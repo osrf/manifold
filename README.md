@@ -14,6 +14,10 @@ Please refer to the [Bitbucket Pipelines](https://bitbucket.org/osrf/manifold/ad
 [![Documentation Status](https://readthedocs.org/projects/manifold/badge/?version=latest)](https://readthedocs.org/projects/manifold/?badge=latest)
 
 
+## Documentation
+
+Check [http://manifold.readthedocs.io/en/latest/](here).
+
 ## Dependencies
 
 The following dependencies are required to compile manifold from source:
