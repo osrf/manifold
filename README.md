@@ -16,8 +16,7 @@ Please refer to the [Bitbucket Pipelines](https://bitbucket.org/osrf/manifold/ad
 
 ## Dependencies
 
-The following dependencies are required to compile ignition-transport from
-source:
+The following dependencies are required to compile manifold from source:
 
  - cmake
  - pkg-config

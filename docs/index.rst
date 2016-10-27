@@ -1,5 +1,5 @@
-.. ign_transport documentation master file, created by
-   sphinx-quickstart on Mon Jun  9 10:09:09 2014.
+.. manifold documentation master file, created by
+   sphinx-quickstart on Mon Jun  9 10:09:09 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -12,9 +12,9 @@ Contents:
    :maxdepth: 2
 
 	Introduction <introduction/intro>
-   Installation <installation/installation>
+  Installation <installation/installation>
 	Contribute <contribute/contribute>
-   API <api/api>
+  API <api/api>
 
 Indices and tables
 ==================

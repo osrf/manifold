@@ -15,9 +15,6 @@ ign_build_tests(${gtest_sources})
 if (UNIX)
   ign_add_library(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION} ${sources})
 elseif(WIN32)
-  # Probotuf compilation is recommended and configured for a STATIC .lib
-  # Not mixing static and shared and just build ignition transport as STATIC
-  # on Windows
   add_library(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION} STATIC ${sources})
 endif()
 

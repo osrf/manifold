@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# ign_transport documentation build configuration file, created by
+# manifold documentation build configuration file, created by
 # sphinx-quickstart on Mon Jun  9 10:09:09 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ign_transportdoc'
+htmlhelp_basename = 'manifolddoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------

@@ -44,5 +44,5 @@ need to [disable the Windows firewall](http://windows.microsoft.com/en-us/window
 
 1. In the Windows Command Prompt, run the test suite:
 
-    cd ign-transport\build
+    cd manifold\build
     ctest
