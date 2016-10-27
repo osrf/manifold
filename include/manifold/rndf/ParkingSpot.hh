@@ -14,3 +14,15 @@
  * limitations under the License.
  *
 */
+
+#ifndef RNDF_PARKINGSPOT_HH_
+#define RNDF_PARKINGSPOT_HH_
+
+namespace manifold
+{
+  namespace rndf
+  {
+
+  }
+}
+#endif

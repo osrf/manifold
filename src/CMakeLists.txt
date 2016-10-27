@@ -2,6 +2,7 @@ include (${project_cmake_dir}/Utils.cmake)
 
 set (sources
   Helpers.cc
+  rndf/RNDF.cc
 )
 
 set (gtest_sources
@@ -18,9 +19,7 @@ elseif(WIN32)
   add_library(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION} STATIC ${sources})
 endif()
 
-# Protobuf module does not have LIBRARIES but LIBRARY
-target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}
-                     )
+target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION})
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}

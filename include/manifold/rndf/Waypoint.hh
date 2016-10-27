@@ -14,3 +14,15 @@
  * limitations under the License.
  *
 */
+
+#ifndef RNDF_WAYPOINT_HH_
+#define RNDF_WAYPOINT_HH_
+
+namespace manifold
+{
+  namespace rndf
+  {
+
+  }
+}
+#endif
