@@ -16,7 +16,7 @@ Please refer to the [Bitbucket Pipelines](https://bitbucket.org/osrf/manifold/ad
 
 ## Documentation
 
-Check [http://manifold.readthedocs.io/en/latest/](here).
+Check [here](http://manifold.readthedocs.io/en/latest/).
 
 ## Dependencies
 
