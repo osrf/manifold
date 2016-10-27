@@ -24,32 +24,6 @@ macro (ign_build_tests)
       gtest gtest_main
     )
 
-    if (MSVC)
-      # Suppress Protobuf message generation warnings.
-      target_compile_options(${BINARY_NAME}
-        PUBLIC /wd4018 /wd4100 /wd4127 /wd4244 /wd4267 /wd4512)
-
-      # Suppress the "decorated name length exceed" warning (inside the STL).
-      target_compile_options(${BINARY_NAME} PUBLIC "/wd4503")
-
-      # Copy the ZMQ DLLs.
-      add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${ZeroMQ_ROOT_DIR}/bin/libzmq-v120-mt-4_0_4.dll"
-        ${CMAKE_CURRENT_BINARY_DIR} VERBATIM)
-
-      add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${ZeroMQ_ROOT_DIR}/bin/libzmq-v120-mt-gd-4_0_4.dll"
-        ${CMAKE_CURRENT_BINARY_DIR} VERBATIM)
-
-      # Copy the Ignition Messages DLL.
-      add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${IGNITION-MSGS_FOLDER}/lib/ignition-msgs0.dll"
-        ${CMAKE_CURRENT_BINARY_DIR} VERBATIM)
-    endif()
-
     target_link_libraries(${BINARY_NAME}
       ${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}
     )
