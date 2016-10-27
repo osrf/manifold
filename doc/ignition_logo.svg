@@ -13,7 +13,7 @@
    height="338.49789"
    id="svg3097"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="ignition_logo.svg">
   <defs
      id="defs3099" />
@@ -235,7 +235,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="402.81549"
        y="649.64667"
        id="text3104"
@@ -244,6 +244,6 @@
          id="tspan3106"
          x="402.81549"
          y="649.64667"
-         style="font-size:48px;fill:#666666">Transport</tspan></text>
+         style="font-size:48px;fill:#666666" /></text>
   </g>
 </svg>
