@@ -15,14 +15,6 @@
  *
 */
 
-#ifndef MANIFOLD_RNDF_RNDF_HH_
-#define MANIFOLD_RNDF_RNDF_HH_
+#include "manifold/RoadNetwork.hh"
 
-namespace manifold
-{
-  namespace rndf
-  {
-
-  }
-}
-#endif
+using namespace manifold;

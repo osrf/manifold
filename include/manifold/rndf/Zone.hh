@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef RNDF_ZONE_HH_
-#define RNDF_ZONE_HH_
+#ifndef MANIFOLD_RNDF_ZONE_HH_
+#define MANIFOLD_RNDF_ZONE_HH_
 
 namespace manifold
 {

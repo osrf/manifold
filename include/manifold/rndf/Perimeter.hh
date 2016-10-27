@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef RNDF_PERIMETER_HH_
-#define RNDF_PERIMETER_HH_
+#ifndef MANIFOLD_RNDF_PERIMETER_HH_
+#define MANIFOLD_RNDF_PERIMETER_HH_
 
 namespace manifold
 {

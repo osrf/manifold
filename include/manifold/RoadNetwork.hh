@@ -15,14 +15,11 @@
  *
 */
 
-#ifndef MANIFOLD_RNDF_RNDF_HH_
-#define MANIFOLD_RNDF_RNDF_HH_
+#ifndef MANIFOLD_ROADNETWORK_HH_
+#define MANIFOLD_ROADNETWORK_HH_
 
 namespace manifold
 {
-  namespace rndf
-  {
 
-  }
 }
 #endif

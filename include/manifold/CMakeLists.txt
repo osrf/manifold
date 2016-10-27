@@ -1,7 +1,9 @@
 include (${project_cmake_dir}/Utils.cmake)
 
 set (common_headers
+  Graph.hh
   Helpers.hh
+  RoadNetwork.hh
 )
 
 set (rndf_headers

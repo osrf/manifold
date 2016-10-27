@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef RNDF_WAYPOINT_HH_
-#define RNDF_WAYPOINT_HH_
+#ifndef MANIFOLD_RNDF_WAYPOINT_HH_
+#define MANIFOLD_RNDF_WAYPOINT_HH_
 
 namespace manifold
 {

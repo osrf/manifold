@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef RNDF_PARKINGSPOT_HH_
-#define RNDF_PARKINGSPOT_HH_
+#ifndef MANIFOLD_RNDF_PARKINGSPOT_HH_
+#define MANIFOLD_RNDF_PARKINGSPOT_HH_
 
 namespace manifold
 {

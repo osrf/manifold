@@ -15,14 +15,11 @@
  *
 */
 
-#ifndef MANIFOLD_RNDF_RNDF_HH_
-#define MANIFOLD_RNDF_RNDF_HH_
+#include "gtest/gtest.h"
 
-namespace manifold
+//////////////////////////////////////////////////
+int main(int argc, char **argv)
 {
-  namespace rndf
-  {
-
-  }
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
-#endif

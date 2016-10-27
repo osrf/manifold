@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef RNDF_LANE_HH_
-#define RNDF_LANE_HH_
+#ifndef MANIFOLD_RNDF_LANE_HH_
+#define MANIFOLD_RNDF_LANE_HH_
 
 namespace manifold
 {

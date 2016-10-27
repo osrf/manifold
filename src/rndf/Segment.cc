@@ -15,14 +15,7 @@
  *
 */
 
-#ifndef MANIFOLD_RNDF_RNDF_HH_
-#define MANIFOLD_RNDF_RNDF_HH_
+#include "manifold/rndf/Segment.hh"
 
-namespace manifold
-{
-  namespace rndf
-  {
-
-  }
-}
-#endif
+using namespace manifold;
+using namespace rndf;
