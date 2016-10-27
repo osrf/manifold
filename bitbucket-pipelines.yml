@@ -8,9 +8,7 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
-          - wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-          - apt-get update
+          - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn
           - mkdir build
           - cd build
           - cmake ..
