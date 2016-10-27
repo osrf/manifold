@@ -8,6 +8,7 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
+          - apt-get update
           - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn
           - mkdir build
           - cd build
