@@ -18,8 +18,27 @@
 #ifndef MANIFOLD_ROADNETWORK_HH_
 #define MANIFOLD_ROADNETWORK_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
+  // Forward declarations.
+  class RoadNetworkPrivate;
 
+  /// \brief ToDo.
+  class MANIFOLD_VISIBLE RoadNetwork
+  {
+    /// \brief Constructor.
+    public: RoadNetwork();
+
+    /// \brief Destructor.
+    public: virtual ~RoadNetwork() = default;
+
+    /// \internal
+    /// \brief Smart pointer to private data.
+    private: std::unique_ptr<RoadNetworkPrivate> dataPtr;
+  };
 }
 #endif

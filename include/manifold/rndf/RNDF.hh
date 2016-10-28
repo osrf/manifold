@@ -18,11 +18,30 @@
 #ifndef MANIFOLD_RNDF_RNDF_HH_
 #define MANIFOLD_RNDF_RNDF_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class RNDFPrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE RNDF
+    {
+      /// \brief Constructor.
+      public: RNDF();
+
+      /// \brief Destructor.
+      public: virtual ~RNDF() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<RNDFPrivate> dataPtr;
+    };
   }
 }
 #endif

@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for Lane class.
+    class LanePrivate
+    {
+      /// \brief Constructor.
+      public: LanePrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~LanePrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+Lane::Lane()
+  : dataPtr(new LanePrivate())
+{
+}

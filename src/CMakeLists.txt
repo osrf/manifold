@@ -1,6 +1,9 @@
 include (${project_cmake_dir}/Utils.cmake)
 
+add_subdirectory(rndf)
+
 set (sources
+  ${rndf_sources}
   Graph.cc
   Helpers.cc
   RoadNetwork.cc
@@ -12,7 +15,7 @@ set (gtest_sources
   RoadNetwork_TEST.cc
 )
 
-add_subdirectory(rndf)
+MESSAGE(STATUS "Files: ${sources}")
 
 include_directories(${CMAKE_BINARY_DIR}/ ${CMAKE_BINARY_DIR}/test/)
 

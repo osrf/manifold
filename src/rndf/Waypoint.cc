@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for Waypoint class.
+    class WaypointPrivate
+    {
+      /// \brief Constructor.
+      public: WaypointPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~WaypointPrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+Waypoint::Waypoint()
+  : dataPtr(new WaypointPrivate())
+{
+}

@@ -18,11 +18,30 @@
 #ifndef MANIFOLD_RNDF_PARKINGSPOT_HH_
 #define MANIFOLD_RNDF_PARKINGSPOT_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class ParkingSpotPrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE ParkingSpot
+    {
+      /// \brief Constructor.
+      public: ParkingSpot();
+
+      /// \brief Destructor.
+      public: virtual ~ParkingSpot() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<ParkingSpotPrivate> dataPtr;
+    };
   }
 }
 #endif

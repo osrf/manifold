@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for Segment class.
+    class SegmentPrivate
+    {
+      /// \brief Constructor.
+      public: SegmentPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~SegmentPrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+Segment::Segment()
+  : dataPtr(new SegmentPrivate())
+{
+}

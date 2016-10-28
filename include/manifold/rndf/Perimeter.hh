@@ -18,11 +18,30 @@
 #ifndef MANIFOLD_RNDF_PERIMETER_HH_
 #define MANIFOLD_RNDF_PERIMETER_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class PerimeterPrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE Perimeter
+    {
+      /// \brief Constructor.
+      public: Perimeter();
+
+      /// \brief Destructor.
+      public: virtual ~Perimeter() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<PerimeterPrivate> dataPtr;
+    };
   }
 }
 #endif

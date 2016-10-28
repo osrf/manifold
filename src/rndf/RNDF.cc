@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for RNDF class.
+    class RNDFPrivate
+    {
+      /// \brief Constructor.
+      public: RNDFPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~RNDFPrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+RNDF::RNDF()
+  : dataPtr(new RNDFPrivate())
+{
+}

@@ -18,11 +18,31 @@
 #ifndef MANIFOLD_RNDF_ZONE_HH_
 #define MANIFOLD_RNDF_ZONE_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class ZonePrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE Zone
+    {
+      /// \brief Constructor.
+      public: Zone();
+
+      /// \brief Destructor.
+      public: virtual ~Zone() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<ZonePrivate> dataPtr;
+    };
   }
 }
 #endif

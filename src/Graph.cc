@@ -18,3 +18,23 @@
 #include "manifold/Graph.hh"
 
 using namespace manifold;
+
+namespace manifold
+{
+  /// \internal
+  /// \brief Private data for Graph class.
+  class GraphPrivate
+  {
+    /// \brief Constructor.
+    public: GraphPrivate() = default;
+
+    /// \brief Destructor.
+    public: virtual ~GraphPrivate() = default;
+  };
+}
+
+//////////////////////////////////////////////////
+Graph::Graph()
+  : dataPtr(new GraphPrivate())
+{
+}

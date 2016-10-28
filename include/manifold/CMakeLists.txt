@@ -22,7 +22,6 @@ set (ign_headers "" CACHE INTERNAL "Manifold headers" FORCE)
 foreach (hdr ${common_headers} ${rndf_headers})
   APPEND_TO_CACHED_STRING(ign_headers
     "Manifold headers" "#include <${PROJECT_NAME_LOWER}/${hdr}>\n")
-  MESSAGE(STATUS ${hdr})
 endforeach()
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/manifold_auto_headers.hh.in

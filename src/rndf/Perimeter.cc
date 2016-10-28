@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for Perimeter class.
+    class PerimeterPrivate
+    {
+      /// \brief Constructor.
+      public: PerimeterPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~PerimeterPrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+Perimeter::Perimeter()
+  : dataPtr(new PerimeterPrivate())
+{
+}

@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for ParkingSpot class.
+    class ParkingSpotPrivate
+    {
+      /// \brief Constructor.
+      public: ParkingSpotPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~ParkingSpotPrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+ParkingSpot::ParkingSpot()
+  : dataPtr(new ParkingSpotPrivate())
+{
+}

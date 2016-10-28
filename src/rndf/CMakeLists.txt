@@ -1,13 +1,14 @@
 include (${project_cmake_dir}/Utils.cmake)
 
-set (sources
-  Lane.cc
-  ParkingSpot.cc
-  Perimeter.cc
-  RNDF.cc
-  Segment.cc
-  Waypoint.cc
-  Zone.cc
+set (rndf_sources
+  rndf/Lane.cc
+  rndf/ParkingSpot.cc
+  rndf/Perimeter.cc
+  rndf/RNDF.cc
+  rndf/Segment.cc
+  rndf/Waypoint.cc
+  rndf/Zone.cc
+  PARENT_SCOPE
 )
 
 set (gtest_sources

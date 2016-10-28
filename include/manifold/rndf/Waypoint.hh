@@ -15,14 +15,33 @@
  *
 */
 
-#ifndef MANIFOLD_RNDF_WAYPOINT_HH_
-#define MANIFOLD_RNDF_WAYPOINT_HH_
+#ifndef MANIFOLD_WAYPOINT_WAYPOINT_HH_
+#define MANIFOLD_WAYPOINT_WAYPOINT_HH_
+
+#include <memory>
+
+#include "manifold/Helpers.hh"
 
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class WaypointPrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE Waypoint
+    {
+      /// \brief Constructor.
+      public: Waypoint();
+
+      /// \brief Destructor.
+      public: virtual ~Waypoint() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<WaypointPrivate> dataPtr;
+    };
   }
 }
 #endif

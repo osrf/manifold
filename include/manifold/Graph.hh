@@ -18,8 +18,27 @@
 #ifndef MANIFOLD_GRAPH_HH_
 #define MANIFOLD_GRAPH_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
+  // Forward declarations.
+  class GraphPrivate;
 
+  /// \brief ToDo.
+  class MANIFOLD_VISIBLE Graph
+  {
+    /// \brief Constructor.
+    public: Graph();
+
+    /// \brief Destructor.
+    public: virtual ~Graph() = default;
+
+    /// \internal
+    /// \brief Smart pointer to private data.
+    private: std::unique_ptr<GraphPrivate> dataPtr;
+  };
 }
 #endif

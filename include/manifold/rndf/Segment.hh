@@ -18,11 +18,30 @@
 #ifndef MANIFOLD_RNDF_SEGMENT_HH_
 #define MANIFOLD_RNDF_SEGMENT_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class SegmentPrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE Segment
+    {
+      /// \brief Constructor.
+      public: Segment();
+
+      /// \brief Destructor.
+      public: virtual ~Segment() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<SegmentPrivate> dataPtr;
+    };
   }
 }
 #endif

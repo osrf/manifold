@@ -18,3 +18,23 @@
 #include "manifold/RoadNetwork.hh"
 
 using namespace manifold;
+
+namespace manifold
+{
+  /// \internal
+  /// \brief Private data for RoadNetwork class.
+  class RoadNetworkPrivate
+  {
+    /// \brief Constructor.
+    public: RoadNetworkPrivate() = default;
+
+    /// \brief Destructor.
+    public: virtual ~RoadNetworkPrivate() = default;
+  };
+}
+
+//////////////////////////////////////////////////
+RoadNetwork::RoadNetwork()
+  : dataPtr(new RoadNetworkPrivate())
+{
+}

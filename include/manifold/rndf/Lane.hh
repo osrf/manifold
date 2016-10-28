@@ -18,11 +18,30 @@
 #ifndef MANIFOLD_RNDF_LANE_HH_
 #define MANIFOLD_RNDF_LANE_HH_
 
+#include <memory>
+
+#include "manifold/Helpers.hh"
+
 namespace manifold
 {
   namespace rndf
   {
+    // Forward declarations.
+    class LanePrivate;
 
+    /// \brief ToDo.
+    class MANIFOLD_VISIBLE Lane
+    {
+      /// \brief Constructor.
+      public: Lane();
+
+      /// \brief Destructor.
+      public: virtual ~Lane() = default;
+
+      /// \internal
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<LanePrivate> dataPtr;
+    };
   }
 }
 #endif

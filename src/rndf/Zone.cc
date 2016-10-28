@@ -19,3 +19,26 @@
 
 using namespace manifold;
 using namespace rndf;
+
+namespace manifold
+{
+  namespace rndf
+  {
+    /// \internal
+    /// \brief Private data for Zone class.
+    class ZonePrivate
+    {
+      /// \brief Constructor.
+      public: ZonePrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~ZonePrivate() = default;
+    };
+  }
+}
+
+//////////////////////////////////////////////////
+Zone::Zone()
+  : dataPtr(new ZonePrivate())
+{
+}
