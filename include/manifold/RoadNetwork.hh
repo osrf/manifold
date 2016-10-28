@@ -34,7 +34,7 @@ namespace manifold
     public: RoadNetwork();
 
     /// \brief Destructor.
-    public: virtual ~RoadNetwork() = default;
+    public: virtual ~RoadNetwork();
 
     /// \internal
     /// \brief Smart pointer to private data.

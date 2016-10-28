@@ -15,31 +15,11 @@
  *
 */
 
-#include "manifold/RoadNetwork.hh"
-
-using namespace manifold;
-
-namespace manifold
-{
-  /// \internal
-  /// \brief Private data for RoadNetwork class.
-  class RoadNetworkPrivate
-  {
-    /// \brief Constructor.
-    public: RoadNetworkPrivate() = default;
-
-    /// \brief Destructor.
-    public: virtual ~RoadNetworkPrivate() = default;
-  };
-}
+#include <manifold/manifold.hh>
 
 //////////////////////////////////////////////////
-RoadNetwork::RoadNetwork()
-  : dataPtr(new RoadNetworkPrivate())
+int main(int argc, char **argv)
 {
-}
-
-//////////////////////////////////////////////////
-RoadNetwork::~RoadNetwork()
-{
+  // Create a road network instance.
+  manifold::RoadNetwork rn;
 }
