@@ -29,16 +29,75 @@ namespace manifold
     class WaypointPrivate
     {
       /// \brief Constructor.
-      public: WaypointPrivate() = default;
+      public: WaypointPrivate(const std::string &_id, const double _lat,
+        const double _lon)
+        : id(_id),
+          latitude(_lat),
+          longitude(_lon)
+      {
+      }
 
       /// \brief Destructor.
       public: virtual ~WaypointPrivate() = default;
+
+      /// \brief Unique waypoint identifier. E.g.: 17.1.1
+      public: std::string id;
+
+      /// \brief Latitude of the waypoint in decimal-degrees, using ITRF00
+      /// reference frame and the GRS80 ellipsoid.
+      public: double latitude;
+
+      /// \brief Longitude of the waypoint in decimal-degrees, using ITRF00
+      /// reference frame and the GRS80 ellipsoid.
+      public: double longitude;
     };
   }
 }
 
 //////////////////////////////////////////////////
-Waypoint::Waypoint()
-  : dataPtr(new WaypointPrivate())
+Waypoint::Waypoint(const std::string &_id, const double _lat, const double _lon)
+  : dataPtr(new WaypointPrivate(_id, _lat, _lon))
 {
+}
+
+//////////////////////////////////////////////////
+std::string Waypoint::Id() const
+{
+  return this->dataPtr->id;
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::SetId(const std::string &_id)
+{
+  // ToDo: Validate the id.
+  this->dataPtr->id = _id;
+  return true;
+}
+
+//////////////////////////////////////////////////
+double Waypoint::Latitude() const
+{
+  return this->dataPtr->latitude;
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::SetLatitude(const double &_lat)
+{
+  // ToDo: Validate the latitude.
+  this->dataPtr->latitude = _lat;
+  return true;
+}
+
+//////////////////////////////////////////////////
+double Waypoint::Longitude() const
+{
+  return this->dataPtr->longitude;
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::SetLongitude(const double &_lon)
+{
+  // ToDo: Validate the longitude.
+  this->dataPtr->longitude = _lon;
+  return true;
 }

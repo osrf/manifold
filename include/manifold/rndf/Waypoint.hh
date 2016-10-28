@@ -33,10 +33,35 @@ namespace manifold
     class MANIFOLD_VISIBLE Waypoint
     {
       /// \brief Constructor.
-      public: Waypoint();
+      /// \param[in] _id Waypoint ID.
+      /// \param[in] _lat Latitude of the waypoint in decimal-degrees,
+      /// using ITRF00 reference frame and the GRS80 ellipsoid.
+      /// \param[in] _lon Longitude of the waypoint in decimal-degrees,
+      /// using ITRF00 reference frame and the GRS80 ellipsoid.
+      public: Waypoint(const std::string &_id,
+                       const double _lat,
+                       const double _lon);
 
       /// \brief Destructor.
       public: virtual ~Waypoint() = default;
+
+      /// \brief ToDo.
+      public: std::string Id() const;
+
+      /// \brief ToDo.
+      public: bool SetId(const std::string &_id);
+
+      /// \brief ToDo.
+      public: double Latitude() const;
+
+      /// \brief ToDo.
+      public: bool SetLatitude(const double &_lat);
+
+      /// \brief ToDo.
+      public: double Longitude() const;
+
+      /// \brief ToDo.
+      public: bool SetLongitude(const double &_lon);
 
       /// \internal
       /// \brief Smart pointer to private data.
