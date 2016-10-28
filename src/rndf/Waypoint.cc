@@ -16,6 +16,7 @@
 */
 
 #include <string>
+#include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Waypoint.hh"
 
@@ -31,11 +32,10 @@ namespace manifold
     class WaypointPrivate
     {
       /// \brief Constructor.
-      public: WaypointPrivate(const std::string &_id, const double _lat,
-        const double _lon)
+      public: WaypointPrivate(const std::string &_id,
+                          const ignition::math::SphericalCoordinates &_location)
         : id(_id),
-          latitude(_lat),
-          longitude(_lon)
+          location(_location)
       {
       }
 
@@ -45,20 +45,17 @@ namespace manifold
       /// \brief Unique waypoint identifier. E.g.: 17.1.1
       public: std::string id;
 
-      /// \brief Latitude of the waypoint in decimal-degrees, using ITRF00
+      /// \brief Location of the waypoint in decimal-degrees, using ITRF00
       /// reference frame and the GRS80 ellipsoid.
-      public: double latitude;
-
-      /// \brief Longitude of the waypoint in decimal-degrees, using ITRF00
-      /// reference frame and the GRS80 ellipsoid.
-      public: double longitude;
+      public: ignition::math::SphericalCoordinates location;
     };
   }
 }
 
 //////////////////////////////////////////////////
-Waypoint::Waypoint(const std::string &_id, const double _lat, const double _lon)
-  : dataPtr(new WaypointPrivate(_id, _lat, _lon))
+Waypoint::Waypoint(const std::string &_id,
+                   const ignition::math::SphericalCoordinates &_location)
+  : dataPtr(new WaypointPrivate(_id, _location)
 {
 }
 
@@ -77,29 +74,7 @@ bool Waypoint::SetId(const std::string &_id)
 }
 
 //////////////////////////////////////////////////
-double Waypoint::Latitude() const
+ignition::math::SphericalCoordinates & Waypoint::Location()
 {
-  return this->dataPtr->latitude;
-}
-
-//////////////////////////////////////////////////
-bool Waypoint::SetLatitude(const double &_lat)
-{
-  // ToDo: Validate the latitude.
-  this->dataPtr->latitude = _lat;
-  return true;
-}
-
-//////////////////////////////////////////////////
-double Waypoint::Longitude() const
-{
-  return this->dataPtr->longitude;
-}
-
-//////////////////////////////////////////////////
-bool Waypoint::SetLongitude(const double &_lon)
-{
-  // ToDo: Validate the longitude.
-  this->dataPtr->longitude = _lon;
-  return true;
+  return this->dataPtr->location;
 }

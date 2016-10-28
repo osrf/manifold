@@ -23,6 +23,14 @@
 
 #include "manifold/Helpers.hh"
 
+namespace ignition
+{
+  namespace math
+  {
+    class SphericalCoordinates;
+  }
+}
+
 namespace manifold
 {
   namespace rndf
@@ -35,13 +43,10 @@ namespace manifold
     {
       /// \brief Constructor.
       /// \param[in] _id Waypoint ID.
-      /// \param[in] _lat Latitude of the waypoint in decimal-degrees,
-      /// using ITRF00 reference frame and the GRS80 ellipsoid.
-      /// \param[in] _lon Longitude of the waypoint in decimal-degrees,
+      /// \param[in] _location Location of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
       public: Waypoint(const std::string &_id,
-                       const double _lat,
-                       const double _lon);
+                       const ignition::math::SphericalCoordinates &_location);
 
       /// \brief Destructor.
       public: virtual ~Waypoint() = default;
@@ -52,17 +57,8 @@ namespace manifold
       /// \brief ToDo.
       public: bool SetId(const std::string &_id);
 
-      /// \brief ToDo.
-      public: double Latitude() const;
-
-      /// \brief ToDo.
-      public: bool SetLatitude(const double &_lat);
-
-      /// \brief ToDo.
-      public: double Longitude() const;
-
-      /// \brief ToDo.
-      public: bool SetLongitude(const double &_lon);
+      /// \brief Get a mutable reference to the waypoint location.
+      public: ignition::math::SphericalCoordinates &Location();
 
       /// \internal
       /// \brief Smart pointer to private data.
