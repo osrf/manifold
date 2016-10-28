@@ -15,6 +15,8 @@
  *
 */
 
+#include <string>
+
 #include "manifold/rndf/Waypoint.hh"
 
 using namespace manifold;

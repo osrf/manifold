@@ -19,6 +19,7 @@
 #define MANIFOLD_WAYPOINT_WAYPOINT_HH_
 
 #include <memory>
+#include <string>
 
 #include "manifold/Helpers.hh"
 
@@ -38,7 +39,7 @@ namespace manifold
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
       /// \param[in] _lon Longitude of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
-      public: Waypoint(const std::string &_id,
+      public: Waypoint(const std:string &_id,
                        const double _lat,
                        const double _lon);
 
