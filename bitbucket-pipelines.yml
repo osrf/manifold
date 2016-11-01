@@ -14,7 +14,7 @@ pipelines:
           - hg clone https://bitbucket.org/ignitionrobotics/ign-math -b ign-math2
           - cd ign-math
           - mkdir build && cd build
-          - cmake -DCMAKE_INSTALL_PREFIX=/usr
+          - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
           - make -j4 install
           - cd ../..
           - mkdir build && cd build
