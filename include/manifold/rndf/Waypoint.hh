@@ -41,6 +41,8 @@ namespace manifold
     /// \brief ToDo.
     class MANIFOLD_VISIBLE Waypoint
     {
+      public: Waypoint();
+
       /// \brief Constructor.
       /// \param[in] _id Waypoint ID.
       /// \param[in] _location Location of the waypoint in decimal-degrees,
@@ -49,7 +51,7 @@ namespace manifold
                        const ignition::math::SphericalCoordinates &_location);
 
       /// \brief Destructor.
-      public: virtual ~Waypoint() = default;
+      public: virtual ~Waypoint();
 
       /// \brief ToDo.
       public: std::string Id() const;
@@ -59,6 +61,12 @@ namespace manifold
 
       /// \brief Get a mutable reference to the waypoint location.
       public: ignition::math::SphericalCoordinates &Location();
+
+      /// \brief \param[in] _waypoint A waypoint to validate.
+      /// \return True if the waypoint is valid. A valid waypoint has the
+      /// following format: x.y.z, where x, y, z are positive integers.
+      /// E.g.: 1.2.3 is a valid. 1.0.2 is not valid.
+      public: bool ValidWaypoint(const std::string &_waypoint);
 
       /// \internal
       /// \brief Smart pointer to private data.

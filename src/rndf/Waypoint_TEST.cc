@@ -15,8 +15,40 @@
  *
 */
 
+#include <map>
+#include <string>
+#include <ignition/math/Angle.hh>
+#include <ignition/math/SphericalCoordinates.hh>
+
+#include "manifold/rndf/Waypoint.hh"
 #include "manifold/test_config.h"
 #include "gtest/gtest.h"
+
+//////////////////////////////////////////////////
+/// \brief Check the
+TEST(WaypointTest, validator)
+{
+  std::map<std::string, bool> cases =
+  {
+    {"1.2.3" ,  true},
+    {"1a.2.3", false},
+    {"1"     , false}
+  };
+
+  for (auto const &usecase : cases)
+  {
+    // Default surface type
+    ignition::math::SphericalCoordinates::SurfaceType st =
+      ignition::math::SphericalCoordinates::EARTH_WGS84;
+    ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+    double elev = 354.1;
+    ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+
+    std::string id = usecase.first;
+    manifold::rndf::Waypoint wp(id, sc);
+    EXPECT_EQ(wp.ValidWaypoint(id), usecase.second);
+  }
+}
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)

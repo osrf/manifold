@@ -21,5 +21,4 @@ set (gtest_sources
   Zone_TEST.cc
 )
 
-
 ign_build_tests(${gtest_sources})

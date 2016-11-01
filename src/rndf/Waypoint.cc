@@ -53,9 +53,19 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
+Waypoint::Waypoint()
+{
+}
+
+//////////////////////////////////////////////////
 Waypoint::Waypoint(const std::string &_id,
                    const ignition::math::SphericalCoordinates &_location)
-  : dataPtr(new WaypointPrivate(_id, _location)
+  : dataPtr(new WaypointPrivate(_id, _location))
+{
+}
+
+//////////////////////////////////////////////////
+Waypoint::~Waypoint()
 {
 }
 
@@ -74,7 +84,52 @@ bool Waypoint::SetId(const std::string &_id)
 }
 
 //////////////////////////////////////////////////
-ignition::math::SphericalCoordinates & Waypoint::Location()
+ignition::math::SphericalCoordinates &Waypoint::Location()
 {
   return this->dataPtr->location;
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::ValidWaypoint(const std::string &_waypoint)
+{
+  std::string waypoint = _waypoint;
+  const std::string kDelim = ".";
+
+  for (auto i = 0; i < 3; ++i)
+  {
+    if (waypoint.empty())
+      return false;
+
+    std::string::size_type sz;
+    auto delimPos = waypoint.find(kDelim);
+    std::string strValue = waypoint;
+    auto expectedSize = waypoint.size();
+    if (delimPos != std::string::npos)
+    {
+      strValue = waypoint.substr(0, delimPos);
+      expectedSize = strValue.size();
+    }
+
+    try
+    {
+      std::stoi(strValue, &sz);
+      if (sz != expectedSize)
+        return false;
+
+      if (delimPos != std::string::npos)
+        waypoint.erase(0, delimPos + kDelim.size());
+      else
+        waypoint = "";
+    }
+    catch (const std::invalid_argument &_ia)
+    {
+      return false;
+    }
+    catch (const std::out_of_range &_oor)
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
