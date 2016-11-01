@@ -18,23 +18,99 @@
 #include <map>
 #include <string>
 #include <ignition/math/Angle.hh>
+#include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Waypoint.hh"
 #include "manifold/test_config.h"
 #include "gtest/gtest.h"
 
+using namespace manifold;
+using namespace rndf;
+
 //////////////////////////////////////////////////
-/// \brief Check the
-TEST(WaypointTest, validator)
+/// \brief Check id-related accessors.
+TEST(WaypointTest, id)
+{
+  // Default surface type
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+
+  std::string id = "1.2.3";
+  Waypoint waypoint(id, sc);
+
+  EXPECT_EQ(waypoint.Id(), id);
+  std::string newId = "1.2.4";
+  EXPECT_TRUE(waypoint.SetId(newId));
+  EXPECT_EQ(waypoint.Id(), newId);
+
+  // Check that trying to set an incorrect Id does not take effect.
+  std::string wrongId = "1.2.0";
+  EXPECT_FALSE(waypoint.SetId(wrongId));
+  EXPECT_EQ(waypoint.Id(), newId);
+
+  // Check that using the constructor with a wrong id results in an empty Id.
+  Waypoint wrongWp(wrongId, sc);
+  EXPECT_TRUE(wrongWp.Id().empty());
+}
+
+//////////////////////////////////////////////////
+/// \brief Check location-related accessors.
+TEST(WaypointTest, location)
+{
+  // Default surface type
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+
+  std::string id = "1.2.3";
+  Waypoint waypoint(id, sc);
+
+  // Check that I can read and modify the location with the mutable accessor.
+  auto &location = waypoint.Location();
+  EXPECT_EQ(location, sc);
+  double newElev = 1000.0;
+  location.SetElevationReference(newElev);
+  EXPECT_TRUE(
+    ignition::math::equal(waypoint.Location().ElevationReference(), newElev));
+}
+
+//////////////////////////////////////////////////
+/// \brief Check function that validates the Id of a waypoint.
+TEST(WaypointTest, valid)
 {
   std::map<std::string, bool> cases =
   {
-    {"1.2.3" ,  true},
-    {"1a.2.3", false},
-    {"1"     , false}
+    {""           , false},
+    {"1"          , false},
+    {"a"          , false},
+    {"1."         , false},
+    {"1.a"        , false},
+    {"1.a."       , false},
+    {"1.2"        , false},
+    {"1.2."       , false},
+    {".."         , false},
+    {"1.2.a"      , false},
+    {"1.2.3."     , false},
+    {"1.2. 3"     , false},
+    {"1a.2.3"     , false},
+    {"1.2a.3"     , false},
+    {"1.2.3a"     , false},
+    {"0.2.3"      , false},
+    {"1.-2.3"     , false},
+    {"1.2.3."     , false},
+    {"foo1.2.3"   , false},
+    {"1.2.3bar"   , false},
+    {"1.2.3"      , true},
+    {"10.200.3000", true},
   };
 
+  // Check all cases.
   for (auto const &usecase : cases)
   {
     // Default surface type
@@ -45,8 +121,7 @@ TEST(WaypointTest, validator)
     ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
 
     std::string id = usecase.first;
-    manifold::rndf::Waypoint wp(id, sc);
-    EXPECT_EQ(wp.ValidWaypoint(id), usecase.second);
+    EXPECT_EQ(Waypoint::valid(id), usecase.second);
   }
 }
 

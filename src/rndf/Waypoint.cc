@@ -15,6 +15,8 @@
  *
 */
 
+#include <iostream>
+#include <regex>
 #include <string>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -53,15 +55,17 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
-Waypoint::Waypoint()
-{
-}
-
-//////////////////////////////////////////////////
 Waypoint::Waypoint(const std::string &_id,
                    const ignition::math::SphericalCoordinates &_location)
-  : dataPtr(new WaypointPrivate(_id, _location))
 {
+  std::string id = _id;
+  if (!valid(_id))
+  {
+    std::cerr << "[WayPoint()] Invalid waypoint Id[" << _id << "]" << std::endl;
+    id = "";
+  }
+
+  this->dataPtr.reset(new WaypointPrivate(id, _location));
 }
 
 //////////////////////////////////////////////////
@@ -78,9 +82,10 @@ std::string Waypoint::Id() const
 //////////////////////////////////////////////////
 bool Waypoint::SetId(const std::string &_id)
 {
-  // ToDo: Validate the id.
-  this->dataPtr->id = _id;
-  return true;
+  bool isValid = valid(_id);
+  if (isValid)
+    this->dataPtr->id = _id;
+  return isValid;
 }
 
 //////////////////////////////////////////////////
@@ -90,46 +95,8 @@ ignition::math::SphericalCoordinates &Waypoint::Location()
 }
 
 //////////////////////////////////////////////////
-bool Waypoint::ValidWaypoint(const std::string &_waypoint)
+bool Waypoint::valid(const std::string &_waypoint)
 {
-  std::string waypoint = _waypoint;
-  const std::string kDelim = ".";
-
-  for (auto i = 0; i < 3; ++i)
-  {
-    if (waypoint.empty())
-      return false;
-
-    std::string::size_type sz;
-    auto delimPos = waypoint.find(kDelim);
-    std::string strValue = waypoint;
-    auto expectedSize = waypoint.size();
-    if (delimPos != std::string::npos)
-    {
-      strValue = waypoint.substr(0, delimPos);
-      expectedSize = strValue.size();
-    }
-
-    try
-    {
-      int intValue = std::stoi(strValue, &sz);
-      if ((sz != expectedSize) || (intValue <= 0))
-        return false;
-
-      if (delimPos != std::string::npos)
-        waypoint.erase(0, delimPos + kDelim.size());
-      else
-        waypoint = "";
-    }
-    catch (const std::invalid_argument &_ia)
-    {
-      return false;
-    }
-    catch (const std::out_of_range &_oor)
-    {
-      return false;
-    }
-  }
-
-  return true;
+  const std::regex rgx("^[1-9][[:d:]]*\\.[1-9][[:d:]]*\\.[1-9][[:d:]]*$");
+  return std::regex_match(_waypoint, rgx);
 }
