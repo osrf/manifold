@@ -15,7 +15,15 @@
  *
 */
 
+#include <algorithm>
+#include <iostream>
+#include <regex>
+#include <string>
+#include <vector>
+#include <ignition/math/SphericalCoordinates.hh>
+
 #include "manifold/rndf/Lane.hh"
+#include "manifold/rndf/Waypoint.hh"
 
 using namespace manifold;
 using namespace rndf;
@@ -25,20 +33,125 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for LaneHeader class.
+    class LaneHeaderPrivate
+    {
+      /// \brief Constructor.
+      public: LaneHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~LaneHeaderPrivate() = default;
+    };
+
+    /// \internal
     /// \brief Private data for Lane class.
     class LanePrivate
     {
       /// \brief Constructor.
-      public: LanePrivate() = default;
+      /// \param[in] _id Lane Id.
+      public: explicit LanePrivate(const std::string &_id)
+        : id(_id)
+      {
+      }
 
       /// \brief Destructor.
       public: virtual ~LanePrivate() = default;
+
+      /// \brief Unique lane identifier. E.g.: 1.2
+      public: std::string id;
+
+      /// \brief Collection of waypoints.
+      public: std::vector<Waypoint> waypoints;
     };
   }
 }
 
 //////////////////////////////////////////////////
-Lane::Lane()
-  : dataPtr(new LanePrivate())
+Lane::Lane(const std::string &_id)
 {
+  std::string id = _id;
+  if (!valid(_id))
+  {
+    std::cerr << "[Lane()] Invalid lane Id[" << _id << "]" << std::endl;
+    id = "";
+  }
+
+  this->dataPtr.reset(new LanePrivate(id));
+}
+
+//////////////////////////////////////////////////
+Lane::~Lane()
+{
+}
+
+//////////////////////////////////////////////////
+std::string Lane::Id() const
+{
+  return this->dataPtr->id;
+}
+
+//////////////////////////////////////////////////
+bool Lane::SetId(const std::string &_id)
+{
+  bool isValid = valid(_id);
+  if (isValid)
+    this->dataPtr->id = _id;
+  return isValid;
+}
+
+//////////////////////////////////////////////////
+unsigned int Lane::NumWaypoints() const
+{
+  return this->dataPtr->waypoints.size();
+}
+
+//////////////////////////////////////////////////
+bool Lane::Waypoint(const unsigned int _idx, rndf::Waypoint &_waypoint)
+{
+  if (_idx >= this->NumWaypoints())
+    return false;
+
+  // ToDo: Check that this is a mutable rederence and not a copy.
+  _waypoint = this->dataPtr->waypoints.at(_idx);
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::Waypoint(const std::string &_wpId, rndf::Waypoint &_waypoint)
+{
+  return std::find(this->dataPtr->waypoints.begin(),
+           this->dataPtr->waypoints.end(), _waypoint) !=
+             this->dataPtr->waypoints.end();
+}
+
+//////////////////////////////////////////////////
+bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
+{
+  // Check that the waypoint doesn't exist.
+  if (std::find(this->dataPtr->waypoints.begin(),
+        this->dataPtr->waypoints.end(), _newWaypoint) ==
+             this->dataPtr->waypoints.end())
+  {
+    return false;
+  }
+
+  this->dataPtr->waypoints.push_back(_newWaypoint);
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::RemoveWaypoint(const std::string &_wpId)
+{
+  rndf::Waypoint wp(_wpId, ignition::math::SphericalCoordinates());
+  this->dataPtr->waypoints.erase(std::remove(this->dataPtr->waypoints.begin(),
+    this->dataPtr->waypoints.end(), wp), this->dataPtr->waypoints.end());
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::valid(const std::string &_id)
+{
+  const std::regex rgx("^[1-9][[:d:]]*\\.[1-9][[:d:]]*$");
+  return std::regex_match(_id, rgx);
 }

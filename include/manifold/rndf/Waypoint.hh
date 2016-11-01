@@ -41,12 +41,20 @@ namespace manifold
     /// \brief A reference point.
     class MANIFOLD_VISIBLE Waypoint
     {
+      /// \brief Default constructor.
+      public: Waypoint();
+
       /// \brief Constructor.
-      /// \param[in] _id Waypoint ID.
+      /// \param[in] _id Waypoint Id.
       /// \param[in] _location Location of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
+      /// \sa valid.
       public: Waypoint(const std::string &_id,
                        const ignition::math::SphericalCoordinates &_location);
+
+      /// \brief Copy constructor.
+      /// \param[in] _other Other waypoint.
+      public: Waypoint(const Waypoint &_other);
 
       /// \brief Destructor.
       public: virtual ~Waypoint();
@@ -66,11 +74,26 @@ namespace manifold
       /// \return A mutable reference to the waypoint location.
       public: ignition::math::SphericalCoordinates &Location();
 
-      /// \brief \param[in] _waypoint A waypoint to validate.
-      /// \return True if the waypoint is valid. A valid waypoint has the
+      /// \brief \param[in] _waypoint A waypoint Id to validate.
+      /// \return True if the waypoint Id is valid. A valid waypoint Id has the
       /// following format: x.y.z, where x, y, z are positive integers.
       /// E.g.: "1.2.3" is a valid; "1.0.2" is not valid.
       static bool valid(const std::string &_waypoint);
+
+      /// \brief Equality operator, result = this == _other
+      /// \param[in] _other Waypoint to check for equality
+      /// \return true if this == _other
+      public: bool operator==(const Waypoint &_other) const;
+
+      /// \brief Inequality
+      /// \param[in] _other Waypoint to check for inequality
+      /// \return true if this != _other
+      public: bool operator!=(const Waypoint &_other) const;
+
+      /// \brief Assignment operator.
+      /// \param[in] _other The new Waypoint.
+      /// \return A reference to this instance.
+      public: Waypoint &operator=(const Waypoint &_other);
 
       /// \internal
       /// \brief Smart pointer to private data.

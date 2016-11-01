@@ -34,6 +34,10 @@ namespace manifold
     class WaypointPrivate
     {
       /// \brief Constructor.
+      /// \param[in] _id Waypoint Id.
+      /// \param[in] _location Location of the waypoint in decimal-degrees,
+      /// using ITRF00 reference frame and the GRS80 ellipsoid.
+      /// \sa valid.
       public: WaypointPrivate(const std::string &_id,
                           const ignition::math::SphericalCoordinates &_location)
         : id(_id),
@@ -55,6 +59,13 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
+Waypoint::Waypoint()
+{
+  this->dataPtr.reset(new WaypointPrivate("",
+    ignition::math::SphericalCoordinates()));
+}
+
+//////////////////////////////////////////////////
 Waypoint::Waypoint(const std::string &_id,
                    const ignition::math::SphericalCoordinates &_location)
 {
@@ -66,6 +77,13 @@ Waypoint::Waypoint(const std::string &_id,
   }
 
   this->dataPtr.reset(new WaypointPrivate(id, _location));
+}
+
+//////////////////////////////////////////////////
+Waypoint::Waypoint(const Waypoint &_other)
+{
+  ignition::math::SphericalCoordinates location = _other.dataPtr->location;
+  this->dataPtr.reset(new WaypointPrivate(_other.Id(), location));
 }
 
 //////////////////////////////////////////////////
@@ -95,8 +113,28 @@ ignition::math::SphericalCoordinates &Waypoint::Location()
 }
 
 //////////////////////////////////////////////////
-bool Waypoint::valid(const std::string &_waypoint)
+bool Waypoint::valid(const std::string &_id)
 {
   const std::regex rgx("^[1-9][[:d:]]*\\.[1-9][[:d:]]*\\.[1-9][[:d:]]*$");
-  return std::regex_match(_waypoint, rgx);
+  return std::regex_match(_id, rgx);
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::operator==(const Waypoint &_other) const
+{
+  return this->Id() == _other.Id();
+}
+
+//////////////////////////////////////////////////
+bool Waypoint::operator!=(const Waypoint &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+Waypoint &Waypoint::operator=(const Waypoint &_other)
+{
+  this->SetId(_other.Id());
+  this->dataPtr->location = _other.dataPtr->location;
+  return *this;
 }
