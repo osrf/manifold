@@ -13,12 +13,11 @@ pipelines:
           # Install Ignition math.
           - hg clone https://bitbucket.org/ignitionrobotics/ign-math -b ign-math2
           - cd ign-math
-          - mkdir build
+          - mkdir build && cd build
           - cmake -DCMAKE_INSTALL_PREFIX=/usr
           - make -j4 install
           - cd ../..
-          - mkdir build
-          - cd build
+          - mkdir build && cd build
           - cmake ..
           - make -j4
           - make test ARGS="-VV"
