@@ -112,8 +112,8 @@ bool Waypoint::ValidWaypoint(const std::string &_waypoint)
 
     try
     {
-      std::stoi(strValue, &sz);
-      if (sz != expectedSize)
+      int intValue = std::stoi(strValue, &sz);
+      if ((sz != expectedSize) || (intValue <= 0))
         return false;
 
       if (delimPos != std::string::npos)
