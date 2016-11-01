@@ -8,10 +8,15 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
-          - wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add -
           - apt-get update
-          - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn libignition-math2-dev
+          - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn mercurial
+          # Install Ignition math.
+          - hg clone https://bitbucket.org/ignitionrobotics/ign-math -b ign-math2
+          - cd ign-math
+          - mkdir build
+          - cmake -DCMAKE_INSTALL_PREFIX=/usr
+          - make -j4 install
+          - cd ../..
           - mkdir build
           - cd build
           - cmake ..
