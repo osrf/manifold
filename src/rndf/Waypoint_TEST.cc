@@ -21,9 +21,9 @@
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
+#include "gtest/gtest.h"
 #include "manifold/rndf/Waypoint.hh"
 #include "manifold/test_config.h"
-#include "gtest/gtest.h"
 
 using namespace manifold;
 using namespace rndf;

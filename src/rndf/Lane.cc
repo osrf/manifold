@@ -119,18 +119,35 @@ bool Lane::Waypoint(const unsigned int _idx, rndf::Waypoint &_waypoint)
 //////////////////////////////////////////////////
 bool Lane::Waypoint(const std::string &_wpId, rndf::Waypoint &_waypoint)
 {
-  return std::find(this->dataPtr->waypoints.begin(),
-           this->dataPtr->waypoints.end(), _waypoint) !=
-             this->dataPtr->waypoints.end();
+  auto it = std::find_if(this->dataPtr->waypoints.begin(),
+    this->dataPtr->waypoints.end(),
+    [&_wpId](const rndf::Waypoint &_wp)
+    {
+      return _wp.Id() == _wpId;
+    });
+
+  bool found = it != this->dataPtr->waypoints.end();
+  if (found)
+    _waypoint = *it;
+
+  return found;
 }
 
 //////////////////////////////////////////////////
 bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
 {
-  // Check that the waypoint doesn't exist.
+  // Validate the waypoint.
+  if (!Waypoint::valid(_newWaypoint.Id()))
+  {
+    std::cerr << "[Lane::Addwaypoint() Invalid waypoint Id ["
+              << _newWaypoint.Id() << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the waypoint already exists.
   if (std::find(this->dataPtr->waypoints.begin(),
-        this->dataPtr->waypoints.end(), _newWaypoint) ==
-             this->dataPtr->waypoints.end())
+        this->dataPtr->waypoints.end(), _newWaypoint) !=
+          this->dataPtr->waypoints.end())
   {
     return false;
   }
@@ -143,10 +160,9 @@ bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
 bool Lane::RemoveWaypoint(const std::string &_wpId)
 {
   rndf::Waypoint wp(_wpId, ignition::math::SphericalCoordinates());
-  this->dataPtr->waypoints.erase(std::remove(this->dataPtr->waypoints.begin(),
-    this->dataPtr->waypoints.end(), wp), this->dataPtr->waypoints.end());
-
-  return true;
+  return (this->dataPtr->waypoints.erase(std::remove(
+    this->dataPtr->waypoints.begin(), this->dataPtr->waypoints.end(), wp),
+      this->dataPtr->waypoints.end()) != this->dataPtr->waypoints.end());
 }
 
 //////////////////////////////////////////////////
