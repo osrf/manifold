@@ -1,6 +1,7 @@
 include (${project_cmake_dir}/Utils.cmake)
 
 set (rndf_sources
+  rndf/Checkpoint.cc
   rndf/Lane.cc
   rndf/ParkingSpot.cc
   rndf/Perimeter.cc
@@ -12,6 +13,7 @@ set (rndf_sources
 )
 
 set (gtest_sources
+  Checkpoint_TEST.cc
   Lane_TEST.cc
   ParkingSpot_TEST.cc
   Perimeter_TEST.cc

@@ -7,6 +7,7 @@ set (common_headers
 )
 
 set (rndf_headers
+  rndf/Checkpoint.hh
   rndf/Lane.hh
   rndf/ParkingSpot.hh
   rndf/Perimeter.hh

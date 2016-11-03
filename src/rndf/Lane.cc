@@ -21,6 +21,7 @@
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
+#include "manifold/rndf/Checkpoint.hh"
 #include "manifold/rndf/Lane.hh"
 #include "manifold/rndf/Waypoint.hh"
 
@@ -31,17 +32,6 @@ namespace manifold
 {
   namespace rndf
   {
-    /// \internal
-    /// \brief Private data for LaneHeader class.
-    class LaneHeaderPrivate
-    {
-      /// \brief Constructor.
-      public: LaneHeaderPrivate() = default;
-
-      /// \brief Destructor.
-      public: virtual ~LaneHeaderPrivate() = default;
-    };
-
     /// \internal
     /// \brief Private data for Lane class.
     class LanePrivate
@@ -77,7 +67,7 @@ namespace manifold
       Lane::Marking rightBoundary = Lane::Marking::UNDEFINED;
 
       /// \brief Collection of checkpoints.
-      // std::vector<Checkpoint> checkpoints;
+      std::vector<Checkpoint> checkpoints;
 
       /// \brief Collection of stop signs.
       // std::vector<Stop> stops;
@@ -129,6 +119,12 @@ unsigned int Lane::NumWaypoints() const
 
 //////////////////////////////////////////////////
 std::vector<rndf::Waypoint> &Lane::Waypoints()
+{
+  return this->dataPtr->waypoints;
+}
+
+//////////////////////////////////////////////////
+const std::vector<rndf::Waypoint> &Lane::Waypoints() const
 {
   return this->dataPtr->waypoints;
 }
@@ -200,6 +196,8 @@ bool Lane::RemoveWaypoint(const int _wpId)
 bool Lane::Valid() const
 {
   bool valid = this->Id() > 0 && this->NumWaypoints() > 0;
+  for (auto &wp : this->Waypoints())
+    valid = valid && wp.Valid();
   return valid;
 }
 
@@ -246,4 +244,87 @@ Lane::Marking Lane::RightBoundary() const
 void Lane::SetRightBoundary(const Lane::Marking &_boundary)
 {
   this->dataPtr->rightBoundary = _boundary;
+}
+
+//////////////////////////////////////////////////
+unsigned int Lane::NumCheckpoints() const
+{
+  return this->dataPtr->checkpoints.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<rndf::Checkpoint> &Lane::Checkpoints()
+{
+  return this->dataPtr->checkpoints;
+}
+
+//////////////////////////////////////////////////
+const std::vector<rndf::Checkpoint> &Lane::Checkpoints() const
+{
+  return this->dataPtr->checkpoints;
+}
+
+//////////////////////////////////////////////////
+bool Lane::Checkpoint(const int _cpId, rndf::Checkpoint &_cp) const
+{
+  auto it = std::find_if(this->dataPtr->checkpoints.begin(),
+    this->dataPtr->checkpoints.end(),
+    [_cpId](const rndf::Checkpoint &_checkpoint)
+    {
+      return _checkpoint.CheckpointId() == _cpId;
+    });
+
+  bool found = it != this->dataPtr->checkpoints.end();
+  if (found)
+    _cp = *it;
+
+  return found;
+}
+
+//////////////////////////////////////////////////
+bool Lane::UpdateCheckpoint(const rndf::Checkpoint &_cp)
+{
+  auto it = std::find(this->dataPtr->checkpoints.begin(),
+    this->dataPtr->checkpoints.end(), _cp);
+
+  bool found = it != this->dataPtr->checkpoints.end();
+  if (found)
+    *it = _cp;
+
+  return found;
+}
+
+//////////////////////////////////////////////////
+bool Lane::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
+{
+  // Validate the checkpoint.
+  if (!_newCheckpoint.Valid())
+  {
+    std::cerr << "[Lane::AddCheckpoint() Invalid checkpoint: "
+              << "checkpointId [" << _newCheckpoint.CheckpointId() << "], "
+              << "waypointId [" << _newCheckpoint.WaypointId() << "]"
+              << std::endl;
+    return false;
+  }
+
+  // Check whether the checkpoint already exists.
+  if (std::find(this->dataPtr->checkpoints.begin(),
+        this->dataPtr->checkpoints.end(), _newCheckpoint) !=
+          this->dataPtr->checkpoints.end())
+  {
+    return false;
+  }
+
+  this->dataPtr->checkpoints.push_back(_newCheckpoint);
+  assert(this->NumCheckpoints() == this->dataPtr->checkpoints.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::RemoveCheckpoint(const int _cpId)
+{
+  rndf::Checkpoint cp(_cpId, 0);
+  return (this->dataPtr->checkpoints.erase(std::remove(
+    this->dataPtr->checkpoints.begin(), this->dataPtr->checkpoints.end(), cp),
+      this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
 }

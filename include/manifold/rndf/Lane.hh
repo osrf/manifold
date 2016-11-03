@@ -28,8 +28,8 @@ namespace manifold
   namespace rndf
   {
     // Forward declarations.
+    class Checkpoint;
     class LanePrivate;
-    class LaneHeaderPrivate;
     class Waypoint;
 
     /// \brief A class that represents a road lane composed by a set of
@@ -59,6 +59,10 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Lane();
 
+      ///////
+      /// Id
+      ///////
+
       /// \brief Get the unique identifier of the lane.
       /// \return The lane Id.
       public: int Id() const;
@@ -70,22 +74,30 @@ namespace manifold
       /// \sa valid.
       public: bool SetId(const int _id);
 
+      /////////////
+      /// Waypoints
+      /////////////
+
       /// \brief Get the number of waypoints stored.
-      /// \return The number of waypoints of the current line.
+      /// \return The number of waypoints in the current lane.
       public: unsigned int NumWaypoints() const;
 
       /// \brief Get a mutable reference to the vector of waypoints;
-      /// \return \return A mutable reference to the vector of waypoints.
+      /// \return A mutable reference to the vector of waypoints.
       public: std::vector<rndf::Waypoint> &Waypoints();
+
+      /// \brief Get the vector of waypoints;
+      /// \return \return The vector of waypoints.
+      public: const std::vector<rndf::Waypoint> &Waypoints() const;
 
       /// \brief Get the details of one of the waypoints with Id _wpId.
       /// \param[in] _wpId The waypoint Id.
-      /// \param[out] _waypoint The waypoint requested.
+      /// \param[out] _wp The waypoint requested.
       /// \return True if the waypoint was found or false otherwise.
       public: bool Waypoint(const int _wpId, rndf::Waypoint &_wp) const;
 
       /// \brief Update an existing waypoint.
-      /// \param[in] _wpId The updated waypoint.
+      /// \param[in] _wp The updated waypoint.
       /// \return True if the waypoint was found and updated or false otherwise.
       public: bool UpdateWaypoint(const rndf::Waypoint &_wp);
 
@@ -103,8 +115,16 @@ namespace manifold
       /// or invalid).
       public: bool RemoveWaypoint(const int _wpId);
 
+      //////////////
+      /// Validation
+      //////////////
+
       /// \return True if the lane is valid.
       public: bool Valid() const;
+
+      /////////
+      /// Width
+      /////////
 
       /// \brief Get the lane width in meters.
       /// \return Return the lane width in meters.
@@ -113,6 +133,10 @@ namespace manifold
       /// \brief Set the lane width.
       /// \param[in] _newWidth The new width in meters.
       public: bool SetWidth(const double _newWidth);
+
+      //////////////
+      /// Boundaries
+      //////////////
 
       /// \brief Get the left boundary type.
       /// \return The left boundary type.
@@ -129,6 +153,49 @@ namespace manifold
       /// \brief Set the new right boundary type.
       /// \param[in] _boundary The new right boundary type.
       public: void SetRightBoundary(const Marking &_boundary);
+
+      ///////////////
+      /// Checkpoints
+      ///////////////
+
+      /// \brief Get the number of checkpoints stored.
+      /// \return The number of checkpoints in the current lane.
+      public: unsigned int NumCheckpoints() const;
+
+      /// \brief Get a mutable reference to the vector of checkpoints;
+      /// \return A mutable reference to the vector of checkpoints.
+      public: std::vector<rndf::Checkpoint> &Checkpoints();
+
+      /// \brief Get the vector of checkpoints;
+      /// \return The vector of checkpoints.
+      public: const std::vector<rndf::Checkpoint> &Checkpoints() const;
+
+      /// \brief Get the details of one of the checkpoints with Id _cpId.
+      /// \param[in] _cpId The checkpoint Id.
+      /// \param[out] _cp The checkpoint requested.
+      /// \return True if the checkpoint was found or false otherwise.
+      public: bool Checkpoint(const int _cpId, rndf::Checkpoint &_cp) const;
+
+      /// \brief Update an existing checkpoint.
+      /// \param[in] _cp The updated checkpoint.
+      /// \return True if the checkpoint was found and updated or false
+      /// otherwise.
+      public: bool UpdateCheckpoint(const rndf::Checkpoint &_cp);
+
+      /// \brief Add a new checkpoint.
+      /// \param[in] _newCheckpoint A new checkpoint to be added.
+      /// \return True when the checkpoint was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the checkpoint was already existing
+      /// or invalid).
+      public: bool AddCheckpoint(const rndf::Checkpoint &_newCheckpoint);
+
+      /// \brief Remove an existing checkpoint.
+      /// \param[in] _cpId The checkpoint Id to be removed.
+      /// \return True when the checkpoint was successfully deleted
+      /// or false otherwise (e.g. if the Id of the checkpoint was not found
+      /// or invalid).
+      public: bool RemoveCheckpoint(const int _cpId);
+
 
       /// \internal
       /// \brief Smart pointer to private data.

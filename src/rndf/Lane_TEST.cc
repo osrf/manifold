@@ -20,6 +20,7 @@
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "gtest/gtest.h"
+#include "manifold/rndf/Checkpoint.hh"
 #include "manifold/rndf/Lane.hh"
 #include "manifold/rndf/Waypoint.hh"
 
@@ -104,6 +105,9 @@ TEST(LaneTest, waypoints)
   EXPECT_TRUE(lane.Waypoint(wp2.Id(), wp3));
   EXPECT_TRUE(ignition::math::equal(wp3.Location().ElevationReference(),
     500.0));
+
+  for (auto const &aWaypoint : lane.Waypoints())
+    EXPECT_TRUE(aWaypoint.Valid());
 }
 
 //////////////////////////////////////////////////
@@ -183,6 +187,62 @@ TEST(LaneTest, Boundaries)
   EXPECT_EQ(lane.LeftBoundary(), leftBoundary);
 }
 
+//////////////////////////////////////////////////
+/// \brief Check checkpoints-related functions.
+TEST(LaneTest, checkpoints)
+{
+  int id = 1;
+  Lane lane(id);
+
+  EXPECT_EQ(lane.NumCheckpoints(), 0u);
+  Checkpoint cp;
+  // Check an inexistent checkpoint Id.
+  EXPECT_FALSE(lane.Checkpoint(id, cp));
+  // Try to remove an inexistent checkpoint id.
+  EXPECT_FALSE(lane.RemoveCheckpoint(id));
+  // Try to add a checkpoint with an invalid Id.
+  EXPECT_FALSE(lane.AddCheckpoint(cp));
+
+  // Create a valid checkpoint.
+  int checkpointId = 2;
+  int waypointId = 3;
+  cp.SetCheckpointId(checkpointId);
+  cp.SetWaypointId(waypointId);
+  EXPECT_TRUE(cp.Valid());
+
+  // Add a valid checkpoint.
+  EXPECT_TRUE(lane.AddCheckpoint(cp));
+  EXPECT_EQ(lane.NumCheckpoints(), 1u);
+
+  // Try to add an existent checkpoint.
+  EXPECT_FALSE(lane.AddCheckpoint(cp));
+  EXPECT_EQ(lane.NumCheckpoints(), 1u);
+
+  // Get the checkpoint.
+  Checkpoint cp2;
+  EXPECT_TRUE(lane.Checkpoint(cp.CheckpointId(), cp2));
+  EXPECT_EQ(cp, cp2);
+
+  // Update a checkpoint.
+  int newWaypointId = 4;
+  cp2.SetWaypointId(newWaypointId);
+  EXPECT_TRUE(lane.UpdateCheckpoint(cp2));
+  Checkpoint cp3;
+  EXPECT_TRUE(lane.Checkpoint(cp2.CheckpointId(), cp3));
+  EXPECT_EQ(cp3, cp2);
+
+  // Get a mutable reference to all checkpoints.
+  std::vector<Checkpoint> &checkpoints = lane.Checkpoints();
+  ASSERT_EQ(checkpoints.size(), 1u);
+  // Modify a checkpoint.
+  Checkpoint &aCp = checkpoints.at(0);
+  aCp.SetWaypointId(5);
+  EXPECT_TRUE(lane.Checkpoint(cp2.CheckpointId(), cp3));
+  EXPECT_EQ(cp3.WaypointId(), 5);
+
+  for (auto const &aCheckpoint : lane.Checkpoints())
+    EXPECT_TRUE(aCheckpoint.Valid());
+}
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
