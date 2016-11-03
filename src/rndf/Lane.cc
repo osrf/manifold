@@ -61,6 +61,26 @@ namespace manifold
 
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;
+
+      /// Bellow are the ptional lane header members.
+
+      /// \brief Lane width in meters (non-negative).
+      double width = 0.0;
+
+      /// \brief Left boundary type.
+      Lane::Marking leftBoundary = Lane::Marking::UNDEFINED;
+
+      /// \brief Right boundary type.
+      Lane::Marking rightBoundary = Lane::Marking::UNDEFINED;
+
+      /// \brief Collection of checkpoints.
+      //std::vector<Checkpoint> checkpoints;
+
+      /// \brief Collection of stop signs.
+      //std::vector<Stop> stops;
+
+      /// \brief Collection of exists.
+      //std::vector<Exit> exits;
     };
   }
 }
@@ -105,29 +125,37 @@ unsigned int Lane::NumWaypoints() const
 }
 
 //////////////////////////////////////////////////
-bool Lane::Waypoint(const unsigned int _idx, rndf::Waypoint &_waypoint)
+std::vector<rndf::Waypoint> &Lane::Waypoints()
 {
-  if (_idx >= this->NumWaypoints())
-    return false;
-
-  // ToDo: Check that this is a mutable reference and not a copy.
-  _waypoint = this->dataPtr->waypoints.at(_idx);
-  return true;
+  return this->dataPtr->waypoints;
 }
 
 //////////////////////////////////////////////////
-bool Lane::Waypoint(const int _wpId, rndf::Waypoint &_waypoint)
+bool Lane::Waypoint(const int _wpId, rndf::Waypoint &_wp) const
 {
   auto it = std::find_if(this->dataPtr->waypoints.begin(),
     this->dataPtr->waypoints.end(),
-    [_wpId](const rndf::Waypoint &_wp)
+    [_wpId](const rndf::Waypoint &_waypoint)
     {
-      return _wp.Id() == _wpId;
+      return _waypoint.Id() == _wpId;
     });
 
   bool found = it != this->dataPtr->waypoints.end();
   if (found)
-    _waypoint = *it;
+    _wp = *it;
+
+  return found;
+}
+
+//////////////////////////////////////////////////
+bool Lane::UpdateWaypoint(const rndf::Waypoint &_wp)
+{
+  auto it = std::find(this->dataPtr->waypoints.begin(),
+    this->dataPtr->waypoints.end(), _wp);
+
+  bool found = it != this->dataPtr->waypoints.end();
+  if (found)
+    *it = _wp;
 
   return found;
 }
@@ -168,5 +196,51 @@ bool Lane::RemoveWaypoint(const int _wpId)
 //////////////////////////////////////////////////
 bool Lane::Valid() const
 {
-  return this->Id() > 0 && this->NumWaypoints() > 0;
+  bool valid = this->Id() > 0 && this->NumWaypoints() > 0;
+  return valid;
+}
+
+//////////////////////////////////////////////////
+double Lane::Width() const
+{
+  return this->dataPtr->width;
+}
+
+//////////////////////////////////////////////////
+bool Lane::SetWidth(const double _newWidth)
+{
+  bool valid = _newWidth >= 0;
+  if (!valid)
+  {
+    std::cerr << "Lane::SetWidth() Invalid lane width [" << _newWidth << "]"
+              << std::endl;
+    return false;
+  }
+
+  this->dataPtr->width = _newWidth;
+  return true;
+}
+
+//////////////////////////////////////////////////
+Lane::Marking Lane::LeftBoundary() const
+{
+  return this->dataPtr->leftBoundary;
+}
+
+//////////////////////////////////////////////////
+void Lane::SetLeftBoundary(const Lane::Marking &_boundary)
+{
+  this->dataPtr->leftBoundary = _boundary;
+}
+
+//////////////////////////////////////////////////
+Lane::Marking Lane::RightBoundary() const
+{
+  return this->dataPtr->rightBoundary;
+}
+
+//////////////////////////////////////////////////
+void Lane::SetRightBoundary(const Lane::Marking &_boundary)
+{
+  this->dataPtr->rightBoundary = _boundary;
 }

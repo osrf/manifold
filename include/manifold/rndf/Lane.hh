@@ -19,6 +19,7 @@
 #define MANIFOLD_RNDF_LANE_HH_
 
 #include <memory>
+#include <vector>
 
 #include "manifold/Helpers.hh"
 
@@ -35,6 +36,21 @@ namespace manifold
     /// waypoints.
     class MANIFOLD_VISIBLE Lane
     {
+      /// \def Scope Different options for the lane boundaries.
+      public: enum class Marking
+      {
+        /// \brief Double yellow type.
+        DOUBLE_YELLOW,
+        /// \brief Solid yellow type.
+        SOLID_YELLOW,
+        /// \brief Solid white type.
+        SOLID_WHITE,
+        /// \brief Broken white,
+        BROKEN_WHITE,
+        /// \brief Undefined.
+        UNDEFINED,
+      };
+
       /// \brief Constructor.
       /// \param[in] _id Lane Id (a positive number).
       /// \sa valid.
@@ -58,20 +74,20 @@ namespace manifold
       /// \return The number of waypoints of the current line.
       public: unsigned int NumWaypoints() const;
 
-      /// \brief Get a mutable reference to a waypoint with index _idx.
-      /// The first index is 0 and the the last index is (NumWaypoints() - 1).
-      /// \param[in] _idx The waypoint index.
-      /// \param[out] _waypoint The waypoint requested.
-      /// \return True if the index is valid or false otherwise.
-      public: bool Waypoint(const unsigned int _idx,
-                            rndf::Waypoint &_waypoint);
+      /// \brief Get a mutable reference to the vector of waypoints;
+      /// \return \return A mutable reference to the vector of waypoints.
+      public: std::vector<rndf::Waypoint> &Waypoints();
 
-      /// \brief Get a mutable reference to the waypoint with Id _wpId.
+      /// \brief Get the details of one of the waypoints with Id _wpId.
       /// \param[in] _wpId The waypoint Id.
       /// \param[out] _waypoint The waypoint requested.
-      /// \return True if the waypoint is found or false otherwise.
-      public: bool Waypoint(const int _wpId,
-                            rndf::Waypoint &_waypoint);
+      /// \return True if the waypoint was found or false otherwise.
+      public: bool Waypoint(const int _wpId, rndf::Waypoint &_wp) const;
+
+      /// \brief Update an existing waypoint.
+      /// \param[in] _wpId The updated waypoint.
+      /// \return True if the waypoint was found and updated or false otherwise.
+      public: bool UpdateWaypoint(const rndf::Waypoint &_wp);
 
       /// \brief Add a new waypoint.
       /// \param[in] _newWaypoint A new waypoint to be added.
@@ -87,9 +103,32 @@ namespace manifold
       /// or invalid).
       public: bool RemoveWaypoint(const int _wpId);
 
-      /// \brief \param[in] _id Validate the current lane (a positive number).
-      /// \return True if the lane Id is valid.
+      /// \return True if the lane is valid.
       public: bool Valid() const;
+
+      /// \brief Get the lane width in meters.
+      /// \return Return the lane width in meters.
+      public: double Width() const;
+
+      /// \brief Set the lane width.
+      /// \param[in] _newWidth The new width in meters.
+      public: bool SetWidth(const double _newWidth);
+
+      /// \brief Get the left boundary type.
+      /// \return The left boundary type.
+      public: Marking LeftBoundary() const;
+
+      /// \brief Set the new left boundary type.
+      /// \param[in] _boundary The new left boundary type.
+      public: void SetLeftBoundary(const Marking &_boundary);
+
+      /// \brief Get the right boundary type.
+      /// \return The right boundary type.
+      public: Marking RightBoundary() const;
+
+      /// \brief Set the new right boundary type.
+      /// \param[in] _boundary The new right boundary type.
+      public: void SetRightBoundary(const Marking &_boundary);
 
       /// \internal
       /// \brief Smart pointer to private data.

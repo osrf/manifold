@@ -108,6 +108,57 @@ TEST(WaypointTest, valid)
 }
 
 //////////////////////////////////////////////////
+/// \brief Check [in]equality operators.
+TEST(WaypointTest, equality)
+{
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc1(st, lat, lon, elev, heading);
+  ignition::math::SphericalCoordinates sc2(st, lat, lon, elev + 1, heading);
+
+  int id1 = 1;
+  Waypoint wp1(id1, sc1);
+
+  int id2 = 2;
+  Waypoint wp2(id2, sc2);
+
+  Waypoint wp3(id1, sc2);
+  Waypoint wp4(id2, sc1);
+
+  EXPECT_FALSE(wp1 == wp2);
+  EXPECT_TRUE(wp1 != wp2);
+
+  EXPECT_TRUE(wp1 == wp3);
+  EXPECT_FALSE(wp1 != wp3);
+
+  EXPECT_FALSE(wp1 == wp4);
+  EXPECT_TRUE(wp1 != wp4);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check assignment operator.
+TEST(WaypointTest, assignment)
+{
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc1(st, lat, lon, elev, heading);
+  ignition::math::SphericalCoordinates sc2(st, lat, lon, elev + 1, heading);
+
+  int id1 = 1;
+  Waypoint wp1(id1, sc1);
+  int id2 = 2;
+  Waypoint wp2(id2, sc2);
+  EXPECT_NE(wp1, wp2);
+
+  wp2 = wp1;
+  EXPECT_EQ(wp1, wp2);
+}
+
+//////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

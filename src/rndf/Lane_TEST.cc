@@ -16,6 +16,7 @@
 */
 
 #include <map>
+#include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "gtest/gtest.h"
@@ -56,13 +57,10 @@ TEST(LaneTest, waypoints)
 
   EXPECT_EQ(lane.NumWaypoints(), 0u);
   Waypoint wp;
-  // Check an incorrect index.
-  EXPECT_FALSE(lane.Waypoint(0u, wp));
   // Check an inexistent waypoint Id.
   EXPECT_FALSE(lane.Waypoint(id, wp));
   // Try to remove an inexistent waypoint id.
   EXPECT_FALSE(lane.RemoveWaypoint(id));
-
   // Try to add a waypoint with an invalid Id.
   EXPECT_FALSE(lane.AddWaypoint(wp));
 
@@ -84,10 +82,28 @@ TEST(LaneTest, waypoints)
   EXPECT_FALSE(lane.AddWaypoint(wp));
   EXPECT_EQ(lane.NumWaypoints(), 1u);
 
-  // Get the waypoint by index.
+  // Get the waypoint.
   Waypoint wp2;
-  EXPECT_TRUE(lane.Waypoint(0u, wp2));
+  EXPECT_TRUE(lane.Waypoint(wp.Id(), wp2));
   EXPECT_EQ(wp, wp2);
+
+  // Update a waypoint.
+  double newElevation = 2000;
+  wp2.Location().SetElevationReference(newElevation);
+  EXPECT_TRUE(lane.UpdateWaypoint(wp2));
+  Waypoint wp3;
+  EXPECT_TRUE(lane.Waypoint(wp2.Id(), wp3));
+  EXPECT_EQ(wp3, wp2);
+
+  // Get a mutable reference to all waypoints.
+  std::vector<Waypoint> &waypoints = lane.Waypoints();
+  ASSERT_EQ(waypoints.size(), 1u);
+  // Modify a waypoint.
+  Waypoint &aWp = waypoints.at(0);
+  aWp.Location().SetElevationReference(500.0);
+  EXPECT_TRUE(lane.Waypoint(wp2.Id(), wp3));
+  EXPECT_TRUE(ignition::math::equal(wp3.Location().ElevationReference(),
+    500.0));
 }
 
 //////////////////////////////////////////////////
@@ -123,6 +139,50 @@ TEST(LaneTest, valid)
     EXPECT_EQ(lane.Valid(), usecase.second);
   }
 }
+
+//////////////////////////////////////////////////
+/// \brief Check lane width.
+TEST(LaneTest, Width)
+{
+  int id = 1;
+  Lane lane(id);
+
+  // Default lane width is 0.
+  EXPECT_TRUE(ignition::math::equal(lane.Width(), 0.0));
+
+  // Unable to change the width with an incorrect value.
+  EXPECT_FALSE(lane.SetWidth(-1));
+
+  // Change the width.
+  double width = 1.0;
+  EXPECT_TRUE(lane.SetWidth(width));
+  EXPECT_TRUE(ignition::math::equal(lane.Width(), width));
+}
+
+//////////////////////////////////////////////////
+/// \brief Check lane boundaries.
+TEST(LaneTest, Boundaries)
+{
+  int id = 1;
+  Lane lane(id);
+
+  // Default boundary is UNDEFINED.
+  EXPECT_EQ(lane.LeftBoundary(), Lane::Marking::UNDEFINED);
+  EXPECT_EQ(lane.RightBoundary(), Lane::Marking::UNDEFINED);
+
+  // Change the left boundary.
+  Lane::Marking leftBoundary = Lane::Marking::DOUBLE_YELLOW;
+  lane.SetLeftBoundary(leftBoundary);
+  EXPECT_EQ(lane.LeftBoundary(), leftBoundary);
+  EXPECT_EQ(lane.RightBoundary(), Lane::Marking::UNDEFINED);
+
+  // Change the right boundary.
+  Lane::Marking rightBoundary = Lane::Marking::SOLID_YELLOW;
+  lane.SetRightBoundary(rightBoundary);
+  EXPECT_EQ(lane.RightBoundary(), rightBoundary);
+  EXPECT_EQ(lane.LeftBoundary(), leftBoundary);
+}
+
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
