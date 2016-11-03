@@ -49,7 +49,10 @@ namespace manifold
       /// \brief Constructor.
       /// \param[in] _id Lane Id.
       public: explicit LanePrivate(const int _id)
-        : id(_id)
+        : id(_id),
+          width(0.0),
+          leftBoundary(Lane::Marking::UNDEFINED),
+          rightBoundary(Lane::Marking::UNDEFINED)
       {
       }
 
@@ -74,13 +77,13 @@ namespace manifold
       Lane::Marking rightBoundary = Lane::Marking::UNDEFINED;
 
       /// \brief Collection of checkpoints.
-      //std::vector<Checkpoint> checkpoints;
+      // std::vector<Checkpoint> checkpoints;
 
       /// \brief Collection of stop signs.
-      //std::vector<Stop> stops;
+      // std::vector<Stop> stops;
 
       /// \brief Collection of exists.
-      //std::vector<Exit> exits;
+      // std::vector<Exit> exits;
     };
   }
 }
