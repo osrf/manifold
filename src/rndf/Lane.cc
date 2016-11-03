@@ -55,7 +55,7 @@ namespace manifold
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;
 
-      /// Bellow are the ptional lane header members.
+      /// Bellow are the optional lane header members.
 
       /// \brief Lane width in meters (non-negative).
       double width = 0.0;
@@ -66,11 +66,12 @@ namespace manifold
       /// \brief Right boundary type.
       Lane::Marking rightBoundary = Lane::Marking::UNDEFINED;
 
-      /// \brief Collection of checkpoints.
+      /// \brief Collection of waypoints that are checkpoints.
       std::vector<Checkpoint> checkpoints;
 
-      /// \brief Collection of stop signs.
-      // std::vector<Stop> stops;
+      /// \brief Collection of waypoints that are stops. We just store the
+      /// waypoint Id.
+      std::vector<int> stops;
 
       /// \brief Collection of exists.
       // std::vector<Exit> exits;
@@ -175,6 +176,7 @@ bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
         this->dataPtr->waypoints.end(), _newWaypoint) !=
           this->dataPtr->waypoints.end())
   {
+    std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
     return false;
   }
 
@@ -312,6 +314,7 @@ bool Lane::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
         this->dataPtr->checkpoints.end(), _newCheckpoint) !=
           this->dataPtr->checkpoints.end())
   {
+    std::cerr << "[Lane::AddStop() error: Existing checkpoint" << std::endl;
     return false;
   }
 
@@ -327,4 +330,57 @@ bool Lane::RemoveCheckpoint(const int _cpId)
   return (this->dataPtr->checkpoints.erase(std::remove(
     this->dataPtr->checkpoints.begin(), this->dataPtr->checkpoints.end(), cp),
       this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
+}
+
+
+
+//////////////////////////////////////////////////
+unsigned int Lane::NumStops() const
+{
+  return this->dataPtr->stops.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<int> &Lane::Stops()
+{
+  return this->dataPtr->stops;
+}
+
+//////////////////////////////////////////////////
+const std::vector<int> &Lane::Stops() const
+{
+  return this->dataPtr->stops;
+}
+
+//////////////////////////////////////////////////
+bool Lane::AddStop(const int _waypointId)
+{
+  // Validate the waypoint Id.
+  if (_waypointId <= 0)
+  {
+    std::cerr << "[Lane::AddStop() Invalid waypoint Id: [" << _waypointId
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the stop already exists.
+  if (std::find(this->dataPtr->stops.begin(),
+        this->dataPtr->stops.end(), _waypointId) !=
+          this->dataPtr->stops.end())
+  {
+    std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->stops.push_back(_waypointId);
+  assert(this->NumStops() == this->dataPtr->stops.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::RemoveStop(const int _waypointId)
+{
+  return (this->dataPtr->stops.erase(std::remove(
+    this->dataPtr->stops.begin(), this->dataPtr->stops.end(), _waypointId),
+      this->dataPtr->stops.end()) != this->dataPtr->stops.end());
 }

@@ -108,6 +108,10 @@ TEST(LaneTest, waypoints)
 
   for (auto const &aWaypoint : lane.Waypoints())
     EXPECT_TRUE(aWaypoint.Valid());
+
+  // Remove a waypoint.
+  EXPECT_TRUE(lane.RemoveWaypoint(wp2.Id()));
+  EXPECT_EQ(lane.NumWaypoints(), 0u);
 }
 
 //////////////////////////////////////////////////
@@ -242,6 +246,46 @@ TEST(LaneTest, checkpoints)
 
   for (auto const &aCheckpoint : lane.Checkpoints())
     EXPECT_TRUE(aCheckpoint.Valid());
+
+  // Remove a checkpoint.
+  EXPECT_TRUE(lane.RemoveCheckpoint(cp2.CheckpointId()));
+  EXPECT_EQ(lane.NumCheckpoints(), 0u);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check stops-related functions.
+TEST(LaneTest, checkStops)
+{
+  int id = 1;
+  Lane lane(id);
+
+  EXPECT_EQ(lane.NumStops(), 0u);
+  // Try to remove an inexistent stop id.
+  EXPECT_FALSE(lane.RemoveStop(id));
+  // Try to add a stop with an invalid Id.
+  EXPECT_FALSE(lane.AddStop(0));
+
+  // Add a valid stop.
+  EXPECT_TRUE(lane.AddStop(1));
+  EXPECT_EQ(lane.NumStops(), 1u);
+
+  // Try to add an existent stop.
+  EXPECT_FALSE(lane.AddStop(1));
+  EXPECT_EQ(lane.NumStops(), 1u);
+
+  // Get a mutable reference to all stops.
+  std::vector<int> &stops = lane.Stops();
+  ASSERT_EQ(stops.size(), 1u);
+  // Modify a stop.
+  stops.at(0) = 2;
+  EXPECT_EQ(lane.Stops().at(0), 2);
+
+  for (auto const &waypointId : lane.Stops())
+    EXPECT_GT(waypointId, 0);
+
+  // Remove a stop.
+  EXPECT_TRUE(lane.RemoveStop(2));
+  EXPECT_EQ(lane.NumStops(), 0u);
 }
 
 //////////////////////////////////////////////////

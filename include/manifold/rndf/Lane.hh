@@ -196,6 +196,36 @@ namespace manifold
       /// or invalid).
       public: bool RemoveCheckpoint(const int _cpId);
 
+      /////////
+      /// Stops
+      /////////
+
+      /// \brief Get the number of stopts stored.
+      /// \return The number of stops in the current lane.
+      public: unsigned int NumStops() const;
+
+      /// \brief Get a mutable reference to the vector of stops. The elements
+      /// are waypoint Ids.
+      /// \return A mutable reference to the vector of stops.
+      public: std::vector<int> &Stops();
+
+      /// \brief Get the vector of stops. The elements are waypoint Ids.
+      /// \return The vector of stops.
+      public: const std::vector<int> &Stops() const;
+
+      /// \brief Add a new stop.
+      /// \param[in] _newStop The Id of a new waypoint considered a stop.
+      /// \return True when the stop was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the waypoint was already existing
+      /// or invalid).
+      public: bool AddStop(const int _waypointId);
+
+      /// \brief Remove an existing stop.
+      /// \param[in] _cpId The waypoint Id to be removed.
+      /// \return True when the waypoint was successfully deleted
+      /// or false otherwise (e.g. if the Id of the waypoint was not found
+      /// or invalid).
+      public: bool RemoveStop(const int _waypointId);
 
       /// \internal
       /// \brief Smart pointer to private data.
