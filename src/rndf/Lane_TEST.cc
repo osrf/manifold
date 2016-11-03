@@ -16,7 +16,6 @@
 */
 
 #include <map>
-#include <string>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "gtest/gtest.h"
@@ -30,29 +29,29 @@ using namespace rndf;
 /// \brief Check id-related accessors.
 TEST(LaneTest, id)
 {
-  std::string id = "1.2";
+  int id = 1;
   Lane lane(id);
 
   EXPECT_EQ(lane.Id(), id);
-  std::string newId = "1.3";
+  int newId = 2;
   EXPECT_TRUE(lane.SetId(newId));
   EXPECT_EQ(lane.Id(), newId);
 
   // Check that trying to set an incorrect Id does not take effect.
-  std::string wrongId = "1.0";
+  int wrongId = -1;
   EXPECT_FALSE(lane.SetId(wrongId));
   EXPECT_EQ(lane.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in an empty Id.
+  // Check that using the constructor with a wrong id results in a Id = 0.
   Lane wrongLane(wrongId);
-  EXPECT_TRUE(wrongLane.Id().empty());
+  EXPECT_EQ(wrongLane.Id(), 0);
 }
 
 //////////////////////////////////////////////////
 /// \brief Check waypoints-related functions.
 TEST(LaneTest, waypoints)
 {
-  std::string id = "1.2";
+  int id = 1;
   Lane lane(id);
 
   EXPECT_EQ(lane.NumWaypoints(), 0u);
@@ -73,7 +72,7 @@ TEST(LaneTest, waypoints)
   ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
   double elev = 354.1;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
-  std::string waypointId = "1.2.3";
+  int waypointId = 1;
   wp.SetId(waypointId);
   wp.Location() = sc;
 
@@ -95,33 +94,33 @@ TEST(LaneTest, waypoints)
 /// \brief Check function that validates the Id of a lane.
 TEST(LaneTest, valid)
 {
-  std::map<std::string, bool> cases =
+  std::map<int, bool> cases =
   {
-    {""      , false},
-    {"1"     , false},
-    {"a"     , false},
-    {"1."    , false},
-    {"1.a"   , false},
-    {"1.a."  , false},
-    {"1.2."  , false},
-    {"1.2 "  , false},
-    {"1. 2"  , false},
-    {"1a.2"  , false},
-    {"1.2a"  , false},
-    {"0.2"   , false},
-    {"1.-2"  , false},
-    {"foo1.2", false},
-    {"1.2bar", false},
-    {".."    , false},
-    {"1.2"   , true},
-    {"10.200", true},
+    {-1 , false},
+    {0  , false},
+    {1  , true},
+    {100, true},
   };
 
   // Check all cases.
   for (auto const &usecase : cases)
   {
-    std::string id = usecase.first;
-    EXPECT_EQ(Lane::valid(id), usecase.second);
+    // Create a valid waypoint.
+    ignition::math::SphericalCoordinates::SurfaceType st =
+      ignition::math::SphericalCoordinates::EARTH_WGS84;
+    ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+    double elev = 354.1;
+    ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+    int waypointId = 1;
+    Waypoint wp(waypointId, sc);
+
+    int laneId = usecase.first;
+    Lane lane(laneId);
+
+    // Add a valid waypoint.
+    EXPECT_TRUE(lane.AddWaypoint(wp));
+
+    EXPECT_EQ(lane.Valid(), usecase.second);
   }
 }
 

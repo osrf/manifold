@@ -19,7 +19,6 @@
 #define MANIFOLD_RNDF_LANE_HH_
 
 #include <memory>
-#include <string>
 
 #include "manifold/Helpers.hh"
 
@@ -37,23 +36,23 @@ namespace manifold
     class MANIFOLD_VISIBLE Lane
     {
       /// \brief Constructor.
-      /// \param[in] _id Lane Id.
+      /// \param[in] _id Lane Id (a positive number).
       /// \sa valid.
-      public: explicit Lane(const std::string &_id);
+      public: explicit Lane(const int _id);
 
       /// \brief Destructor.
       public: virtual ~Lane();
 
       /// \brief Get the unique identifier of the lane.
       /// \return The lane Id.
-      public: std::string Id() const;
+      public: int Id() const;
 
       /// \brief Set the identifier of the lane.
       /// \param[in] _id New unique Id.
       /// \return True if the operation succeed or false otherwise (e.g.: if the
       /// id is not valid).
       /// \sa valid.
-      public: bool SetId(const std::string &_id);
+      public: bool SetId(const int _id);
 
       /// \brief Get the number of waypoints stored.
       /// \return The number of waypoints of the current line.
@@ -71,7 +70,7 @@ namespace manifold
       /// \param[in] _wpId The waypoint Id.
       /// \param[out] _waypoint The waypoint requested.
       /// \return True if the waypoint is found or false otherwise.
-      public: bool Waypoint(const std::string &_wpId,
+      public: bool Waypoint(const int _wpId,
                             rndf::Waypoint &_waypoint);
 
       /// \brief Add a new waypoint.
@@ -86,13 +85,11 @@ namespace manifold
       /// \return True when the waypoint was successfully deleted from the list
       /// or false otherwise (e.g. if the Id of the waypoint was not found
       /// or invalid).
-      public: bool RemoveWaypoint(const std::string &_wpId);
+      public: bool RemoveWaypoint(const int _wpId);
 
-      /// \brief \param[in] _id A lane Id to validate.
-      /// \return True if the lane Id is valid. A valid id has the
-      /// following format: x.y, where x, y are positive integers.
-      /// E.g.: "1.2" is a valid; "1.0" is not valid.
-      static bool valid(const std::string &_id);
+      /// \brief \param[in] _id Validate the current lane (a positive number).
+      /// \return True if the lane Id is valid.
+      public: bool Valid() const;
 
       /// \internal
       /// \brief Smart pointer to private data.

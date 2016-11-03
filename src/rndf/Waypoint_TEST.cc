@@ -16,7 +16,6 @@
 */
 
 #include <map>
-#include <string>
 #include <ignition/math/Angle.hh>
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
@@ -39,22 +38,22 @@ TEST(WaypointTest, id)
   double elev = 354.1;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
 
-  std::string id = "1.2.3";
+  int id = 1;
   Waypoint waypoint(id, sc);
 
   EXPECT_EQ(waypoint.Id(), id);
-  std::string newId = "1.2.4";
+  int newId = 2;
   EXPECT_TRUE(waypoint.SetId(newId));
   EXPECT_EQ(waypoint.Id(), newId);
 
   // Check that trying to set an incorrect Id does not take effect.
-  std::string wrongId = "1.2.0";
+  int wrongId = -1;
   EXPECT_FALSE(waypoint.SetId(wrongId));
   EXPECT_EQ(waypoint.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in an empty Id.
+  // Check that using the constructor with a wrong id results in an Id = 0.
   Waypoint wrongWp(wrongId, sc);
-  EXPECT_TRUE(wrongWp.Id().empty());
+  EXPECT_EQ(wrongWp.Id(), 0);
 }
 
 //////////////////////////////////////////////////
@@ -68,7 +67,7 @@ TEST(WaypointTest, location)
   double elev = 354.1;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
 
-  std::string id = "1.2.3";
+  int id = 1;
   Waypoint waypoint(id, sc);
 
   // Check that I can read and modify the location with the mutable accessor.
@@ -84,30 +83,12 @@ TEST(WaypointTest, location)
 /// \brief Check function that validates the Id of a waypoint.
 TEST(WaypointTest, valid)
 {
-  std::map<std::string, bool> cases =
+  std::map<int, bool> cases =
   {
-    {""           , false},
-    {"1"          , false},
-    {"a"          , false},
-    {"1."         , false},
-    {"1.a"        , false},
-    {"1.a."       , false},
-    {"1.2"        , false},
-    {"1.2."       , false},
-    {".."         , false},
-    {"1.2.a"      , false},
-    {"1.2.3."     , false},
-    {"1.2. 3"     , false},
-    {"1a.2.3"     , false},
-    {"1.2a.3"     , false},
-    {"1.2.3a"     , false},
-    {"0.2.3"      , false},
-    {"1.-2.3"     , false},
-    {"1.2.3."     , false},
-    {"foo1.2.3"   , false},
-    {"1.2.3bar"   , false},
-    {"1.2.3"      , true},
-    {"10.200.3000", true},
+    {-1 , false},
+    {0  , false},
+    {1  , true},
+    {100, true},
   };
 
   // Check all cases.
@@ -120,8 +101,9 @@ TEST(WaypointTest, valid)
     double elev = 354.1;
     ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
 
-    std::string id = usecase.first;
-    EXPECT_EQ(Waypoint::valid(id), usecase.second);
+    int id = usecase.first;
+    Waypoint wp(id, sc);
+    EXPECT_EQ(wp.Valid(), usecase.second);
   }
 }
 

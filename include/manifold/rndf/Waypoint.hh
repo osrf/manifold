@@ -19,7 +19,6 @@
 #define MANIFOLD_WAYPOINT_WAYPOINT_HH_
 
 #include <memory>
-#include <string>
 
 #include "manifold/Helpers.hh"
 
@@ -45,11 +44,11 @@ namespace manifold
       public: Waypoint();
 
       /// \brief Constructor.
-      /// \param[in] _id Waypoint Id.
+      /// \param[in] _id Waypoint Id (a positive number).
       /// \param[in] _location Location of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
       /// \sa valid.
-      public: Waypoint(const std::string &_id,
+      public: Waypoint(const int _id,
                        const ignition::math::SphericalCoordinates &_location);
 
       /// \brief Copy constructor.
@@ -61,24 +60,21 @@ namespace manifold
 
       /// \brief Get the unique identifier of the waypoint.
       /// \return The waypoint Id.
-      public: std::string Id() const;
+      public: int Id() const;
 
       /// \brief Set the identifier of the waypoint.
       /// \param[in] _id New unique Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
-      /// \sa valid.
-      public: bool SetId(const std::string &_id);
+      /// \return True if the operation succeed or false otherwise. If the Id
+      /// is not valid, the operation won't have any effect.
+      public: bool SetId(const int _id);
 
       /// \brief Get a mutable reference to the waypoint location.
       /// \return A mutable reference to the waypoint location.
       public: ignition::math::SphericalCoordinates &Location();
 
-      /// \brief \param[in] _waypoint A waypoint Id to validate.
-      /// \return True if the waypoint Id is valid. A valid waypoint Id has the
-      /// following format: x.y.z, where x, y, z are positive integers.
-      /// E.g.: "1.2.3" is a valid; "1.0.2" is not valid.
-      static bool valid(const std::string &_waypoint);
+      /// \return True if the waypoint Id is valid. A valid waypoint Id is a
+      /// positive number.
+      public: bool Valid() const;
 
       /// \brief Equality operator, result = this == _other
       /// \param[in] _other Waypoint to check for equality

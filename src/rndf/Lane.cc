@@ -16,9 +16,8 @@
 */
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
-#include <regex>
-#include <string>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -49,7 +48,7 @@ namespace manifold
     {
       /// \brief Constructor.
       /// \param[in] _id Lane Id.
-      public: explicit LanePrivate(const std::string &_id)
+      public: explicit LanePrivate(const int _id)
         : id(_id)
       {
       }
@@ -57,8 +56,8 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~LanePrivate() = default;
 
-      /// \brief Unique lane identifier. E.g.: 1.2
-      public: std::string id;
+      /// \brief Unique lane identifier. E.g.: 1
+      public: int id;
 
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;
@@ -67,13 +66,13 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
-Lane::Lane(const std::string &_id)
+Lane::Lane(const int _id)
 {
-  std::string id = _id;
-  if (!valid(_id))
+  int id = _id;
+  if (_id <= 0)
   {
     std::cerr << "[Lane()] Invalid lane Id[" << _id << "]" << std::endl;
-    id = "";
+    id = 0;
   }
 
   this->dataPtr.reset(new LanePrivate(id));
@@ -85,18 +84,18 @@ Lane::~Lane()
 }
 
 //////////////////////////////////////////////////
-std::string Lane::Id() const
+int Lane::Id() const
 {
   return this->dataPtr->id;
 }
 
 //////////////////////////////////////////////////
-bool Lane::SetId(const std::string &_id)
+bool Lane::SetId(const int _id)
 {
-  bool isValid = valid(_id);
-  if (isValid)
+  bool valid = _id > 0;
+  if (valid)
     this->dataPtr->id = _id;
-  return isValid;
+  return valid;
 }
 
 //////////////////////////////////////////////////
@@ -111,17 +110,17 @@ bool Lane::Waypoint(const unsigned int _idx, rndf::Waypoint &_waypoint)
   if (_idx >= this->NumWaypoints())
     return false;
 
-  // ToDo: Check that this is a mutable rederence and not a copy.
+  // ToDo: Check that this is a mutable reference and not a copy.
   _waypoint = this->dataPtr->waypoints.at(_idx);
   return true;
 }
 
 //////////////////////////////////////////////////
-bool Lane::Waypoint(const std::string &_wpId, rndf::Waypoint &_waypoint)
+bool Lane::Waypoint(const int _wpId, rndf::Waypoint &_waypoint)
 {
   auto it = std::find_if(this->dataPtr->waypoints.begin(),
     this->dataPtr->waypoints.end(),
-    [&_wpId](const rndf::Waypoint &_wp)
+    [_wpId](const rndf::Waypoint &_wp)
     {
       return _wp.Id() == _wpId;
     });
@@ -137,7 +136,7 @@ bool Lane::Waypoint(const std::string &_wpId, rndf::Waypoint &_waypoint)
 bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
 {
   // Validate the waypoint.
-  if (!Waypoint::valid(_newWaypoint.Id()))
+  if (!_newWaypoint.Valid())
   {
     std::cerr << "[Lane::Addwaypoint() Invalid waypoint Id ["
               << _newWaypoint.Id() << "]" << std::endl;
@@ -153,11 +152,12 @@ bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
   }
 
   this->dataPtr->waypoints.push_back(_newWaypoint);
+  assert(this->NumWaypoints() == this->dataPtr->waypoints.size());
   return true;
 }
 
 //////////////////////////////////////////////////
-bool Lane::RemoveWaypoint(const std::string &_wpId)
+bool Lane::RemoveWaypoint(const int _wpId)
 {
   rndf::Waypoint wp(_wpId, ignition::math::SphericalCoordinates());
   return (this->dataPtr->waypoints.erase(std::remove(
@@ -166,8 +166,7 @@ bool Lane::RemoveWaypoint(const std::string &_wpId)
 }
 
 //////////////////////////////////////////////////
-bool Lane::valid(const std::string &_id)
+bool Lane::Valid() const
 {
-  const std::regex rgx("^[1-9][[:d:]]*\\.[1-9][[:d:]]*$");
-  return std::regex_match(_id, rgx);
+  return this->Id() > 0 && this->NumWaypoints() > 0;
 }

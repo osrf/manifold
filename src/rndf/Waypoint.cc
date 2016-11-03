@@ -16,8 +16,6 @@
 */
 
 #include <iostream>
-#include <regex>
-#include <string>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Waypoint.hh"
@@ -38,18 +36,20 @@ namespace manifold
       /// \param[in] _location Location of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
       /// \sa valid.
-      public: WaypointPrivate(const std::string &_id,
+      public: WaypointPrivate(const int &_id,
                           const ignition::math::SphericalCoordinates &_location)
         : id(_id),
           location(_location)
       {
       }
 
+      public: WaypointPrivate() = default;
+
       /// \brief Destructor.
       public: virtual ~WaypointPrivate() = default;
 
-      /// \brief Unique waypoint identifier. E.g.: 17.1.1
-      public: std::string id;
+      /// \brief Unique waypoint identifier.
+      public: int id;
 
       /// \brief Location of the waypoint in decimal-degrees, using ITRF00
       /// reference frame and the GRS80 ellipsoid.
@@ -61,19 +61,19 @@ namespace manifold
 //////////////////////////////////////////////////
 Waypoint::Waypoint()
 {
-  this->dataPtr.reset(new WaypointPrivate("",
+  this->dataPtr.reset(new WaypointPrivate(0,
     ignition::math::SphericalCoordinates()));
 }
 
 //////////////////////////////////////////////////
-Waypoint::Waypoint(const std::string &_id,
+Waypoint::Waypoint(const int _id,
                    const ignition::math::SphericalCoordinates &_location)
 {
-  std::string id = _id;
-  if (!valid(_id))
+  int id = _id;
+  if (_id <= 0)
   {
     std::cerr << "[WayPoint()] Invalid waypoint Id[" << _id << "]" << std::endl;
-    id = "";
+    id = 0;
   }
 
   this->dataPtr.reset(new WaypointPrivate(id, _location));
@@ -92,18 +92,18 @@ Waypoint::~Waypoint()
 }
 
 //////////////////////////////////////////////////
-std::string Waypoint::Id() const
+int Waypoint::Id() const
 {
   return this->dataPtr->id;
 }
 
 //////////////////////////////////////////////////
-bool Waypoint::SetId(const std::string &_id)
+bool Waypoint::SetId(const int _id)
 {
-  bool isValid = valid(_id);
-  if (isValid)
+  bool valid = _id > 0;
+  if (valid)
     this->dataPtr->id = _id;
-  return isValid;
+  return valid;
 }
 
 //////////////////////////////////////////////////
@@ -113,10 +113,9 @@ ignition::math::SphericalCoordinates &Waypoint::Location()
 }
 
 //////////////////////////////////////////////////
-bool Waypoint::valid(const std::string &_id)
+bool Waypoint::Valid() const
 {
-  const std::regex rgx("^[1-9][[:d:]]*\\.[1-9][[:d:]]*\\.[1-9][[:d:]]*$");
-  return std::regex_match(_id, rgx);
+  return this->Id() > 0;
 }
 
 //////////////////////////////////////////////////
