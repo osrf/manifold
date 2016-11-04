@@ -38,7 +38,7 @@ namespace manifold
     {
       /// \brief Constructor.
       /// \param[in] _id Zone Id.
-      public: ZonePrivate(const int _id)
+      public: explicit ZonePrivate(const int _id)
         : id(_id)
       {
       }

@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "manifold/Helpers.hh"
 
@@ -38,7 +39,7 @@ namespace manifold
       /// \brief Constructor.
       /// \param[in] _id Zone Id (a positive number).
       /// \sa valid.
-      public: Zone(const int _id);
+      public: explicit Zone(const int _id);
 
       /// \brief Destructor.
       public: virtual ~Zone();
