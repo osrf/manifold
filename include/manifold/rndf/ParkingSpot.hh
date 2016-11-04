@@ -121,11 +121,11 @@ namespace manifold
       /// Checkpoint
       //////////////
 
-      /// \brief Get a mutable reference to the checkpoint
-      /// \return A mutable reference to he checkpoint.
+      /// \brief Get a mutable reference to the checkpoint.
+      /// \return A mutable reference to the checkpoint.
       public: rndf::Checkpoint &Checkpoint();
 
-      /// \brief Get the checkpoint
+      /// \brief Get the checkpoint.
       /// \return The checkpoint.
       public: const rndf::Checkpoint &Checkpoint() const;
 

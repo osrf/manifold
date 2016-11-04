@@ -33,6 +33,7 @@ using namespace rndf;
 TEST(PerimeterTest, points)
 {
   Perimeter perimeter;
+  EXPECT_FALSE(perimeter.Valid());
 
   EXPECT_EQ(perimeter.NumPoints(), 0u);
   Waypoint wp;
@@ -57,17 +58,19 @@ TEST(PerimeterTest, points)
   // Add a valid point.
   EXPECT_TRUE(perimeter.AddPoint(wp));
   EXPECT_EQ(perimeter.NumPoints(), 1u);
+  EXPECT_TRUE(perimeter.Valid());
 
   // Try to add an existent point.
   EXPECT_FALSE(perimeter.AddPoint(wp));
   EXPECT_EQ(perimeter.NumPoints(), 1u);
+  EXPECT_TRUE(perimeter.Valid());
 
   // Get the point.
   Waypoint wp2;
   EXPECT_TRUE(perimeter.Point(wp.Id(), wp2));
   EXPECT_EQ(wp, wp2);
 
-  // Update a ypoint.
+  // Update a point.
   double newElevation = 2000;
   wp2.Location().SetElevationReference(newElevation);
   EXPECT_TRUE(perimeter.UpdatePoint(wp2));
@@ -91,6 +94,7 @@ TEST(PerimeterTest, points)
   // Remove a point.
   EXPECT_TRUE(perimeter.RemovePoint(wp2.Id()));
   EXPECT_EQ(perimeter.NumPoints(), 0u);
+  EXPECT_FALSE(perimeter.Valid());
 }
 
 //////////////////////////////////////////////////

@@ -87,7 +87,7 @@ namespace manifold
       /// \return A mutable reference to the vector of waypoints.
       public: std::vector<rndf::Waypoint> &Waypoints();
 
-      /// \brief Get the vector of waypoints;
+      /// \brief Get the vector of waypoints.
       /// \return \return The vector of waypoints.
       public: const std::vector<rndf::Waypoint> &Waypoints() const;
 

@@ -51,7 +51,7 @@ namespace manifold
       public: virtual ~LanePrivate() = default;
 
       /// \brief Unique lane identifier. E.g.: 1
-      public: int id;
+      public: int id = 0;
 
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;

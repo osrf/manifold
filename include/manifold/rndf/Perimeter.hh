@@ -110,6 +110,13 @@ namespace manifold
       /// or false otherwise (e.g. if the exit was not found or invalid).
       public: bool RemoveExit(const Exit &_exit);
 
+      //////////////
+      /// Validation
+      //////////////
+
+      /// \return True if the parking spot is valid.
+      public: bool Valid() const;
+
       /// \internal
       /// \brief Smart pointer to private data.
       private: std::unique_ptr<PerimeterPrivate> dataPtr;

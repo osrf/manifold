@@ -203,3 +203,9 @@ bool Perimeter::RemoveExit(const Exit &_exit)
     this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
       this->dataPtr->exits.end()) != this->dataPtr->exits.end());
 }
+
+//////////////////////////////////////////////////
+bool Perimeter::Valid() const
+{
+  return this->NumPoints() > 0;;
+}

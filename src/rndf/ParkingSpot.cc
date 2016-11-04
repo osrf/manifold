@@ -39,7 +39,8 @@ namespace manifold
       /// \brief Constructor.
       /// \param[in] _id Parking spot Id.
       public: explicit ParkingSpotPrivate(const int _spotId)
-        : id(_spotId)
+        : id(_spotId),
+          width(0.0)
       {
       }
 
