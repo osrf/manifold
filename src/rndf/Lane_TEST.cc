@@ -21,7 +21,9 @@
 
 #include "gtest/gtest.h"
 #include "manifold/rndf/Checkpoint.hh"
+#include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/Lane.hh"
+#include "manifold/rndf/UniqueId.hh"
 #include "manifold/rndf/Waypoint.hh"
 
 using namespace manifold;
@@ -286,6 +288,42 @@ TEST(LaneTest, checkStops)
   // Remove a stop.
   EXPECT_TRUE(lane.RemoveStop(2));
   EXPECT_EQ(lane.NumStops(), 0u);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check exits-related functions.
+TEST(LaneTest, checkExits)
+{
+  int id = 1;
+  Lane lane(id);
+
+  EXPECT_EQ(lane.NumExits(), 0u);
+  // Try to remove an inexistent exit.
+  EXPECT_FALSE(lane.RemoveExit(Exit()));
+  // Try to add an invalid exit.
+  EXPECT_FALSE(lane.AddExit(Exit()));
+
+  // Add a valid exit.
+  UniqueId exitId(1, 2, 3);
+  UniqueId entryId(4, 5, 6);
+  Exit exit1(exitId, entryId);
+  EXPECT_TRUE(lane.AddExit(exit1));
+  EXPECT_EQ(lane.NumExits(), 1u);
+
+  // Try to add an existent exit.
+  EXPECT_FALSE(lane.AddExit(exit1));
+  EXPECT_EQ(lane.NumExits(), 1u);
+
+  // Get a mutable reference to all exits.
+  std::vector<Exit> &exits = lane.Exits();
+  ASSERT_EQ(exits.size(), 1u);
+
+  for (auto const &exit : lane.Exits())
+    EXPECT_TRUE(exit.Valid());
+
+  // Remove an exit.
+  EXPECT_TRUE(lane.RemoveExit(exit1));
+  EXPECT_EQ(lane.NumExits(), 0u);
 }
 
 //////////////////////////////////////////////////

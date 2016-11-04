@@ -22,6 +22,7 @@
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Checkpoint.hh"
+#include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/Lane.hh"
 #include "manifold/rndf/Waypoint.hh"
 
@@ -74,7 +75,7 @@ namespace manifold
       std::vector<int> stops;
 
       /// \brief Collection of exists.
-      // std::vector<Exit> exits;
+      std::vector<Exit> exits;
     };
   }
 }
@@ -332,8 +333,6 @@ bool Lane::RemoveCheckpoint(const int _cpId)
       this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
 }
 
-
-
 //////////////////////////////////////////////////
 unsigned int Lane::NumStops() const
 {
@@ -365,8 +364,7 @@ bool Lane::AddStop(const int _waypointId)
 
   // Check whether the stop already exists.
   if (std::find(this->dataPtr->stops.begin(),
-        this->dataPtr->stops.end(), _waypointId) !=
-          this->dataPtr->stops.end())
+        this->dataPtr->stops.end(), _waypointId) != this->dataPtr->stops.end())
   {
     std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
     return false;
@@ -383,4 +381,64 @@ bool Lane::RemoveStop(const int _waypointId)
   return (this->dataPtr->stops.erase(std::remove(
     this->dataPtr->stops.begin(), this->dataPtr->stops.end(), _waypointId),
       this->dataPtr->stops.end()) != this->dataPtr->stops.end());
+}
+
+
+
+//////////////////////////////////////////////////
+unsigned int Lane::NumExits() const
+{
+  return this->dataPtr->exits.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<Exit> &Lane::Exits()
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+const std::vector<Exit> &Lane::Exits() const
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+bool Lane::AddExit(const Exit &_newExit)
+{
+  // Validate the exit unique Id.
+  if (!_newExit.ExitId().Valid())
+  {
+    std::cerr << "[Lane::AddExit() Invalid exit Id: [" << _newExit.ExitId()
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Validate the entry unique Id.
+  if (!_newExit.EntryId().Valid())
+  {
+    std::cerr << "[Lane::AddExit() Invalid entry Id: [" << _newExit.EntryId()
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the exit already exists.
+  if (std::find(this->dataPtr->exits.begin(),
+        this->dataPtr->exits.end(), _newExit) != this->dataPtr->exits.end())
+  {
+    std::cerr << "[Lane::AddExit() error: Existing exit" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->exits.push_back(_newExit);
+  assert(this->NumExits() == this->dataPtr->exits.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::RemoveExit(const Exit &_exit)
+{
+  return (this->dataPtr->exits.erase(std::remove(
+    this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
+      this->dataPtr->exits.end()) != this->dataPtr->exits.end());
 }

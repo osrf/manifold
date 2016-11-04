@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_UNIQUEID_HH_
 #define MANIFOLD_RNDF_UNIQUEID_HH_
 
+#include <iostream>
 #include "manifold/Helpers.hh"
 
 namespace manifold
@@ -28,6 +29,8 @@ namespace manifold
     /// numbers.
     class MANIFOLD_VISIBLE UniqueId
     {
+      public: UniqueId();
+
       /// \brief Constructor.
       /// \param[in] _segmentId Segment Id (a positive number).
       /// \param[in] _laneId Lane Id (a positive number).
@@ -94,6 +97,17 @@ namespace manifold
       /// \param[in] _other The new UniqueId.
       /// \return A reference to this instance.
       public: UniqueId &operator=(const UniqueId &_other);
+
+      /// \brief Stream insertion operator.
+      /// \param[out] _out The output stream.
+      /// \param[in] _id UniqueId to write to the stream.
+      public: friend std::ostream &operator<<(std::ostream &_out,
+                                              const UniqueId &_id)
+      {
+        _out << _id.SegmentId() << "." << _id.LaneId() << "."
+             << _id.WaypointId();
+        return _out;
+      }
 
       /// \brief The segment Id.
       private: int segmentId;

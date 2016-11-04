@@ -29,6 +29,7 @@ namespace manifold
   {
     // Forward declarations.
     class Checkpoint;
+    class Exit;
     class LanePrivate;
     class Waypoint;
 
@@ -200,7 +201,7 @@ namespace manifold
       /// Stops
       /////////
 
-      /// \brief Get the number of stopts stored.
+      /// \brief Get the number of stops stored.
       /// \return The number of stops in the current lane.
       public: unsigned int NumStops() const;
 
@@ -226,6 +227,34 @@ namespace manifold
       /// or false otherwise (e.g. if the Id of the waypoint was not found
       /// or invalid).
       public: bool RemoveStop(const int _waypointId);
+
+      /////////
+      /// Exits
+      /////////
+
+      /// \brief Get the number of exits stored.
+      /// \return The number of exits in the current lane.
+      public: unsigned int NumExits() const;
+
+      /// \brief Get a mutable reference to the vector of exits.
+      /// \return A mutable reference to the vector of exits.
+      public: std::vector<Exit> &Exits();
+
+      /// \brief Get the vector of stops. The elements are waypoint Ids.
+      /// \return The vector of stops.
+      public: const std::vector<Exit> &Exits() const;
+
+      /// \brief Add a new exit.
+      /// \param[in] _newExit The exit to add.
+      /// \return True when the exit was successfully added or
+      /// false otherwise (e.g. if the exit  was already existing or invalid).
+      public: bool AddExit(const Exit &_newExit);
+
+      /// \brief Remove an existing exit.
+      /// \param[in] _exit The exit to be removed.
+      /// \return True when the exit was successfully deleted
+      /// or false otherwise (e.g. if the exit was not found or invalid).
+      public: bool RemoveExit(const Exit &_exit);
 
       /// \internal
       /// \brief Smart pointer to private data.

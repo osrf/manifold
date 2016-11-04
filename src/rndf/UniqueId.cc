@@ -22,6 +22,12 @@ using namespace manifold;
 using namespace rndf;
 
 //////////////////////////////////////////////////
+UniqueId::UniqueId()
+  : UniqueId(0, 0, 0)
+{
+}
+
+//////////////////////////////////////////////////
 UniqueId::UniqueId(const int _segmentId, const int _laneId,
     const int _waypointId)
 {
