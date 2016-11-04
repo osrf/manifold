@@ -30,7 +30,8 @@ namespace manifold
     class CheckpointPrivate
     {
       /// \brief Constructor.
-      /// \param[in] _id Lane Id.
+      /// \param[in] _checkpointId Checkpoint Id.
+      /// \param[in] _waypointId Waypoint Id.
       public: explicit CheckpointPrivate(const int _checkpointId,
                                          const int _waypointId)
         : checkpointId(_checkpointId),

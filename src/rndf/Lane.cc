@@ -74,7 +74,7 @@ namespace manifold
       /// waypoint Id.
       std::vector<int> stops;
 
-      /// \brief Collection of exists.
+      /// \brief Collection of exits.
       std::vector<Exit> exits;
     };
   }
