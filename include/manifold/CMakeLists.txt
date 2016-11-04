@@ -13,6 +13,7 @@ set (rndf_headers
   rndf/Perimeter.hh
   rndf/RNDF.hh
   rndf/Segment.hh
+  rndf/UniqueId.hh
   rndf/Waypoint.hh
   rndf/Zone.hh
 )

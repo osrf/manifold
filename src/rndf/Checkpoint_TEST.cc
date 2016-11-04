@@ -23,7 +23,7 @@ using namespace rndf;
 
 //////////////////////////////////////////////////
 /// \brief Check accessors.
-TEST(ChecpointTest, accessors)
+TEST(CheckpointTest, accessors)
 {
   // Test invalid Ids.
   {

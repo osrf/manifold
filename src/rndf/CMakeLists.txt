@@ -7,6 +7,7 @@ set (rndf_sources
   rndf/Perimeter.cc
   rndf/RNDF.cc
   rndf/Segment.cc
+  rndf/UniqueId.cc
   rndf/Waypoint.cc
   rndf/Zone.cc
   PARENT_SCOPE
@@ -19,6 +20,7 @@ set (gtest_sources
   Perimeter_TEST.cc
   RNDF_TEST.cc
   Segment_TEST.cc
+  UniqueId_TEST.cc
   Waypoint_TEST.cc
   Zone_TEST.cc
 )
