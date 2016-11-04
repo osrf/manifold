@@ -83,7 +83,7 @@ namespace manifold
       /// \return The number of waypoints in the current lane.
       public: unsigned int NumWaypoints() const;
 
-      /// \brief Get a mutable reference to the vector of waypoints;
+      /// \brief Get a mutable reference to the vector of waypoints.
       /// \return A mutable reference to the vector of waypoints.
       public: std::vector<rndf::Waypoint> &Waypoints();
 

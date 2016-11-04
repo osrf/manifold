@@ -56,7 +56,7 @@ namespace manifold
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;
 
-      /// Bellow are the optional lane header members.
+      /// Below are the optional lane header members.
 
       /// \brief Lane width in meters (non-negative).
       double width = 0.0;
@@ -177,7 +177,7 @@ bool Lane::AddWaypoint(const rndf::Waypoint &_newWaypoint)
         this->dataPtr->waypoints.end(), _newWaypoint) !=
           this->dataPtr->waypoints.end())
   {
-    std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
+    std::cerr << "[Lane::AddWaypoint() error: Existing waypoint" << std::endl;
     return false;
   }
 
@@ -315,7 +315,8 @@ bool Lane::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
         this->dataPtr->checkpoints.end(), _newCheckpoint) !=
           this->dataPtr->checkpoints.end())
   {
-    std::cerr << "[Lane::AddStop() error: Existing checkpoint" << std::endl;
+    std::cerr << "[Lane::AddCheckpoint() error: Existing checkpoint"
+              << std::endl;
     return false;
   }
 
@@ -382,8 +383,6 @@ bool Lane::RemoveStop(const int _waypointId)
     this->dataPtr->stops.begin(), this->dataPtr->stops.end(), _waypointId),
       this->dataPtr->stops.end()) != this->dataPtr->stops.end());
 }
-
-
 
 //////////////////////////////////////////////////
 unsigned int Lane::NumExits() const

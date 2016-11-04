@@ -55,7 +55,7 @@ namespace manifold
       /// \brief The (normally two) waypoints that define the spot.
       public: std::vector<Waypoint> waypoints;
 
-      /// Bellow are the optional spot header members.
+      /// Below are the optional spot header members.
 
       /// \brief Spot width in meters.
       public: double width = 0.0;
