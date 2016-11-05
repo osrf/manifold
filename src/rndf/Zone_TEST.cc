@@ -15,8 +15,116 @@
  *
 */
 
-#include "manifold/test_config.h"
+#include <map>
+#include <ignition/math/Helpers.hh>
+#include <ignition/math/SphericalCoordinates.hh>
+
 #include "gtest/gtest.h"
+#include "manifold/rndf/ParkingSpot.hh"
+#include "manifold/rndf/Waypoint.hh"
+#include "manifold/rndf/Zone.hh"
+
+using namespace manifold;
+using namespace rndf;
+
+//////////////////////////////////////////////////
+/// \brief Check id-related accessors.
+TEST(ZoneTest, id)
+{
+  int id = 1;
+  Zone zone(id);
+
+  EXPECT_EQ(zone.Id(), id);
+  int newId = 2;
+  EXPECT_TRUE(zone.SetId(newId));
+  EXPECT_EQ(zone.Id(), newId);
+
+  // Check that trying to set an incorrect Id does not take effect.
+  int wrongId = -1;
+  EXPECT_FALSE(zone.SetId(wrongId));
+  EXPECT_EQ(zone.Id(), newId);
+
+  // Check that using the constructor with a wrong id results in a Id = 0.
+  Zone wrongZone(wrongId);
+  EXPECT_EQ(wrongZone.Id(), 0);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check parking spots-related functions.
+TEST(ZoneTest, spots)
+{
+  int id = 1;
+  Zone zone(id);
+
+  EXPECT_EQ(zone.NumSpots(), 0u);
+  ParkingSpot ps;
+  // Check an inexistent parking spot Id.
+  EXPECT_FALSE(zone.Spot(id, ps));
+  // Try to remove an inexistent spot id.
+  EXPECT_FALSE(zone.RemoveSpot(id));
+  // Try to add a parking spot with an invalid Id.
+  EXPECT_FALSE(zone.AddSpot(ps));
+
+  // Create a valid parking spot.
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+  int waypointId = 1;
+  Waypoint wp;
+  wp.SetId(waypointId);
+  wp.Location() = sc;
+  ps.SetId(id);
+  ps.AddWaypoint(wp);
+  EXPECT_EQ(ps.NumWaypoints(), 1u);
+
+  // Add a valid parking spot.
+  EXPECT_TRUE(zone.AddSpot(ps));
+  EXPECT_EQ(zone.NumSpots(), 1u);
+
+  // Try to add an existent parking spot.
+  EXPECT_FALSE(zone.AddSpot(ps));
+  EXPECT_EQ(zone.NumSpots(), 1u);
+
+  return;
+
+  // Get the parking spot.
+  ParkingSpot ps2;
+  EXPECT_TRUE(zone.Spot(ps.Id(), ps2));
+  EXPECT_EQ(ps, ps2);
+  EXPECT_EQ(ps2.NumWaypoints(), 1u);
+
+  return;
+
+  // Update a parking spot.
+  double newElevation = 2000;
+  ASSERT_GT(ps2.NumWaypoints(), 0u);
+  ps2.Waypoints().at(0).Location().SetElevationReference(newElevation);
+  EXPECT_TRUE(zone.UpdateSpot(ps2));
+  ParkingSpot ps3;
+  EXPECT_TRUE(zone.Spot(ps2.Id(), ps3));
+  EXPECT_EQ(ps3, ps2);
+
+  return;
+
+  // Get a mutable reference to all parking spots.
+  std::vector<ParkingSpot> &spots = zone.Spots();
+  ASSERT_EQ(spots.size(), 1u);
+  // Modify a parking spot.
+  ParkingSpot &aPs = spots.at(0);
+  aPs.Waypoints().at(0).Location().SetElevationReference(500.0);
+  EXPECT_TRUE(zone.Spot(ps2.Id(), ps3));
+  EXPECT_TRUE(ignition::math::equal(
+    ps3.Waypoints().at(0).Location().ElevationReference(), 500.0));
+
+  for (auto const &aSpot : zone.Spots())
+    EXPECT_TRUE(aSpot.Valid());
+
+  // Remove a parking spot.
+  EXPECT_TRUE(zone.RemoveSpot(ps2.Id()));
+  EXPECT_EQ(zone.NumSpots(), 0u);
+}
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)

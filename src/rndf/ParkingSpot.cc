@@ -219,6 +219,9 @@ bool ParkingSpot::operator!=(const ParkingSpot &_other) const
 ParkingSpot &ParkingSpot::operator=(const ParkingSpot &_other)
 {
   this->SetId(_other.Id());
+  this->Waypoints() = _other.Waypoints();
+  this->SetWidth(_other.Width());
+  this->Checkpoint() = _other.Checkpoint();
   return *this;
 }
 
