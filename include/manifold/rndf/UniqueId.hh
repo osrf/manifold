@@ -53,8 +53,8 @@ namespace manifold
 
       /// \brief Set the segment Id.
       /// \param[in] _id New segment Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
       /// \sa Valid.
       public: bool SetSegmentId(const int _id);
 
@@ -64,8 +64,8 @@ namespace manifold
 
       /// \brief Set the lane Id.
       /// \param[in] _id New lane Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
       /// \sa Valid.
       public: bool SetLaneId(const int _id);
 
@@ -75,8 +75,8 @@ namespace manifold
 
       /// \brief Set the identifier of the waypoint.
       /// \param[in] _id New unique Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
       /// \sa Valid.
       public: bool SetWaypointId(const int _id);
 

@@ -15,6 +15,9 @@
  *
 */
 
+#include <iostream>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "manifold/rndf/UniqueId.hh"
 
@@ -125,6 +128,22 @@ TEST(UniqueIdTest, assignment)
 
   id2 = id1;
   EXPECT_EQ(id1, id2);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check the << operator
+TEST(UniqueIdTest, streamInsertion)
+{
+  int segmentId = 1;
+  int laneId = 2;
+  int waypointId = 3;
+  UniqueId id(segmentId, laneId, waypointId);
+
+  std::ostringstream output;
+  output << id;
+  std::string expectedOutput = "1.2.3";
+
+  EXPECT_EQ(output.str(), expectedOutput);
 }
 
 //////////////////////////////////////////////////

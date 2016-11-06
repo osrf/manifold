@@ -91,6 +91,7 @@ ParkingSpot::ParkingSpot(const int _spotId)
 ParkingSpot::ParkingSpot(const ParkingSpot &_other)
   : ParkingSpot(_other.Id())
 {
+  *this = _other;
 }
 
 //////////////////////////////////////////////////

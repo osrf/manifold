@@ -53,7 +53,7 @@ namespace manifold
       /// \return A mutable reference to the vector of perimeter points.
       public: std::vector<rndf::Waypoint> &Points();
 
-      /// \brief Get the vector of perimeter points;
+      /// \brief Get the vector of perimeter points.
       /// \return \return The vector of perimeter points.
       public: const std::vector<rndf::Waypoint> &Points() const;
 

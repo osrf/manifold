@@ -64,8 +64,8 @@ namespace manifold
 
       /// \brief Set the identifier of the waypoint.
       /// \param[in] _id New unique Id.
-      /// \return True if the operation succeed or false otherwise. If the Id
-      /// is not valid, the operation won't have any effect.
+      /// \return True if the operation succeed or false otherwise.
+      /// If the Id is not valid, the operation won't have any effect.
       public: bool SetId(const int _id);
 
       /// \brief Get a mutable reference to the waypoint location.
@@ -77,12 +77,12 @@ namespace manifold
       public: bool Valid() const;
 
       /// \brief Equality operator, result = this == _other
-      /// \param[in] _other Waypoint to check for equality
+      /// \param[in] _other Waypoint to check for equality.
       /// \return true if this == _other
       public: bool operator==(const Waypoint &_other) const;
 
       /// \brief Inequality
-      /// \param[in] _other Waypoint to check for inequality
+      /// \param[in] _other Waypoint to check for inequality.
       /// \return true if this != _other
       public: bool operator!=(const Waypoint &_other) const;
 

@@ -182,6 +182,40 @@ TEST(ParkingSpotTest, valid)
 }
 
 //////////////////////////////////////////////////
+/// \brief Check [in]equality operators.
+TEST(ParkingSpotTest, equality)
+{
+  int id1 = 1;
+  ParkingSpot ps1(id1);
+
+  int id2 = 2;
+  ParkingSpot ps2(id2);
+
+  ParkingSpot ps3(id1);
+
+  EXPECT_FALSE(ps1 == ps2);
+  EXPECT_TRUE(ps1 != ps2);
+
+  EXPECT_TRUE(ps1 == ps3);
+  EXPECT_FALSE(ps1 != ps3);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check assignment operator.
+TEST(ParkingSpotTest, assignment)
+{
+  int id1 = 1;
+  ParkingSpot ps1(id1);
+
+  int id2 = 2;
+  ParkingSpot ps2(id2);
+  EXPECT_NE(ps1, ps2);
+
+  ps2 = ps1;
+  EXPECT_EQ(ps1, ps2);
+}
+
+//////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

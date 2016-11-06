@@ -69,8 +69,8 @@ namespace manifold
       /// \return true if this == _other
       public: bool operator==(const Exit &_other) const;
 
-      /// \brief Inequality
-      /// \param[in] _other Exit to check for inequality
+      /// \brief Inequality.
+      /// \param[in] _other Exit to check for inequality.
       /// \return true if this != _other
       public: bool operator!=(const Exit &_other) const;
 

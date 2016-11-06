@@ -146,7 +146,7 @@ namespace manifold
       public: bool operator==(const ParkingSpot &_other) const;
 
       /// \brief Inequality.
-      /// \param[in] _other Parking spot to check for inequality
+      /// \param[in] _other Parking spot to check for inequality.
       /// \return true if this != _other
       public: bool operator!=(const ParkingSpot &_other) const;
 

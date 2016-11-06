@@ -70,9 +70,9 @@ namespace manifold
 
       /// \brief Set the identifier of the lane.
       /// \param[in] _id New unique Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
-      /// \sa valid.
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
+      /// \sa Valid.
       public: bool SetId(const int _id);
 
       /////////////
@@ -215,14 +215,14 @@ namespace manifold
       public: const std::vector<int> &Stops() const;
 
       /// \brief Add a new stop.
-      /// \param[in] _newStop The Id of a new waypoint considered a stop.
+      /// \param[in] _waypointId The Id of a new waypoint considered a stop.
       /// \return True when the stop was successfully added to the list or
       /// false otherwise (e.g. if the Id of the waypoint was already existing
       /// or invalid).
       public: bool AddStop(const int _waypointId);
 
       /// \brief Remove an existing stop.
-      /// \param[in] _cpId The waypoint Id to be removed.
+      /// \param[in] _waypointId The waypoint Id (of a stop sign) to be removed.
       /// \return True when the waypoint was successfully deleted
       /// or false otherwise (e.g. if the Id of the waypoint was not found
       /// or invalid).
@@ -240,7 +240,7 @@ namespace manifold
       /// \return A mutable reference to the vector of exits.
       public: std::vector<Exit> &Exits();
 
-      /// \brief Get the vector of stops. The elements are waypoint Ids.
+      /// \brief Get the vector of stops.
       /// \return The vector of stops.
       public: const std::vector<Exit> &Exits() const;
 

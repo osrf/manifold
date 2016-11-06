@@ -87,15 +87,11 @@ TEST(ZoneTest, spots)
   EXPECT_FALSE(zone.AddSpot(ps));
   EXPECT_EQ(zone.NumSpots(), 1u);
 
-  return;
-
   // Get the parking spot.
   ParkingSpot ps2;
   EXPECT_TRUE(zone.Spot(ps.Id(), ps2));
   EXPECT_EQ(ps, ps2);
   EXPECT_EQ(ps2.NumWaypoints(), 1u);
-
-  return;
 
   // Update a parking spot.
   double newElevation = 2000;
@@ -105,8 +101,6 @@ TEST(ZoneTest, spots)
   ParkingSpot ps3;
   EXPECT_TRUE(zone.Spot(ps2.Id(), ps3));
   EXPECT_EQ(ps3, ps2);
-
-  return;
 
   // Get a mutable reference to all parking spots.
   std::vector<ParkingSpot> &spots = zone.Spots();
