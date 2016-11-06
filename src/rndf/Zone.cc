@@ -196,7 +196,7 @@ std::string Zone::Name() const
 }
 
 //////////////////////////////////////////////////
-void Zone::Name(const std::string &_name) const
+void Zone::SetName(const std::string &_name) const
 {
   this->dataPtr->name = _name;
 }
@@ -204,5 +204,5 @@ void Zone::Name(const std::string &_name) const
 //////////////////////////////////////////////////
 bool Zone::Valid() const
 {
-  return this->Id() > 0;
+  return this->Id() > 0 && this->Perimeter().Valid();
 }

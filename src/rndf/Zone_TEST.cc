@@ -21,6 +21,7 @@
 
 #include "gtest/gtest.h"
 #include "manifold/rndf/ParkingSpot.hh"
+#include "manifold/rndf/Perimeter.hh"
 #include "manifold/rndf/Waypoint.hh"
 #include "manifold/rndf/Zone.hh"
 
@@ -118,6 +119,70 @@ TEST(ZoneTest, spots)
   // Remove a parking spot.
   EXPECT_TRUE(zone.RemoveSpot(ps2.Id()));
   EXPECT_EQ(zone.NumSpots(), 0u);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check perimeter-related functions.
+TEST(ZoneTest, perimeter)
+{
+  int id = 1;
+  Zone zone(id);
+
+  // Add a perimeter point.
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+  int waypointId = 1;
+  Waypoint wp;
+  wp.SetId(waypointId);
+  wp.Location() = sc;
+
+  EXPECT_TRUE(zone.Perimeter().AddPoint(wp));
+  EXPECT_EQ(zone.Perimeter().Points().size(), 1u);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check zone name.
+TEST(ZoneTest, Name)
+{
+  int id = 1;
+  Zone zone(id);
+  EXPECT_TRUE(zone.Name().empty());
+
+  std::string name = "North_parking_lot";
+  zone.SetName(name);
+  EXPECT_EQ(zone.Name(), name);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check zone validation.
+TEST(ZoneTest, Validation)
+{
+  int id = 1;
+  Zone zone(id);
+  EXPECT_TRUE(zone.Name().empty());
+  EXPECT_FALSE(zone.Valid());
+
+  std::string name = "North_parking_lot";
+  zone.SetName(name);
+  EXPECT_EQ(zone.Name(), name);
+  EXPECT_FALSE(zone.Valid());
+
+  // Add a perimeter point.
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+  int waypointId = 1;
+  Waypoint wp;
+  wp.SetId(waypointId);
+  wp.Location() = sc;
+
+  EXPECT_TRUE(zone.Perimeter().AddPoint(wp));
+  EXPECT_TRUE(zone.Valid());
 }
 
 //////////////////////////////////////////////////

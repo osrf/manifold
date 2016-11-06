@@ -122,7 +122,7 @@ namespace manifold
 
       /// \brief Set the zone name. E.g.: "North_parking_lot".
       /// \param[in] _name The new name.
-      public: void Name(const std::string &_name) const;
+      public: void SetName(const std::string &_name) const;
 
       //////////////
       /// Validation
