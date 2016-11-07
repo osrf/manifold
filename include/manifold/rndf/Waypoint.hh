@@ -47,7 +47,7 @@ namespace manifold
       /// \param[in] _id Waypoint Id (a positive number).
       /// \param[in] _location Location of the waypoint in decimal-degrees,
       /// using ITRF00 reference frame and the GRS80 ellipsoid.
-      /// \sa valid.
+      /// \sa Valid.
       public: Waypoint(const int _id,
                        const ignition::math::SphericalCoordinates &_location);
 

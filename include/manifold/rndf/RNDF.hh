@@ -19,6 +19,8 @@
 #define MANIFOLD_RNDF_RNDF_HH_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "manifold/Helpers.hh"
 
@@ -28,6 +30,8 @@ namespace manifold
   {
     // Forward declarations.
     class RNDFPrivate;
+    class Segment;
+    class Zone;
 
     /// \brief ToDo.
     class MANIFOLD_VISIBLE RNDF
@@ -36,7 +40,132 @@ namespace manifold
       public: RNDF();
 
       /// \brief Destructor.
-      public: virtual ~RNDF() = default;
+      public: virtual ~RNDF();
+
+      ////////
+      /// Name
+      ////////
+
+      /// \brief Get the segment name.
+      /// \return The segment name.
+      public: std::string Name() const;
+
+      /// \brief Set the segment name.
+      /// \param[in] _name The new name.
+      public: void SetName(const std::string &_name);
+
+      ////////////
+      /// Segments
+      ////////////
+
+      /// \brief Get the number of segments stored.
+      /// \return The number of segments in this RNDF.
+      public: unsigned int NumSegments() const;
+
+      /// \brief Get a mutable reference to the vector of segments.
+      /// \return A mutable reference to the vector of segments.
+      public: std::vector<rndf::Segment> &Segments();
+
+      /// \brief Get the vector of segments.
+      /// \return \return The vector of segments.
+      public: const std::vector<rndf::Segment> &Segments() const;
+
+      /// \brief Get the details of one of the segments with Id _segmentId.
+      /// \param[in] _segmentId The segment Id.
+      /// \param[out] _segment The segment requested.
+      /// \return True if the segment was found or false otherwise.
+      public: bool Segment(const int _segmentId, rndf::Segment &_segment) const;
+
+      /// \brief Update an existing segment.
+      /// \param[in] _segment The updated segment.
+      /// \return True if the segment was found and updated or false otherwise.
+      public: bool UpdateSegment(const rndf::Segment &_segment);
+
+      /// \brief Add a new segment.
+      /// \param[in] _newSegment A new segment to be added.
+      /// \return True when the segment was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the segment was already existing
+      /// or invalid).
+      public: bool AddSegment(const rndf::Segment &_newSegment);
+
+      /// \brief Remove an existing segment.
+      /// \param[in] _segmentId The segment Id to be removed.
+      /// \return True when the segment was successfully deleted from the list
+      /// or false otherwise (e.g. if the Id of the segment was not found
+      /// or invalid).
+      public: bool RemoveSegment(const int _segmentId);
+
+      /////////
+      /// Zones
+      /////////
+
+      /// \brief Get the number of zones stored.
+      /// \return The number of zones in this RNDF.
+      public: unsigned int NumZones() const;
+
+      /// \brief Get a mutable reference to the vector of zones.
+      /// \return A mutable reference to the vector of zones.
+      public: std::vector<rndf::Zone> &Zones();
+
+      /// \brief Get the vector of zones.
+      /// \return \return The vector of zones.
+      public: const std::vector<rndf::Zone> &Zones() const;
+
+      /// \brief Get the details of one of the zones with Id _zoneId.
+      /// \param[in] _zoneId The zone Id.
+      /// \param[out] _zone The zone requested.
+      /// \return True if the zone was found or false otherwise.
+      public: bool Zone(const int _zoneId, rndf::Zone &_zone) const;
+
+      /// \brief Update an existing zone.
+      /// \param[in] _zone The updated zone.
+      /// \return True if the zone was found and updated or false otherwise.
+      public: bool UpdateZone(const rndf::Zone &_zone);
+
+      /// \brief Add a new zone.
+      /// \param[in] _newZone A new zone to be added.
+      /// \return True when the zone was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the zone was already existing
+      /// or invalid).
+      public: bool AddZone(const rndf::Zone &_newZone);
+
+      /// \brief Remove an existing zone.
+      /// \param[in] _zoneId The zone Id to be removed.
+      /// \return True when the zone was successfully deleted from the list
+      /// or false otherwise (e.g. if the Id of the zone was not found
+      /// or invalid).
+      public: bool RemoveZone(const int _zoneId);
+
+      ///////////
+      /// Version
+      ///////////
+
+      /// \brief Get the format version. E.g.: "2.3.6".
+      /// \return The format version.
+      public: std::string Version() const;
+
+      /// \brief Set the format version.
+      /// \param[in] _version The new version.
+      public: void SetVersion(const std::string &_version) const;
+
+      ////////
+      /// Date
+      ////////
+
+      /// \brief Get the creation date.
+      /// \return The creation date.
+      public: std::string Date() const;
+
+      /// \brief Set the creation date.
+      /// \param[in] _date The new creation date.
+      public: void SetDate(const std::string &_newDate) const;
+
+      //////////////
+      /// Validation
+      //////////////
+
+      /// \return True if the RNDF is valid.
+      public: bool Valid() const;
 
       /// \internal
       /// \brief Smart pointer to private data.

@@ -60,6 +60,13 @@ Perimeter::Perimeter()
 }
 
 //////////////////////////////////////////////////
+Perimeter::Perimeter(const Perimeter &_other)
+  : Perimeter()
+{
+  *this = _other;
+}
+
+//////////////////////////////////////////////////
 Perimeter::~Perimeter()
 {
 }
@@ -208,4 +215,48 @@ bool Perimeter::RemoveExit(const Exit &_exit)
 bool Perimeter::Valid() const
 {
   return this->NumPoints() > 0;;
+}
+
+//////////////////////////////////////////////////
+bool Perimeter::operator==(const Perimeter &_other) const
+{
+  if ((this->Points().size() != _other.Points().size()) ||
+      (this->Exits().size() != _other.Exits().size()))
+  {
+    return false;
+  }
+
+  for (auto const &point : this->Points())
+  {
+    if (std::find(_other.Points().begin(), _other.Points().end(), point) ==
+          _other.Points().end())
+    {
+      return false;
+    }
+  }
+
+  for (auto const &exit : this->Exits())
+  {
+    if (std::find(_other.Exits().begin(), _other.Exits().end(), exit) ==
+          _other.Exits().end())
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Perimeter::operator!=(const Perimeter &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+Perimeter &Perimeter::operator=(const Perimeter &_other)
+{
+  this->Points() = _other.Points();
+  this->Exits() = _other.Exits();
+  return *this;
 }

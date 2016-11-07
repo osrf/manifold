@@ -36,7 +36,13 @@ namespace manifold
     class MANIFOLD_VISIBLE Perimeter
     {
       /// \brief Constructor.
+      /// \sa Valid.
       public: Perimeter();
+
+      /// \brief Copy constructor.
+      /// \param[in] _other Other segment to copy from.
+      /// \sa Valid.
+      public: Perimeter(const Perimeter &_other);
 
       /// \brief Destructor.
       public: virtual ~Perimeter();
@@ -116,6 +122,25 @@ namespace manifold
 
       /// \return True if the parking spot is valid.
       public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
+
+      /// \brief Equality operator, result = this == _other
+      /// \param[in] _other Perimeter to check for equality.
+      /// \return true if this == _other
+      public: bool operator==(const Perimeter &_other) const;
+
+      /// \brief Inequality.
+      /// \param[in] _other Perimeter to check for inequality.
+      /// \return true if this != _other
+      public: bool operator!=(const Perimeter &_other) const;
+
+      /// \brief Assignment operator.
+      /// \param[in] _other The new perimeter.
+      /// \return A reference to this instance.
+      public: Perimeter &operator=(const Perimeter &_other);
 
       /// \internal
       /// \brief Smart pointer to private data.

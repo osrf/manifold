@@ -141,7 +141,7 @@ namespace manifold
       /////////////
 
       /// \brief Equality operator, result = this == _other
-      /// \param[in] _other Parking spot to check for equality
+      /// \param[in] _other Parking spot to check for equality.
       /// \return true if this == _other
       public: bool operator==(const ParkingSpot &_other) const;
 

@@ -50,7 +50,7 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~LanePrivate() = default;
 
-      /// \brief Unique lane identifier. E.g.: 1
+      /// \brief Lane identifier. E.g.: 1
       public: int id = 0;
 
       /// \brief Collection of waypoints.
@@ -81,6 +81,12 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
+Lane::Lane()
+  : Lane(0)
+{
+}
+
+//////////////////////////////////////////////////
 Lane::Lane(const int _id)
 {
   int id = _id;
@@ -91,6 +97,13 @@ Lane::Lane(const int _id)
   }
 
   this->dataPtr.reset(new LanePrivate(id));
+}
+
+//////////////////////////////////////////////////
+Lane::Lane(const Lane &_other)
+  : Lane(_other.Id())
+{
+  *this = _other;
 }
 
 //////////////////////////////////////////////////
@@ -440,4 +453,30 @@ bool Lane::RemoveExit(const Exit &_exit)
   return (this->dataPtr->exits.erase(std::remove(
     this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
       this->dataPtr->exits.end()) != this->dataPtr->exits.end());
+}
+
+//////////////////////////////////////////////////
+bool Lane::operator==(const Lane &_other) const
+{
+  return this->Id() == _other.Id();
+}
+
+//////////////////////////////////////////////////
+bool Lane::operator!=(const Lane &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+Lane &Lane::operator=(const Lane &_other)
+{
+  this->SetId(_other.Id());
+  this->Waypoints() = _other.Waypoints();
+  this->SetWidth(_other.Width());
+  this->SetLeftBoundary(_other.LeftBoundary());
+  this->SetRightBoundary(_other.RightBoundary());
+  this->Checkpoints() = _other.Checkpoints();
+  this->Stops() = _other.Stops();
+  this->Exits() = _other.Exits();
+  return *this;
 }

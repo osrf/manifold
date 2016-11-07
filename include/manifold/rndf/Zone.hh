@@ -36,10 +36,19 @@ namespace manifold
     /// \brief ToDo.
     class MANIFOLD_VISIBLE Zone
     {
+      /// \brief Default constructor.
+      /// \sa Valid.
+      public: explicit Zone();
+
       /// \brief Constructor.
       /// \param[in] _id Zone Id (a positive number).
-      /// \sa valid.
+      /// \sa Valid.
       public: explicit Zone(const int _id);
+
+      /// \brief Copy constructor.
+      /// \param[in] _other Other zone to copy from.
+      /// \sa Valid.
+      public: Zone(const Zone &_other);
 
       /// \brief Destructor.
       public: virtual ~Zone();
@@ -55,8 +64,7 @@ namespace manifold
       /// \brief Set the identifier of the zone.
       /// \param[in] _id New unique Id.
       /// \return True if the operation succeed or false otherwise
-      /// (e.g.: if theid is not valid).
-      /// \sa valid.
+      /// (e.g.: if the id is not valid).
       public: bool SetId(const int _id);
 
       /////////////////
@@ -130,6 +138,25 @@ namespace manifold
 
       /// \return True if the zone is valid.
       public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
+
+      /// \brief Equality operator, result = this == _other
+      /// \param[in] _other Zone to check for equality.
+      /// \return true if this == _other
+      public: bool operator==(const Zone &_other) const;
+
+      /// \brief Inequality.
+      /// \param[in] _other Zone to check for inequality.
+      /// \return true if this != _other
+      public: bool operator!=(const Zone &_other) const;
+
+      /// \brief Assignment operator.
+      /// \param[in] _other The new zone.
+      /// \return A reference to this instance.
+      public: Zone &operator=(const Zone &_other);
 
       /// \internal
       /// \brief Smart pointer to private data.

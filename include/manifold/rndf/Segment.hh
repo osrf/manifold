@@ -19,6 +19,8 @@
 #define MANIFOLD_RNDF_SEGMENT_HH_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "manifold/Helpers.hh"
 
@@ -27,16 +29,122 @@ namespace manifold
   namespace rndf
   {
     // Forward declarations.
+    class Lane;
     class SegmentPrivate;
 
     /// \brief ToDo.
     class MANIFOLD_VISIBLE Segment
     {
-      /// \brief Constructor.
+      /// \brief Default constructor.
+      /// \sa Valid.
       public: Segment();
 
+      /// \brief Constructor.
+      /// \param[in] _id Segment Id (a positive number).
+      /// \sa Valid.
+      public: explicit Segment(const int _id);
+
+      /// \brief Copy constructor.
+      /// \param[in] _other Other segment to copy from.
+      /// \sa Valid.
+      public: Segment(const Segment &_other);
+
       /// \brief Destructor.
-      public: virtual ~Segment() = default;
+      public: virtual ~Segment();
+
+      ///////
+      /// Id
+      ///////
+
+      /// \brief Get the unique identifier of the segment.
+      /// \return The segment Id.
+      public: int Id() const;
+
+      /// \brief Set the identifier of the segment.
+      /// \param[in] _id New unique Id.
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
+      /// \sa Valid.
+      public: bool SetId(const int _id);
+
+      /////////
+      /// Lanes
+      /////////
+
+      /// \brief Get the number of lanes stored.
+      /// \return The number of lanes in this segment.
+      public: unsigned int NumLanes() const;
+
+      /// \brief Get a mutable reference to the vector of lanes.
+      /// \return A mutable reference to the vector of lanes.
+      public: std::vector<rndf::Lane> &Lanes();
+
+      /// \brief Get the vector of lanes.
+      /// \return \return The vector of lanes.
+      public: const std::vector<rndf::Lane> &Lanes() const;
+
+      /// \brief Get the details of one of the lane with Id _laneId.
+      /// \param[in] _laneId The lane Id.
+      /// \param[out] _lane The lane requested.
+      /// \return True if the lane was found or false otherwise.
+      public: bool Lane(const int _laneId, rndf::Lane &_lane) const;
+
+      /// \brief Update an existing lane.
+      /// \param[in] _lane The updated lane.
+      /// \return True if the lane was found and updated or false otherwise.
+      public: bool UpdateLane(const rndf::Lane &_lane);
+
+      /// \brief Add a new lane.
+      /// \param[in] _newLane A new lane to be added.
+      /// \return True when the lane was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the lane was already existing
+      /// or invalid).
+      public: bool AddLane(const rndf::Lane &_newLane);
+
+      /// \brief Remove an existing lane.
+      /// \param[in] _laneId The lane Id to be removed.
+      /// \return True when the lane was successfully deleted from the list
+      /// or false otherwise (e.g. if the Id of the lane was not found
+      /// or invalid).
+      public: bool RemoveLane(const int _laneId);
+
+      ////////
+      /// Name
+      ////////
+
+      /// \brief Get the segment name. E.g.: "Wisconsin_Ave".
+      /// \return The segment name.
+      public: std::string Name() const;
+
+      /// \brief Set the segment name. E.g.: "Wisconsin_Ave".
+      /// \param[in] _name The new name.
+      public: void SetName(const std::string &_name) const;
+
+      //////////////
+      /// Validation
+      //////////////
+
+      /// \return True if the segment is valid.
+      public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
+
+      /// \brief Equality operator, result = this == _other
+      /// \param[in] _other Segment to check for equality.
+      /// \return true if this == _other
+      public: bool operator==(const Segment &_other) const;
+
+      /// \brief Inequality.
+      /// \param[in] _other Segment to check for inequality.
+      /// \return true if this != _other
+      public: bool operator!=(const Segment &_other) const;
+
+      /// \brief Assignment operator.
+      /// \param[in] _other The new segment.
+      /// \return A reference to this instance.
+      public: Segment &operator=(const Segment &_other);
 
       /// \internal
       /// \brief Smart pointer to private data.

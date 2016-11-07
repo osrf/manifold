@@ -64,6 +64,12 @@ namespace manifold
 }
 
 //////////////////////////////////////////////////
+Zone::Zone()
+  : Zone(0)
+{
+}
+
+//////////////////////////////////////////////////
 Zone::Zone(const int _id)
 {
   int id = _id;
@@ -74,6 +80,13 @@ Zone::Zone(const int _id)
   }
 
   this->dataPtr.reset(new ZonePrivate(id));
+}
+
+//////////////////////////////////////////////////
+Zone::Zone(const Zone &_other)
+  : Zone(_other.Id())
+{
+  *this = _other;
 }
 
 //////////////////////////////////////////////////
@@ -205,4 +218,26 @@ void Zone::SetName(const std::string &_name) const
 bool Zone::Valid() const
 {
   return this->Id() > 0 && this->Perimeter().Valid();
+}
+
+//////////////////////////////////////////////////
+bool Zone::operator==(const Zone &_other) const
+{
+  return this->Id() == _other.Id();
+}
+
+//////////////////////////////////////////////////
+bool Zone::operator!=(const Zone &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+Zone &Zone::operator=(const Zone &_other)
+{
+  this->SetId(_other.Id());
+  this->Spots() = _other.Spots();
+  this->Perimeter() = _other.Perimeter();
+  this->SetName(_other.Name());
+  return *this;
 }

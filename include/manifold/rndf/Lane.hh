@@ -52,10 +52,19 @@ namespace manifold
         UNDEFINED,
       };
 
+      /// \brief Default constructor.
+      /// \sa Valid.
+      public: Lane();
+
       /// \brief Constructor.
       /// \param[in] _id Lane Id (a positive number).
-      /// \sa valid.
+      /// \sa Valid.
       public: explicit Lane(const int _id);
+
+      /// \brief Copy constructor.
+      /// \param[in] _other Other lane.
+      /// \sa Valid.
+      public: explicit Lane(const Lane &_other);
 
       /// \brief Destructor.
       public: virtual ~Lane();
@@ -115,13 +124,6 @@ namespace manifold
       /// or false otherwise (e.g. if the Id of the waypoint was not found
       /// or invalid).
       public: bool RemoveWaypoint(const int _wpId);
-
-      //////////////
-      /// Validation
-      //////////////
-
-      /// \return True if the lane is valid.
-      public: bool Valid() const;
 
       /////////
       /// Width
@@ -255,6 +257,32 @@ namespace manifold
       /// \return True when the exit was successfully deleted
       /// or false otherwise (e.g. if the exit was not found or invalid).
       public: bool RemoveExit(const Exit &_exit);
+
+      //////////////
+      /// Validation
+      //////////////
+
+      /// \return True if the lane is valid.
+      public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
+
+      /// \brief Equality operator, result = this == _other
+      /// \param[in] _other Lane to check for equality.
+      /// \return true if this == _other
+      public: bool operator==(const Lane &_other) const;
+
+      /// \brief Inequality.
+      /// \param[in] _other Lane to check for inequality.
+      /// \return true if this != _other
+      public: bool operator!=(const Lane &_other) const;
+
+      /// \brief Assignment operator.
+      /// \param[in] _other The new lane.
+      /// \return A reference to this instance.
+      public: Lane &operator=(const Lane &_other);
 
       /// \internal
       /// \brief Smart pointer to private data.
