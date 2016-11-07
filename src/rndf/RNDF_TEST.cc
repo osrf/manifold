@@ -210,6 +210,43 @@ TEST(RNDFTest, Version)
 }
 
 //////////////////////////////////////////////////
+/// \brief Check RNDF validation.
+TEST(RNDFTest, Validation)
+{
+  RNDF rndf;
+  EXPECT_TRUE(rndf.Valid());
+
+  // Create a valid waypoint.
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+  int waypointId = 1;
+  Waypoint wp;
+  wp.SetId(waypointId);
+  wp.Location() = sc;
+
+  // Create a valid lane.
+  int id = 1;
+  Lane lane(id);
+  EXPECT_TRUE(lane.AddWaypoint(wp));
+  EXPECT_EQ(lane.NumWaypoints(), 1u);
+
+  // Add the lane to the segment.
+  Segment segment;
+  EXPECT_TRUE(segment.AddLane(lane));
+  EXPECT_EQ(segment.NumLanes(), 1u);
+
+  // Add the segment to the RNDF.
+  segment.SetId(id);
+  EXPECT_TRUE(rndf.AddSegment(segment));
+
+  // The segment is not valid (missing Id).
+  EXPECT_TRUE(rndf.Valid());
+}
+
+//////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
