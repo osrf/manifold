@@ -39,6 +39,10 @@ namespace manifold
       /// \brief Constructor.
       public: RNDF();
 
+      /// \brief Constructor.
+      /// \param[in] _filepath Path to an existing RNDF file.
+      public: RNDF(const std::string &_filepath);
+
       /// \brief Destructor.
       public: virtual ~RNDF();
 
@@ -166,6 +170,36 @@ namespace manifold
 
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
+
+      /// \def
+      public: enum class ParserState
+      {
+        COMMENT,
+        GENERAL,
+        SEGMENTS,
+        LANES,
+        ZONES,
+        PERIMETER,
+        PARKING_SPOT,
+        UNKNOWN
+      };
+
+      /// \brief ToDo
+      private: void ChangeState(const ParserState &_newState);
+
+      /// \brief ToDo
+      private: std::string ParseString(const std::string &_line,
+                                       const std::string &_token,
+                                       bool &_valid);
+
+      /// \brief ToDo
+      private: int ParseInteger(const std::string &_line,
+                                const std::string &_token,
+                                bool &_valid);
+
+      /// \brief ToDo
+      private: int ParseInteger(const std::string &_line,
+                                bool &_valid);
 
       /// \internal
       /// \brief Smart pointer to private data.
