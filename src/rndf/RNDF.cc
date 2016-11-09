@@ -17,13 +17,16 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <vector>
 
 #include "manifold/rndf/RNDF.hh"
 #include "manifold/rndf/Segment.hh"
+#include "manifold/rndf/UniqueId.hh"
 #include "manifold/rndf/Zone.hh"
 
 using namespace manifold;
@@ -89,8 +92,29 @@ RNDF::RNDF(const std::string &_filepath)
     return;
   }
 
+
   std::string lineread;
   int lineNumber = 0;
+  int segmentId;
+  int laneId;
+  int waypointId;
+  int checkpointId;
+  int zoneId;
+  int numLanes;
+  int laneWidth;
+  int numWaypoints;
+  int numSegments;
+  int numZones;
+  int numPerimeterPoints;
+  int numSpots;
+  std::string formatVersion;
+  std::string creationDate;
+  std::string filename;
+  std::string segmentName;
+  std::string zoneName;
+  Lane::Marking leftBoundary;
+  Lane::Marking rightBoundary;
+  rndf::Segment tempSegment;
 
   // Read line by line
   while (std::getline(rndfFile, lineread))
@@ -148,33 +172,30 @@ RNDF::RNDF(const std::string &_filepath)
       case RNDF::ParserState::GENERAL:
         // RNDF_NAME
         if (token.compare("RNDF_name") == 0)
-          auto filename = this->ParseString(lineread, "RNDF_name", valid);
+          filename = this->ParseString(lineread, "RNDF_name", valid);
         // NUM_SEGMENTS
         else if (token.compare("num_segments") == 0)
         {
-          auto numSegments = this->ParseInteger(lineread, "num_segments",
-            valid);
+          numSegments = this->ParseInteger(lineread, "num_segments", valid);
           if (numSegments <= 0)
             valid = false;
         }
         // NUM_ZONES
         else if (token.compare("num_zones") == 0)
         {
-          auto numZones = this->ParseInteger(lineread, "num_zones", valid);
+          numZones = this->ParseInteger(lineread, "num_zones", valid);
           if (numZones < 0)
             valid = false;
         }
         // FORMAT_VERSION
         else if (token.compare("format_version") == 0)
         {
-          auto formatVersion = this->ParseString(lineread, "format_version",
-            valid);
+          formatVersion = this->ParseString(lineread, "format_version", valid);
         }
         // CREATION_DATE
         else if (token.compare("creation_date") == 0)
         {
-          auto creationDate = this->ParseString(lineread, "creation_date",
-            valid);
+          creationDate = this->ParseString(lineread, "creation_date", valid);
         }
         // END_FILE
         else if (token.compare("end_file") == 0)
@@ -196,21 +217,21 @@ RNDF::RNDF(const std::string &_filepath)
         // SEGMENT
         if (token.compare("segment") == 0)
         {
-          auto segmentId = this->ParseInteger(lineread, "segment", valid);
+          segmentId = this->ParseInteger(lineread, "segment", valid);
           if (segmentId <= 0)
             valid = false;
         }
         // NUM_LANES
         else if (token.compare("num_lanes") == 0)
         {
-          auto numLanes = this->ParseInteger(lineread, "num_lanes", valid);
+          numLanes = this->ParseInteger(lineread, "num_lanes", valid);
           if (numLanes <= 0)
             valid = false;
         }
         // SEGMENT_NAME
         else if (token.compare("segment_name") == 0)
         {
-          auto segmentName = this->ParseString(lineread, "segment_name", valid);
+          segmentName = this->ParseString(lineread, "segment_name", valid);
         }
         // END_SEGMENT
         else if (token.compare("end_segment") == 0)
@@ -233,191 +254,206 @@ RNDF::RNDF(const std::string &_filepath)
         }
         break;
 
-      /*
+
       case RNDF::ParserState::LANES:
         // LANE
         if (token.compare("lane") == 0)
         {
-          sprintf(temp_char, "lane %d.%%d", temp_segment.segment_id);
-          if (sscanf(lineread.c_str(), temp_char, &temp_lane.lane_id) == 1){
-            if (verbose)
-              printf("%d: Lane number is %d\n",
-               line_number, temp_lane.lane_id);
+          std::regex rgx("^lane " + std::to_string(segmentId) +
+            "\\.([1-9][[:d:]]*)$");
+          std::smatch result;
+          std::regex_search(lineread, result, rgx);
+          if (result.size() == 1)
+          {
+            std::string::size_type sz;
+            auto intValue = std::stoi(result[0], &sz);
+            laneId = intValue;
           }
-          else valid=false;
-          if (temp_lane.lane_id <= 0) valid = false;
-        }
-        //NUM_WAYPOINTS
-        else if(token.compare("num_waypoints") == 0){
-          temp_lane.number_of_waypoints =
-            parse_integer(lineread, std::string("num_waypoints"),
-              line_number, valid, verbose);
-          if (temp_lane.number_of_waypoints <= 0) valid = false;
-        }
-        //LANE_WIDTH
-        else if(token.compare("lane_width") == 0){
-          temp_lane.lane_width =
-            parse_integer(lineread, std::string("lane_width"),
-              line_number, valid, verbose);
-          if (temp_lane.lane_width <= 0) valid = false;
-        }
-        //LEFT_BOUNDARY
-        else if(token.compare("left_boundary") == 0){
-          temp_lane.left_boundary =
-            parse_boundary(lineread, valid);
-          if (verbose)
-            printf("%d: left boundary type is %d\n",
-             line_number, temp_lane.left_boundary);
-        }
-        //RIGHT_BOUNDARY
-        else if(token.compare("right_boundary") == 0){
-          temp_lane.right_boundary =
-            parse_boundary(lineread, valid);
-          if (verbose)
-            printf("%d: right boundary type is %d\n",
-             line_number, temp_lane.right_boundary);
-        }
-        //CHECKPOINT
-        else if(token.compare("checkpoint") == 0){
-          Checkpoint checkpoint(lineread, temp_segment.segment_id,
-              temp_lane.lane_id, line_number, valid, verbose);
-          temp_lane.checkpoints.push_back(checkpoint);
-        }
-        //STOP
-        else if(token.compare("stop") == 0){
-          Stop stop(lineread, temp_segment.segment_id,
-              temp_lane.lane_id, line_number, valid, verbose);
-          temp_lane.stops.push_back(stop);
-        }
-        //EXIT
-        else if(token.compare("exit") == 0){
-          Exit exit(lineread, temp_segment.segment_id,
-              temp_lane.lane_id, line_number, valid, verbose);
-          temp_lane.exits.push_back(exit);
-        }
-        //END_LANE
-        else if(token.compare("end_lane") == 0){
-          if(temp_lane.number_of_waypoints != (int)temp_lane.waypoints.size())
-            printf("Number of waypoints in lane does not match num_waypoints\n");
-          if (!temp_lane.isvalid())
+          else
             valid = false;
-          else{
-            temp_segment.lanes.push_back(temp_lane);
-            if (verbose)
-              printf("%d: lane has ended\n", line_number);
-            change_state(previous_state, state, SEGMENTS);
-            temp_lane.clear();
-          }
-        }
 
-        //NO TOKEN
-        else{
+          if (laneId <= 0)
+            valid = false;
+
+          // sprintf(temp_char, "lane %d.%%d", temp_segment.segment_id);
+          // if (sscanf(lineread.c_str(), temp_char, &temp_lane.lane_id) == 1){
+          //   if (verbose)
+          //     printf("%d: Lane number is %d\n",
+          //      line_number, temp_lane.lane_id);
+          // }
+          // else valid=false;
+          // if (temp_lane.lane_id <= 0) valid = false;
+        }
+        // NUM_WAYPOINTS
+        else if (token.compare("num_waypoints") == 0)
+        {
+          numWaypoints = this->ParseInteger(lineread, "num_waypoints", valid);
+          if (numWaypoints <= 0)
+            valid = false;
+        }
+        // LANE_WIDTH
+        else if (token.compare("lane_width") == 0)
+        {
+          laneWidth = this->ParseInteger(lineread, "lane_width", valid);
+          if (laneWidth <= 0)
+            valid = false;
+        }
+        // LEFT_BOUNDARY
+        else if (token.compare("left_boundary") == 0)
+        {
+          leftBoundary = this->ParseBoundary(lineread, valid);
+          //if (verbose)
+          //  printf("%d: left boundary type is %d\n",
+          //   line_number, temp_lane.left_boundary);
+        }
+        // RIGHT_BOUNDARY
+        else if (token.compare("right_boundary") == 0)
+        {
+          rightBoundary = this->ParseBoundary(lineread, valid);
+          // if (verbose)
+          //   printf("%d: right boundary type is %d\n",
+          //    line_number, temp_lane.right_boundary);
+        }
+        // CHECKPOINT
+        else if (token.compare("checkpoint") == 0)
+        {
+          this->ParseCheckpoint(lineread, segmentId, laneId, waypointId,
+            checkpointId, valid);
+          //temp_lane.checkpoints.push_back(checkpoint);
+        }
+        // STOP
+        else if(token.compare("stop") == 0)
+        {
+          this->ParseStop(lineread, segmentId, laneId, waypointId, valid);
+          // temp_lane.stops.push_back(stop);
+        }
+        // EXIT
+        else if(token.compare("exit") == 0)
+        {
+          UniqueId id;
+          this->ParseExit(lineread, segmentId, laneId, waypointId, id, valid);
+          // temp_lane.exits.push_back(exit);
+        }
+        // END_LANE
+        else if (token.compare("end_lane") == 0)
+        {
+          // if (temp_lane.number_of_waypoints != (int)temp_lane.waypoints.size())
+          //   printf("Number of waypoints in lane does not match num_waypoints\n");
+          // if (!temp_lane.isvalid())
+          //   valid = false;
+          // else{
+          //   temp_segment.lanes.push_back(temp_lane);
+          //   if (verbose)
+          //     printf("%d: lane has ended\n", line_number);
+          //   change_state(previous_state, state, SEGMENTS);
+          //   temp_lane.clear();
+          // }
+        }
+        // NO TOKEN
+        else
+        {
           //WAYPOINT
-          sprintf(temp_char, "%d.%d.", temp_segment.segment_id,
-            temp_lane.lane_id);
-          if(token.find(temp_char) != std::string::npos ){
-            LL_Waypoint wp(lineread, temp_segment.segment_id,
-               temp_lane.lane_id, line_number, valid, verbose);
-            temp_lane.waypoints.push_back(wp);
-          }
-          else{
-            printf("%d: Unexpected token\n", line_number);
-            valid=false;
-          }
+          //sprintf(temp_char, "%d.%d.", temp_segment.segment_id,
+          //  temp_lane.lane_id);
+          //if(token.find(temp_char) != std::string::npos ){
+          //  LL_Waypoint wp(lineread, temp_segment.segment_id,
+          //     temp_lane.lane_id, line_number, valid, verbose);
+          //  temp_lane.waypoints.push_back(wp);
+          //}
+          //else{
+          //  printf("%d: Unexpected token\n", line_number);
+          //  valid=false;
+          //}
         }
         break;
 
-      case ZONES:
-        //ZONE
-        if(token.compare("zone") == 0){
-          temp_zone.zone_id =
-            parse_integer(lineread, std::string("zone"),
-              line_number, valid, verbose);
-          if (temp_zone.zone_id <= 0) valid = false;
+      case RNDF::ParserState::ZONES:
+        // ZONE
+        if (token.compare("zone") == 0)
+        {
+          zoneId = this->ParseInteger(lineread, "zone", valid);
+          if (zoneId <= 0)
+            valid = false;
 
         }
-        //NUM_SPOTS
-        else if(token.compare("num_spots") == 0){
-          temp_zone.number_of_parking_spots =
-            parse_integer(lineread, std::string("num_spots"),
-              line_number, valid, verbose);
-          if (temp_zone.number_of_parking_spots < 0) valid = false;
-        }
-        //ZONE_NAME
-        else if(token.compare("zone_name") == 0)
-          temp_zone.zone_name =
-            parse_string(lineread, std::string("zone_name"),
-             line_number, valid, verbose);
-        //END_ZONE
-        else if(token.compare("end_zone") == 0){
-          if(!temp_zone.isvalid())
+        // NUM_SPOTS
+        else if (token.compare("num_spots") == 0)
+        {
+          numSpots = this->ParseInteger(lineread, "num_spots", valid);
+          if (numSpots < 0)
             valid = false;
-          else{
-            zones.push_back(temp_zone);
-            if (verbose)
-              printf("%d: zone has ended\n", line_number);
-            change_state(previous_state, state, GENERAL);
-            temp_zone.clear();
-          }
         }
-        else {
-          printf("%d: Unexpected token\n", line_number);
-          valid=false;
+        // ZONE_NAME
+        else if (token.compare("zone_name") == 0)
+          zoneName = this->ParseString(lineread, "zone_name", valid);
+        // END_ZONE
+        else if (token.compare("end_zone") == 0)
+        {
+          // if (!temp_zone.isvalid())
+          //   valid = false;
+          // else{
+          //   zones.push_back(temp_zone);
+          //   if (verbose)
+          //     printf("%d: zone has ended\n", line_number);
+          //   change_state(previous_state, state, GENERAL);
+          //   temp_zone.clear();
+          // }
+        }
+        else
+        {
+          //printf("%d: Unexpected token\n", line_number);
+          valid = false;
         }
         break;
 
-      case PERIMETER:
-        //PERIMETER
-        if(token.compare("perimeter") == 0){
-          sprintf(temp_char,"perimeter %d.%%d" , temp_zone.zone_id);
-          if (sscanf(lineread.c_str(), temp_char,
-               &temp_perimeter.perimeter_id) == 1){
-            if (verbose)
-              printf("%d: Perimeter id is %d\n",
-               line_number, temp_perimeter.perimeter_id);
-          }
-          else valid=false;
-          if (temp_perimeter.perimeter_id != 0)
+      case RNDF::ParserState::PERIMETER:
+        // PERIMETER
+        if (token.compare("perimeter") == 0)
+        {
+          this->ParsePerimeter(lineread, zoneId, valid);
+        }
+        // NUM_PERIMETER_POINTS
+        else if (token.compare("num_perimeterpoints") == 0)
+        {
+          numPerimeterPoints = this->ParseInteger(lineread,
+            "num_perimeterpoints", valid);
+          if (numPerimeterPoints <= 0)
             valid = false;
         }
-        //NUM_PERIMETER_POINTS
-        else if(token.compare("num_perimeterpoints") == 0){
-          temp_perimeter.number_of_perimeterpoints =
-            parse_integer(lineread, std::string("num_perimeterpoints"),
-              line_number, valid, verbose);
-          if (temp_perimeter.number_of_perimeterpoints <= 0)
-            valid = false;
+        // EXIT
+        else if (token.compare("exit") == 0)
+        {
+          UniqueId id;
+          this->ParseExit(lineread, zoneId, 0, waypointId, id, valid);
+          //temp_perimeter.exits_from_perimeter.push_back(exit);
         }
-        //EXIT
-        else if(token.compare("exit") == 0){
-          Exit exit(lineread, temp_zone.zone_id, 0, line_number, valid,
-              verbose);
-          temp_perimeter.exits_from_perimeter.push_back(exit);
+        // END_PERIMETER
+        else if (token.compare("end_perimeter") == 0)
+        {
+          // if(!temp_perimeter.isvalid())
+          //   valid = false;
+          // else{
+          //   temp_zone.perimeter = temp_perimeter;
+          //   if (verbose)
+          //     printf("%d: perimeter has ended\n", line_number);
+          //   change_state(previous_state, state, ZONES);
+          //   temp_perimeter.clear();
+          // }
         }
-        //END_PERIMETER
-        else if(token.compare("end_perimeter") == 0){
-          if(!temp_perimeter.isvalid())
-            valid = false;
-          else{
-            temp_zone.perimeter = temp_perimeter;
-            if (verbose)
-              printf("%d: perimeter has ended\n", line_number);
-            change_state(previous_state, state, ZONES);
-            temp_perimeter.clear();
-          }
-        }
-        else{
-          //WAYPOINT
-          sprintf(temp_char, "%d.%d.", temp_zone.zone_id, 0);
-          if(token.find(temp_char) != std::string::npos ){
-            LL_Waypoint wp(lineread, temp_zone.zone_id, 0, line_number,
-               valid, verbose);
-            temp_perimeter.perimeterpoints.push_back(wp);
-          }
-          else valid=false;
+        else
+        {
+          // // WAYPOINT
+          // sprintf(temp_char, "%d.%d.", temp_zone.zone_id, 0);
+          // if(token.find(temp_char) != std::string::npos ){
+          //   LL_Waypoint wp(lineread, temp_zone.zone_id, 0, line_number,
+          //      valid, verbose);
+          //   temp_perimeter.perimeterpoints.push_back(wp);
+          // }
+          // else valid=false;
         }
         break;
 
+      /*
       case PARKING_SPOT:
         //SPOT
         if(token.compare("spot") == 0){
@@ -788,4 +824,111 @@ int RNDF::ParseInteger(const std::string &_line, bool &_valid)
 
   _valid = true;
   return intValue;
+}
+
+//////////////////////////////////////////////////
+Lane::Marking RNDF::ParseBoundary(const std::string &_line, bool &_valid)
+{
+  _valid = true;
+
+  std::regex rgx("^(left|right)_boundary (.*)$");
+  std::smatch result;
+  std::regex_search(_line, result, rgx);
+  if (result.size() != 2)
+  {
+    _valid = false;
+    return Lane::Marking::UNDEFINED;
+  }
+
+  std::string boundary = result[1];
+  if (boundary == "double_yellow")
+    return Lane::Marking::DOUBLE_YELLOW;
+  else if (boundary == "solid_yellow")
+    return Lane::Marking::SOLID_YELLOW;
+  else if (boundary == "double_white")
+    return Lane::Marking::SOLID_WHITE;
+  else if (boundary == "broken_white")
+    return Lane::Marking::BROKEN_WHITE;
+  else
+  {
+    _valid = false;
+    return Lane::Marking::UNDEFINED;
+  }
+}
+
+//////////////////////////////////////////////////
+void RNDF::ParseCheckpoint(const std::string &_line, const int _segmentId,
+  const int _laneId, int &_waypointId, int &_checkpointId, bool &_valid)
+{
+  _valid = true;
+
+  std::regex rgx("^checkpoint " + std::to_string(_segmentId) + "\\." +
+    std::to_string(_laneId) + "\\." + "([1-9][[:d:]]*) ([1-9][[:d:]]*)$");
+  std::smatch result;
+  std::regex_search(_line, result, rgx);
+  if (result.size() != 2)
+  {
+    _valid = false;
+    return;
+  }
+
+  std::string::size_type sz;
+  _waypointId = std::stoi(result[0], &sz);
+  _checkpointId = std::stoi(result[1], &sz);
+}
+
+//////////////////////////////////////////////////
+void RNDF::ParseStop(const std::string &_line, const int _segmentId,
+  const int _laneId, int &_waypointId, bool &_valid)
+{
+  _valid = true;
+
+  std::regex rgx("^stop " + std::to_string(_segmentId) + "\\." +
+    std::to_string(_laneId) + "\\." + "([1-9][[:d:]]*)$");
+  std::smatch result;
+  std::regex_search(_line, result, rgx);
+  if (result.size() != 1)
+  {
+    _valid = false;
+    return;
+  }
+
+  std::string::size_type sz;
+  _waypointId = std::stoi(result[0], &sz);
+}
+
+//////////////////////////////////////////////////
+void RNDF::ParseExit(const std::string &_line, const int _segmentId,
+  const int _laneId, int &_waypointId, UniqueId &_id, bool &_valid)
+{
+  _valid = true;
+
+  std::regex rgx("^exit " + std::to_string(_segmentId) + "\\." +
+    std::to_string(_laneId) +
+    "\\.([1-9][[:d:]]*) ([1-9][[:d:]]*)\\.([1-9][[:d:]]*)\\.([1-9][[:d:]]*)$");
+  std::smatch result;
+  std::regex_search(_line, result, rgx);
+  if (result.size() != 4)
+  {
+    _valid = false;
+    return;
+  }
+
+  std::string::size_type sz;
+  _waypointId = std::stoi(result[0], &sz);
+
+  auto sId = std::stoi(result[1], &sz);
+  auto lId = std::stoi(result[2], &sz);
+  auto wId = std::stoi(result[3], &sz);
+  _id.SetSegmentId(sId);
+  _id.SetLaneId(lId);
+  _id.SetWaypointId(wId);
+}
+
+//////////////////////////////////////////////////
+void RNDF::ParsePerimeter(const std::string &_line, const int _zoneId,
+  bool &_valid)
+{
+  std::regex rgx("^perimeter " + std::to_string(_zoneId) + "\\.0$");
+  _valid = std::regex_match(_line, rgx);
 }

@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "manifold/rndf/Lane.hh"
 #include "manifold/Helpers.hh"
 
 namespace manifold
@@ -31,6 +32,7 @@ namespace manifold
     // Forward declarations.
     class RNDFPrivate;
     class Segment;
+    class UniqueId;
     class Zone;
 
     /// \brief ToDo.
@@ -200,6 +202,38 @@ namespace manifold
       /// \brief ToDo
       private: int ParseInteger(const std::string &_line,
                                 bool &_valid);
+
+      /// \brief ToDo
+      private: Lane::Marking ParseBoundary(const std::string &_line,
+                                           bool &_valid);
+
+      /// \brief ToDo
+      private: void ParseCheckpoint(const std::string &_line,
+                                    const int _segmentId,
+                                    const int _laneId,
+                                    int &_waypointId,
+                                    int &_checkpointId,
+                                    bool &_valid);
+
+      /// \brief ToDo
+      private: void ParseStop(const std::string &_line,
+                              const int _segmentId,
+                              const int _laneId,
+                              int &_waypointId,
+                              bool &_valid);
+
+      /// \brief ToDo
+      private: void ParseExit(const std::string &_line,
+                              const int _segmentId,
+                              const int _laneId,
+                              int &_waypointId,
+                              UniqueId &_id,
+                              bool &_valid);
+
+      /// \brief ToDo
+      private: void ParsePerimeter(const std::string &_line,
+                                   const int _zoneId,
+                                   bool &_valid);
 
       /// \internal
       /// \brief Smart pointer to private data.
