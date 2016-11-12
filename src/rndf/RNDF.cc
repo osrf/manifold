@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/RNDF.hh"
 #include "manifold/rndf/Segment.hh"
 #include "manifold/rndf/UniqueId.hh"
@@ -92,6 +93,8 @@ RNDF::RNDF(const std::string &_filepath)
     return;
   }
 
+  this->Parse(rndfFile);
+  return;
 
   std::string lineread;
   int lineNumber = 0;
@@ -107,6 +110,8 @@ RNDF::RNDF(const std::string &_filepath)
   int numZones;
   int numPerimeterPoints;
   int numSpots;
+  int spotWidth;
+  int spotId;
   std::string formatVersion;
   std::string creationDate;
   std::string filename;
@@ -116,7 +121,7 @@ RNDF::RNDF(const std::string &_filepath)
   Lane::Marking rightBoundary;
   rndf::Segment tempSegment;
 
-  // Read line by line
+  // Read line by line.
   while (std::getline(rndfFile, lineread))
   {
     ++lineNumber;
@@ -453,58 +458,88 @@ RNDF::RNDF(const std::string &_filepath)
         }
         break;
 
-      /*
-      case PARKING_SPOT:
-        //SPOT
-        if(token.compare("spot") == 0){
-          sprintf(temp_char,"spot %d.%%d" , temp_zone.zone_id);
-          if (sscanf(lineread.c_str(), temp_char, &temp_spot.spot_id) == 1){
-            if (verbose)
-              printf("%d: Spot id is %d\n", line_number, temp_spot.spot_id);
-          }
-          else valid=false;
-          if (temp_spot.spot_id <= 0) valid = false;
-        }
-        //SPOT_WIDTH
-        else if(token.compare("spot_width") == 0){
-          temp_spot.spot_width =
-            parse_integer(lineread, std::string("spot_width"),
-              line_number, valid, verbose);
-          if (temp_spot.spot_width <= 0) valid = false;
-        }
-        //CHECKPOINT
-        else if(token.compare("checkpoint") == 0)
-          temp_spot.checkpoint = Checkpoint(lineread, temp_zone.zone_id,
-                    temp_spot.spot_id,
-                    line_number, valid, verbose);
-        //END_SPOT
-        else if(token.compare("end_spot") == 0){
-          if(!temp_spot.isvalid())
+
+      case RNDF::ParserState::PARKING_SPOT:
+        // SPOT
+        if (token.compare("spot") == 0)
+        {
+          this->ParseSpot(lineread, zoneId, spotId, valid);
+          // sprintf(temp_char,"spot %d.%%d" , temp_zone.zone_id);
+          // if (sscanf(lineread.c_str(), temp_char, &temp_spot.spot_id) == 1){
+          //   if (verbose)
+          //     printf("%d: Spot id is %d\n", line_number, temp_spot.spot_id);
+          // }
+          // else valid=false;
+          if (spotId <= 0)
             valid = false;
-          else{
-            temp_zone.spots.push_back(temp_spot);
-            if (verbose)
-              printf("%d: spot has ended\n", line_number);
-            change_state(previous_state, state, ZONES);
-            temp_spot.clear();
-          }
         }
-        else{
-          //WAYPOINT
-          sprintf(temp_char, "%d.%d.", temp_zone.zone_id, temp_spot.spot_id);
-          if(token.find(temp_char) != std::string::npos ){
-            LL_Waypoint wp(lineread, temp_zone.zone_id,
-               temp_spot.spot_id, line_number, valid, verbose);
-            temp_spot.waypoints.push_back(wp);
+        // SPOT_WIDTH
+        else if (token.compare("spot_width") == 0)
+        {
+          spotWidth = this->ParseInteger(lineread, "spot_width", valid);
+          if (spotWidth <= 0)
+            valid = false;
+        }
+        // CHECKPOINT
+        else if (token.compare("checkpoint") == 0)
+        {
+          this->ParseCheckpoint(lineread, zoneId, spotId, waypointId,
+            checkpointId, valid);
+          // temp_spot.checkpoint = Checkpoint(lineread, temp_zone.zone_id,
+          //           temp_spot.spot_id,
+          //           line_number, valid, verbose);
+        }
+        // END_SPOT
+        else if (token.compare("end_spot") == 0)
+        {
+          // if (!temp_spot.isvalid())
+          //   valid = false;
+          // else{
+          //   temp_zone.spots.push_back(temp_spot);
+          //   if (verbose)
+          //     printf("%d: spot has ended\n", line_number);
+          //   change_state(previous_state, state, ZONES);
+          //   temp_spot.clear();
+          // }
+        }
+        else
+        {
+          // WAYPOINT
+          double lat;
+          double lon;
+          std::string decNumRgx("-?[1-9][[:d:]]*(\\.?[[:digit:]]+)?$");
+          std::regex rgx("^" + std::to_string(zoneId) + "\\." +
+            std::to_string(spotId) + "\\.([1-9][[:d:]]*) (" + decNumRgx +
+            ") (" + decNumRgx + ")$");
+          std::smatch result;
+          std::regex_search(lineread, result, rgx);
+          if (result.size() == 3)
+          {
+            std::string::size_type sz;
+            auto intValue = std::stoi(result[0], &sz);
+            waypointId = intValue;
+
+            lat = std::stod(result[1], &sz);
+            lon = std::stod(result[2], &sz);
           }
-          else{
-            printf("%d: Unexpected token\n", line_number);
-            valid=false;
-          }
+          else
+            valid = false;
+          // this->ParseWaypoint(lineread, zoneId, spotId, waypointId, )
+          // sprintf(temp_char, "%d.%d.", temp_zone.zone_id, temp_spot.spot_id);
+          // if (token.find(temp_char) != std::string::npos )
+          // {
+          //   LL_Waypoint wp(lineread, temp_zone.zone_id,
+          //      temp_spot.spot_id, line_number, valid, verbose);
+          //   temp_spot.waypoints.push_back(wp);
+          // }
+          // else
+          // {
+          //   printf("%d: Unexpected token\n", line_number);
+          //   valid=false;
+          // }
         }
         break;
 
-      */
       case RNDF::ParserState::UNKNOWN:
         printf("%d: Unexpected token\n", lineNumber);
         valid = false;
@@ -518,6 +553,45 @@ RNDF::RNDF(const std::string &_filepath)
 //////////////////////////////////////////////////
 RNDF::~RNDF()
 {
+}
+
+//////////////////////////////////////////////////
+bool RNDF::Parse(std::ifstream &_rndfFile)
+{
+  assert(_rndfFile.is_open());
+
+  int lineNumber = -1;
+
+  // Parse "RNDF_name"
+  std::string fileName;
+  if (!this->ParseName(_rndfFile, fileName, lineNumber))
+    return false;
+
+  // Parse "num_segments".
+  int numSegments;
+  if (!this->ParseNumSegments(_rndfFile, numSegments, lineNumber))
+    return false;
+
+  // Parse "num_zones".
+  int numZones;
+  if (!this->ParseNumZones(_rndfFile, numZones, lineNumber))
+    return false;
+
+  // Parse optional file header (format_version and/or creation_date).
+  std::string formatVersion;
+  std::string creationDate;
+  std::string nextLine;
+  if (!this->ParseHeader(_rndfFile, formatVersion, creationDate, lineNumber))
+    return false;
+
+  std::vector<rndf::Segment> segments;
+
+  // Parse a segment.
+  rndf::Segment segment;
+  if (!segment.Parse(_rndfFile, segment, lineNumber))
+    return false;
+
+  return true;
 }
 
 //////////////////////////////////////////////////
@@ -857,13 +931,13 @@ Lane::Marking RNDF::ParseBoundary(const std::string &_line, bool &_valid)
 }
 
 //////////////////////////////////////////////////
-void RNDF::ParseCheckpoint(const std::string &_line, const int _segmentId,
-  const int _laneId, int &_waypointId, int &_checkpointId, bool &_valid)
+void RNDF::ParseCheckpoint(const std::string &_line, const int _major,
+  const int _minor, int &_patch, int &_checkpointId, bool &_valid)
 {
   _valid = true;
 
-  std::regex rgx("^checkpoint " + std::to_string(_segmentId) + "\\." +
-    std::to_string(_laneId) + "\\." + "([1-9][[:d:]]*) ([1-9][[:d:]]*)$");
+  std::regex rgx("^checkpoint " + std::to_string(_major) + "\\." +
+    std::to_string(_minor) + "\\." + "([1-9][[:d:]]*) ([1-9][[:d:]]*)$");
   std::smatch result;
   std::regex_search(_line, result, rgx);
   if (result.size() != 2)
@@ -873,7 +947,7 @@ void RNDF::ParseCheckpoint(const std::string &_line, const int _segmentId,
   }
 
   std::string::size_type sz;
-  _waypointId = std::stoi(result[0], &sz);
+  _patch = std::stoi(result[0], &sz);
   _checkpointId = std::stoi(result[1], &sz);
 }
 
@@ -931,4 +1005,147 @@ void RNDF::ParsePerimeter(const std::string &_line, const int _zoneId,
 {
   std::regex rgx("^perimeter " + std::to_string(_zoneId) + "\\.0$");
   _valid = std::regex_match(_line, rgx);
+}
+
+//////////////////////////////////////////////////
+void RNDF::ParseSpot(const std::string &_line, const int _zoneId,
+  int &_spotId, bool &_valid)
+{
+  _valid = true;
+
+  std::regex rgx("^spot " + std::to_string(_zoneId) + "\\.([1-9][[:d:]]*)$");
+  std::smatch result;
+  std::regex_search(_line, result, rgx);
+  if (result.size() != 1)
+  {
+    _valid = false;
+    return;
+  }
+
+  std::string::size_type sz;
+  _spotId = std::stoi(result[0], &sz);
+}
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+//////////////////////////////////////////////////
+bool RNDF::ParseName(std::ifstream &_rndfFile, std::string &_name,
+  int &_lineNumber)
+{
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxName("^RNDF_name (" + kRgxString + ")\\s*(" +
+    kRgxComment +  ")?$");
+  std::smatch result;
+  std::regex_search(lineread, result, rgxName);
+  if (result.size() < 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse RNDF_name "
+              << "element." << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  _name = result[1];
+}
+
+//////////////////////////////////////////////////
+bool RNDF::ParseNumSegments(std::ifstream &_rndfFile, int &_numSegments,
+  int &_lineNumber)
+{
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxNumSegments("^num_segments " + kRgxPositive + "$");
+  std::smatch result;
+  std::regex_search(lineread, result, rgxNumSegments);
+  if (result.size() != 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse num_segments "
+              << "element." << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  std::string::size_type sz;
+  _numSegments = std::stoi(result[1], &sz);
+}
+
+//////////////////////////////////////////////////
+bool RNDF::ParseNumZones(std::ifstream &_rndfFile, int &_numZones,
+  int &_lineNumber)
+{
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxNumZones("^num_zones " + kRgxNonNegative + "$");
+  std::smatch result;
+  std::regex_search(lineread, result, rgxNumZones);
+  if (result.size() != 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse num_zones "
+              << "element." << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  std::string::size_type sz;
+  _numZones = std::stoi(result[1], &sz);
+}
+
+//////////////////////////////////////////////////
+bool RNDF::ParseHeader(std::ifstream &_rndfFile, std::string &_formatVersion,
+  std::string &_creationDate, int &_lineNumber)
+{
+  _formatVersion = "";
+  _creationDate = "";
+
+  std::regex rgxHeader("^(format_version|creation_date) (" + kRgxString +
+    ")\\s*(" + kRgxComment + ")?$");
+  std::regex rgxSegmentId("^segment " + kRgxPositive + "$");
+  std::smatch result;
+  for (auto i = 0; i < 2; ++i)
+  {
+    auto oldPos = _rndfFile.tellg();
+    int oldLineNumber = _lineNumber;
+
+    std::string lineread;
+    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+      return false;
+
+    // Check if we found the "segment" element.
+    // If this is the case we should leave.
+    std::regex_search(lineread, result, rgxSegmentId);
+    if (result.size() >= 2)
+    {
+      // Restore the file position and line number.
+      // ParseHeader() shouldn't have any effect.
+      _rndfFile.seekg(oldPos);
+      _lineNumber = oldLineNumber;
+      return true;
+    }
+
+    std::regex_search(lineread, result, rgxHeader);
+    if ((result.size() <= 3) ||
+        (result[1] == "format_version" && !_formatVersion.empty()) ||
+        (result[1] == "creation_date" && !_creationDate.empty()))
+    {
+      // Invalid or repeated header element.
+      std::cerr << "[Line " << _lineNumber << "]: Unable to parse file header "
+                << "element." << std::endl;
+      std::cerr << " \"" << lineread << "\"" << std::endl;
+      return false;
+    }
+
+    if (result[1] == "format_version")
+      _formatVersion = result[1];
+    else
+      _creationDate = result[1];
+  }
 }

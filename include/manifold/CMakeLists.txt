@@ -11,6 +11,7 @@ set (rndf_headers
   rndf/Exit.hh
   rndf/Lane.hh
   rndf/ParkingSpot.hh
+  rndf/ParserUtils.hh
   rndf/Perimeter.hh
   rndf/RNDF.hh
   rndf/Segment.hh

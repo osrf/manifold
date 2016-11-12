@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_RNDF_HH_
 #define MANIFOLD_RNDF_RNDF_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,10 +44,15 @@ namespace manifold
 
       /// \brief Constructor.
       /// \param[in] _filepath Path to an existing RNDF file.
-      public: RNDF(const std::string &_filepath);
+      public: explicit RNDF(const std::string &_filepath);
 
       /// \brief Destructor.
       public: virtual ~RNDF();
+
+      ///////////
+      /// Parsing
+      ///////////
+      public: bool Parse(std::ifstream &_rndfFile);
 
       ////////
       /// Name
@@ -209,9 +215,9 @@ namespace manifold
 
       /// \brief ToDo
       private: void ParseCheckpoint(const std::string &_line,
-                                    const int _segmentId,
-                                    const int _laneId,
-                                    int &_waypointId,
+                                    const int _major,
+                                    const int _minor,
+                                    int &_patch,
                                     int &_checkpointId,
                                     bool &_valid);
 
@@ -234,6 +240,29 @@ namespace manifold
       private: void ParsePerimeter(const std::string &_line,
                                    const int _zoneId,
                                    bool &_valid);
+
+      /// \brief ToDo
+      private: void ParseSpot(const std::string &_line,
+                              const int _zoneId,
+                              int &_spotId,
+                              bool &_valid);
+
+      private: bool ParseName(std::ifstream &_rndfFile,
+                              std::string &_name,
+                              int &_lineNumber);
+
+      private: bool ParseNumSegments(std::ifstream &_rndfFile,
+                                     int &_numSegments,
+                                     int &_lineNumber);
+
+      private: bool ParseNumZones(std::ifstream &_rndfFile,
+                                  int &_numZones,
+                                  int &_lineNumber);
+
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                std::string &_formatVersion,
+                                std::string &_creationDate,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

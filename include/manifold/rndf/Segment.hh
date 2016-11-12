@@ -52,6 +52,14 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Segment();
 
+      ///////////
+      /// Parsing
+      ///////////
+
+      public: bool Parse(std::ifstream &_rndfFile,
+                         rndf::Segment &_segment,
+                         int &_lineNumber);
+
       ///////
       /// Id
       ///////

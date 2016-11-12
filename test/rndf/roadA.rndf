@@ -1,6 +1,10 @@
-RNDF_name roadA
-num_segments  2
+RNDF_name roadA /*A comment */
+
+ /* Ignore */
+
+num_segments 2
 num_zones 0
+format_version 1.2.2
 segment 1
 num_lanes 1
 lane  1.1

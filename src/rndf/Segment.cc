@@ -21,7 +21,11 @@
 #include <string>
 #include <vector>
 
+#include <regex>
+#include <fstream>
+
 #include "manifold/rndf/Lane.hh"
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/Segment.hh"
 
 using namespace manifold;
@@ -88,6 +92,31 @@ Segment::Segment(const Segment &_other)
 //////////////////////////////////////////////////
 Segment::~Segment()
 {
+}
+
+//////////////////////////////////////////////////
+bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
+  int &_lineNumber)
+{
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxSegmentId("^segment " + kRgxPositive + "$");
+  std::smatch result;
+  std::regex_search(lineread, result, rgxSegmentId);
+  if (result.size() != 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse section "
+              << "element." << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  std::string::size_type sz;
+  int segmentId = std::stoi(result[1], &sz);
+
+  return true;
 }
 
 //////////////////////////////////////////////////

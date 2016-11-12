@@ -5,6 +5,7 @@ set (rndf_sources
   rndf/Exit.cc
   rndf/Lane.cc
   rndf/ParkingSpot.cc
+  rndf/ParserUtils.cc
   rndf/Perimeter.cc
   rndf/RNDF.cc
   rndf/Segment.cc
