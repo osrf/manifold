@@ -69,6 +69,16 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Lane();
 
+      ///////////
+      /// Parsing
+      ///////////
+
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         const int _segmentId,
+                         rndf::Lane &_lane,
+                         int &_lineNumber);
+
       ///////
       /// Id
       ///////
@@ -283,6 +293,18 @@ namespace manifold
       /// \param[in] _other The new lane.
       /// \return A reference to this instance.
       public: Lane &operator=(const Lane &_other);
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                const int _segmentId,
+                                const int _laneId,
+                                int &_width,
+                                Lane::Marking &_leftBoundary,
+                                Lane::Marking &_rightBoundary,
+                                std::vector<rndf::Checkpoint> &_checkpoints,
+                                std::vector<rndf::Waypoint> &_stops,
+                                std::vector<rndf::Exit> &_exits,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

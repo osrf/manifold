@@ -247,18 +247,6 @@ namespace manifold
                               int &_spotId,
                               bool &_valid);
 
-      private: bool ParseName(std::ifstream &_rndfFile,
-                              std::string &_name,
-                              int &_lineNumber);
-
-      private: bool ParseNumSegments(std::ifstream &_rndfFile,
-                                     int &_numSegments,
-                                     int &_lineNumber);
-
-      private: bool ParseNumZones(std::ifstream &_rndfFile,
-                                  int &_numZones,
-                                  int &_lineNumber);
-
       private: bool ParseHeader(std::ifstream &_rndfFile,
                                 std::string &_formatVersion,
                                 std::string &_creationDate,

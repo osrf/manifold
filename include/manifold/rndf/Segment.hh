@@ -56,6 +56,7 @@ namespace manifold
       /// Parsing
       ///////////
 
+      /// \brief ToDo.
       public: bool Parse(std::ifstream &_rndfFile,
                          rndf::Segment &_segment,
                          int &_lineNumber);
@@ -153,6 +154,12 @@ namespace manifold
       /// \param[in] _other The new segment.
       /// \return A reference to this instance.
       public: Segment &operator=(const Segment &_other);
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                const int _segmentId,
+                                std::string &_segmentName,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

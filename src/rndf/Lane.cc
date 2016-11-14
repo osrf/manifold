@@ -18,12 +18,14 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <regex>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Checkpoint.hh"
 #include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/Lane.hh"
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/Waypoint.hh"
 
 using namespace manifold;
@@ -109,6 +111,76 @@ Lane::Lane(const Lane &_other)
 //////////////////////////////////////////////////
 Lane::~Lane()
 {
+}
+
+//////////////////////////////////////////////////
+bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
+  rndf::Lane &_lane, int &_lineNumber)
+{
+  std::smatch result;
+  std::string lineread;
+
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  // Parse the "lane ID" .
+  std::regex rgxLaneId("^lane " + std::to_string(_segmentId) + "\\." +
+    kRgxPositive + "$");
+  std::regex_search(lineread, result, rgxLaneId);
+  if (result.size() < 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+  std::string::size_type sz;
+  int laneId = std::stoi(result[1], &sz);
+
+  // Parse "num_waypoints".
+  int numWaypoints;
+  if (!parsePositive(_rndfFile, "num_waypoints", numWaypoints, _lineNumber))
+    return false;
+
+  // Parse optional lane header.
+  int width;
+  Lane::Marking leftBoundary;
+  Lane::Marking rightBoundary;
+  std::vector<rndf::Checkpoint> checkpoints;
+  std::vector<rndf::Waypoint> stops;
+  std::vector<rndf::Exit> exits;
+  if (!this->ParseHeader(_rndfFile, _segmentId, laneId, width, leftBoundary,
+    rightBoundary, checkpoints, stops, exits, _lineNumber))
+  {
+    return false;
+  }
+
+  std::vector<rndf::Waypoint> waypoints;
+  for (auto i = 0; i < numWaypoints; ++i)
+  {
+    // Parse a waypoint.
+    rndf::Waypoint waypoint;
+    if (!waypoint.Parse(_rndfFile, _segmentId, laneId, waypoint, _lineNumber))
+      return false;
+
+    if (!waypoint.Valid())
+    {
+      std::cerr << "Invalid waypoint" << std::endl;
+      return false;
+    }
+
+    waypoints.push_back(waypoint);
+  }
+
+  // Parse "end_lane".
+  if (!parseDelimiter(_rndfFile, "end_lane", _lineNumber))
+    return false;
+
+  // Populate the lane.
+  _lane.SetId(laneId);
+  _lane.Waypoints() = waypoints;
+
+  return true;
 }
 
 //////////////////////////////////////////////////
@@ -479,4 +551,37 @@ Lane &Lane::operator=(const Lane &_other)
   this->Stops() = _other.Stops();
   this->Exits() = _other.Exits();
   return *this;
+}
+
+//////////////////////////////////////////////////
+bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
+  const int _laneId, int &_width, Lane::Marking &_leftBoundary,
+  Lane::Marking &_rightBoundary, std::vector<rndf::Checkpoint> &_checkpoints,
+  std::vector<rndf::Waypoint> &_stops, std::vector<rndf::Exit> &_exits,
+  int &_lineNumber)
+{
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  // Check if we found the "waypoint" element.
+  // If this is the case we should leave.
+  std::regex rgxWaypointId("^" + std::to_string(_segmentId) + "\\." +
+    std::to_string(_laneId) + "\\." + kRgxPositive + " " + kRgxDouble + " " +
+    kRgxDouble + "$");
+  if (std::regex_match(lineread, rgxWaypointId))
+  {
+    // Restore the file position and line number.
+    // ParseHeader() shouldn't have any effect.
+    _rndfFile.seekg(oldPos);
+    _lineNumber = oldLineNumber;
+    return true;
+  }
+
+  std::cout << "Header parsing is not supported yet" << std::endl;
+
+  return true;
 }

@@ -51,6 +51,9 @@ namespace manifold
     static const std::string kRgxNonNegative = "(0|" + kPositiveData + ")";
 
     /// \brief A comment.
+    static const std::string kRgxDouble = "(-?[0-9]*\\.?[0-9]+)";
+
+    /// \brief A comment.
     static const std::string kRgxComment = "\\/\\*[^\\*\\/]*\\*\\/";
 
     /// \brief ToDo.
@@ -58,6 +61,33 @@ namespace manifold
     bool nextRealLine(std::ifstream &_rndfFile,
                       std::string &_line,
                       int &_lineNumber);
+
+    /// \brief ToDo.
+    MANIFOLD_VISIBLE
+    bool parseString(std::ifstream &_rndfFile,
+                     const std::string &_delimiter,
+                     std::string &_value,
+                     int &_lineNumber);
+
+    /// \brief ToDo.
+    MANIFOLD_VISIBLE
+    bool parseDelimiter(std::ifstream &_rndfFile,
+                        const std::string &_delimiter,
+                        int &_lineNumber);
+
+    /// \brief ToDo.
+    MANIFOLD_VISIBLE
+    bool parsePositive(std::ifstream &_rndfFile,
+                       const std::string &_delimiter,
+                       int &_value,
+                       int &_lineNumber);
+
+    /// \brief ToDo.
+    MANIFOLD_VISIBLE
+    bool parseNonNegative(std::ifstream &_rndfFile,
+                         const std::string &_delimiter,
+                         int &_value,
+                         int &_lineNumber);
   }
 }
 #endif

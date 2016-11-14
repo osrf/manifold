@@ -564,17 +564,17 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
 
   // Parse "RNDF_name"
   std::string fileName;
-  if (!this->ParseName(_rndfFile, fileName, lineNumber))
+  if (!parseString(_rndfFile, "RNDF_name", fileName, lineNumber))
     return false;
 
   // Parse "num_segments".
   int numSegments;
-  if (!this->ParseNumSegments(_rndfFile, numSegments, lineNumber))
+  if (!parsePositive(_rndfFile, "num_segments", numSegments, lineNumber))
     return false;
 
   // Parse "num_zones".
   int numZones;
-  if (!this->ParseNumZones(_rndfFile, numZones, lineNumber))
+  if (!parseNonNegative(_rndfFile, "num_zones", numZones, lineNumber))
     return false;
 
   // Parse optional file header (format_version and/or creation_date).
@@ -586,10 +586,25 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
 
   std::vector<rndf::Segment> segments;
 
-  // Parse a segment.
-  rndf::Segment segment;
-  if (!segment.Parse(_rndfFile, segment, lineNumber))
+  for (auto i = 0; i < numSegments; ++i)
+  {
+    // Parse a segment.
+    rndf::Segment segment;
+    if (!segment.Parse(_rndfFile, segment, lineNumber))
+      return false;
+
+    segments.push_back(segment);
+  }
+
+  // Parse "end_file".
+  if (!parseDelimiter(_rndfFile, "end_file", lineNumber))
     return false;
+
+  // Populate the RNDF.
+  this->SetName(fileName);
+  this->Segments() = segments;
+  this->SetVersion(formatVersion);
+  this->SetDate(creationDate);
 
   return true;
 }
@@ -1031,75 +1046,6 @@ void RNDF::ParseSpot(const std::string &_line, const int _zoneId,
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
-bool RNDF::ParseName(std::ifstream &_rndfFile, std::string &_name,
-  int &_lineNumber)
-{
-  std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
-  std::regex rgxName("^RNDF_name (" + kRgxString + ")\\s*(" +
-    kRgxComment +  ")?$");
-  std::smatch result;
-  std::regex_search(lineread, result, rgxName);
-  if (result.size() < 2)
-  {
-    std::cerr << "[Line " << _lineNumber << "]: Unable to parse RNDF_name "
-              << "element." << std::endl;
-    std::cerr << " \"" << lineread << "\"" << std::endl;
-    return false;
-  }
-
-  _name = result[1];
-}
-
-//////////////////////////////////////////////////
-bool RNDF::ParseNumSegments(std::ifstream &_rndfFile, int &_numSegments,
-  int &_lineNumber)
-{
-  std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
-  std::regex rgxNumSegments("^num_segments " + kRgxPositive + "$");
-  std::smatch result;
-  std::regex_search(lineread, result, rgxNumSegments);
-  if (result.size() != 2)
-  {
-    std::cerr << "[Line " << _lineNumber << "]: Unable to parse num_segments "
-              << "element." << std::endl;
-    std::cerr << " \"" << lineread << "\"" << std::endl;
-    return false;
-  }
-
-  std::string::size_type sz;
-  _numSegments = std::stoi(result[1], &sz);
-}
-
-//////////////////////////////////////////////////
-bool RNDF::ParseNumZones(std::ifstream &_rndfFile, int &_numZones,
-  int &_lineNumber)
-{
-  std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
-  std::regex rgxNumZones("^num_zones " + kRgxNonNegative + "$");
-  std::smatch result;
-  std::regex_search(lineread, result, rgxNumZones);
-  if (result.size() != 2)
-  {
-    std::cerr << "[Line " << _lineNumber << "]: Unable to parse num_zones "
-              << "element." << std::endl;
-    std::cerr << " \"" << lineread << "\"" << std::endl;
-    return false;
-  }
-
-  std::string::size_type sz;
-  _numZones = std::stoi(result[1], &sz);
-}
-
-//////////////////////////////////////////////////
 bool RNDF::ParseHeader(std::ifstream &_rndfFile, std::string &_formatVersion,
   std::string &_creationDate, int &_lineNumber)
 {
@@ -1148,4 +1094,6 @@ bool RNDF::ParseHeader(std::ifstream &_rndfFile, std::string &_formatVersion,
     else
       _creationDate = result[1];
   }
+
+  return true;
 }

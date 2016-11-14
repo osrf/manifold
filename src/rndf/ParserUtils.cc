@@ -16,6 +16,7 @@
 */
 
 #include <fstream>
+#include <iostream>
 #include <regex>
 #include <string>
 
@@ -42,6 +43,100 @@ namespace manifold
       }
 
       return !_rndfFile.eof();
+    }
+
+    //////////////////////////////////////////////////
+    bool parseString(std::ifstream &_rndfFile, const std::string &_delimiter,
+      std::string &_value, int &_lineNumber)
+    {
+      std::string lineread;
+      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+        return false;
+
+      std::regex rgxName("^" + _delimiter + " (" + kRgxString + ")\\s*(" +
+        kRgxComment +  ")?$");
+      std::smatch result;
+      std::regex_search(lineread, result, rgxName);
+      if (result.size() < 2)
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << _delimiter << " element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      _value = result[1];
+      return true;
+    }
+
+    //////////////////////////////////////////////////
+    bool parseDelimiter(std::ifstream &_rndfFile, const std::string &_delimiter,
+      int &_lineNumber)
+    {
+      if (_rndfFile.eof())
+        return false;
+
+      std::string lineread;
+      nextRealLine(_rndfFile, lineread, _lineNumber);
+
+      std::regex rgxDelim("^" + _delimiter + "$");
+      if (!std::regex_match(lineread, rgxDelim))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse delimiter ["
+                  << _delimiter << "]" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      return true;
+    }
+
+    //////////////////////////////////////////////////
+    bool parsePositive(std::ifstream &_rndfFile, const std::string &_delimiter,
+      int &_value, int &_lineNumber)
+    {
+      std::string lineread;
+      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+        return false;
+
+      std::regex rgxNumSegments("^" + _delimiter + " " + kRgxPositive + "$");
+      std::smatch result;
+      std::regex_search(lineread, result, rgxNumSegments);
+      if (result.size() != 2)
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << _delimiter << " element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      std::string::size_type sz;
+      _value = std::stoi(result[1], &sz);
+      return true;
+    }
+
+    //////////////////////////////////////////////////
+    bool parseNonNegative(std::ifstream &_rndfFile,
+      const std::string &_delimiter, int &_value, int &_lineNumber)
+    {
+      std::string lineread;
+      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+        return false;
+
+      std::regex rgxNumSegments("^" + _delimiter + " " + kRgxNonNegative + "$");
+      std::smatch result;
+      std::regex_search(lineread, result, rgxNumSegments);
+      if (result.size() != 2)
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << _delimiter << " element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      std::string::size_type sz;
+      _value = std::stoi(result[1], &sz);
+      return true;
     }
   }
 }
