@@ -584,16 +584,26 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
   if (!this->ParseHeader(_rndfFile, formatVersion, creationDate, lineNumber))
     return false;
 
+  // Parse all segments.
   std::vector<rndf::Segment> segments;
-
   for (auto i = 0; i < numSegments; ++i)
   {
-    // Parse a segment.
     rndf::Segment segment;
     if (!segment.Parse(_rndfFile, segment, lineNumber))
       return false;
 
     segments.push_back(segment);
+  }
+
+  // Parse all zones.
+  std::vector<rndf::Zone> zones;
+  for (auto i = 0; i < numZones; ++i)
+  {
+    rndf::Zone zone;
+    if (!zone.Parse(_rndfFile, zone, lineNumber))
+      return false;
+
+    zones.push_back(zone);
   }
 
   // Parse "end_file".

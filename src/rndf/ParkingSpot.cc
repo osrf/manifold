@@ -18,11 +18,13 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <regex>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/Checkpoint.hh"
 #include "manifold/rndf/ParkingSpot.hh"
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/Waypoint.hh"
 
 using namespace manifold;
@@ -97,6 +99,63 @@ ParkingSpot::ParkingSpot(const ParkingSpot &_other)
 //////////////////////////////////////////////////
 ParkingSpot::~ParkingSpot()
 {
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpot::Parse(std::ifstream &_rndfFile, const int _zoneId,
+  rndf::ParkingSpot &_spot, int &_lineNumber)
+{
+  std::smatch result;
+  std::string lineread;
+
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  // Parse the "spot Id" .
+  std::regex rgxSpotId("^spot " + std::to_string(_zoneId) + "\\." +
+    kRgxPositive + "$");
+  std::regex_search(lineread, result, rgxSpotId);
+  if (result.size() < 2)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+  std::string::size_type sz;
+  int spotId = std::stoi(result[1], &sz);
+
+  // Parse optional parking spot header.
+  int width = 0;
+  rndf::Checkpoint checkpoint;
+  // if (!this->ParseHeader(_rndfFile, _zoneId, spotId, width, checkpoint,
+  //   _lineNumber))
+  // {
+  //   return false;
+  // }
+
+  // Parse waypoints.
+  std::vector<rndf::Waypoint> waypoints;
+  for (auto i = 0; i < 2; ++i)
+  {
+    rndf::Waypoint waypoint;
+    if (!waypoint.Parse(_rndfFile, _zoneId, spotId, waypoint, _lineNumber))
+      return false;
+
+    waypoints.push_back(waypoint);
+  }
+
+  // Parse "end_spot".
+  if (!parseDelimiter(_rndfFile, "end_spot", _lineNumber))
+    return false;
+
+  // Populate the spot.
+  _spot.SetId(spotId);
+  _spot.Waypoints() = waypoints;
+  _spot.SetWidth(width);
+  _spot.Checkpoint() = checkpoint;
+
+  return true;
 }
 
 //////////////////////////////////////////////////
@@ -257,4 +316,35 @@ Checkpoint &ParkingSpot::Checkpoint()
 const Checkpoint &ParkingSpot::Checkpoint() const
 {
   return this->dataPtr->checkpoint;
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
+  const int _spotId, int &_width, rndf::Checkpoint &_checkpoint,
+  int &_lineNumber)
+{
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  // Check if we found the "waypoint" element.
+  // If this is the case we should leave.
+  std::regex rgxWaypointId("^" + std::to_string(_zoneId) + "\\." +
+    std::to_string(_spotId) + "\\." + kRgxPositive + " " + kRgxDouble + " " +
+    kRgxDouble + "$");
+  if (std::regex_match(lineread, rgxWaypointId))
+  {
+    // Restore the file position and line number.
+    // ParseHeader() shouldn't have any effect.
+    _rndfFile.seekg(oldPos);
+    _lineNumber = oldLineNumber;
+    return true;
+  }
+
+  std::cout << "Header parsing is not supported yet" << std::endl;
+
+  return true;
 }

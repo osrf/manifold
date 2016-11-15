@@ -45,6 +45,13 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Exit();
 
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         const int major,
+                         const int minor,
+                         rndf::Exit &_exit,
+                         int &_lineNumber);
+
       /// \brief Get the unique Id of the exit waypoint.
       /// \return The unique Id of the exit waypoint.
       public: const UniqueId &ExitId() const;

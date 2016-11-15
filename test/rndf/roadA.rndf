@@ -3,7 +3,7 @@ RNDF_name roadA /*A comment */
  /* Ignore */
 
 num_segments 2
-num_zones 0
+num_zones 1
 format_version 1.2.2
 segment 1
 num_lanes 1
@@ -34,4 +34,8 @@ num_waypoints 8
 2.1.8 30.3880462 -97.7272477
 end_lane
 end_segment
+zone 3
+num_spots 0
+zone_name my_zone
+end_zone
 end_file

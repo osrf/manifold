@@ -49,6 +49,12 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~ParkingSpot();
 
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         const int _zoneId,
+                         rndf::ParkingSpot &_spot,
+                         int &_lineNumber);
+
       ///////
       /// Id
       ///////
@@ -154,6 +160,14 @@ namespace manifold
       /// \param[in] _other The new parking spot.
       /// \return A reference to this instance.
       public: ParkingSpot &operator=(const ParkingSpot &_other);
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                const int _zoneId,
+                                const int _spotId,
+                                int &_width,
+                                rndf::Checkpoint &_checkpoint,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

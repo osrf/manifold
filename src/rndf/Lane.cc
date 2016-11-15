@@ -155,19 +155,13 @@ bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
     return false;
   }
 
+  // Parse waypoints.
   std::vector<rndf::Waypoint> waypoints;
   for (auto i = 0; i < numWaypoints; ++i)
   {
-    // Parse a waypoint.
     rndf::Waypoint waypoint;
     if (!waypoint.Parse(_rndfFile, _segmentId, laneId, waypoint, _lineNumber))
       return false;
-
-    if (!waypoint.Valid())
-    {
-      std::cerr << "Invalid waypoint" << std::endl;
-      return false;
-    }
 
     waypoints.push_back(waypoint);
   }
