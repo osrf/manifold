@@ -103,11 +103,13 @@ namespace manifold
                         int &_lineNumber);
 
     /// \brief ToDo
+    MANIFOLD_VISIBLE
     bool parseBoundary(const std::string &_input,
                        Lane::Marking &_boundary,
                        int &_lineNumber);
 
     /// \brief ToDo
+    MANIFOLD_VISIBLE
     bool parseCheckpoint(const std::string &_input,
                          const int _segmentId,
                          const int _laneId,
@@ -115,6 +117,7 @@ namespace manifold
                          int &_lineNumber);
 
     /// \brief ToDo
+    MANIFOLD_VISIBLE
     bool parseStop(const std::string &_input,
                    const int _segmentId,
                    const int _laneId,
@@ -122,6 +125,7 @@ namespace manifold
                    int &_lineNumber);
 
     /// \brief ToDo
+    MANIFOLD_VISIBLE
     bool parseExit(const std::string &_input,
                    const int _segmentId,
                    const int _laneId,

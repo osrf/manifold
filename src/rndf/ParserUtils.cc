@@ -150,7 +150,7 @@ namespace manifold
       std::regex rgxLaneWidth("^lane_width " + kRgxNonNegative + "$");
       std::smatch result;
       std::regex_search(_input, result, rgxLaneWidth);
-      if (result.size() != 2)
+      if (result.size() < 2)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "lane width element" << std::endl;
@@ -173,7 +173,7 @@ namespace manifold
         "solid_white|broken_white)$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
-      if (result.size() != 2)
+      if (result.size() < 3)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "lane boundary element" << std::endl;
@@ -181,12 +181,12 @@ namespace manifold
         return false;
       }
 
-      std::string boundary = result[1];
+      std::string boundary = result[2];
       if (boundary == "double_yellow")
         _boundary = Lane::Marking::DOUBLE_YELLOW;
       else if (boundary == "solid_yellow")
         _boundary = Lane::Marking::SOLID_YELLOW;
-      else if (boundary == "double_white")
+      else if (boundary == "solid_white")
         _boundary = Lane::Marking::SOLID_WHITE;
       else if (boundary == "broken_white")
         _boundary = Lane::Marking::BROKEN_WHITE;
@@ -205,7 +205,7 @@ namespace manifold
         "$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
-      if (result.size() != 3)
+      if (result.size() < 3)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "checkpoint element" << std::endl;
@@ -227,7 +227,7 @@ namespace manifold
         std::to_string(_laneId) + "\\." + kRgxPositive + "$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
-      if (result.size() != 2)
+      if (result.size() < 2)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "stop element" << std::endl;
@@ -251,7 +251,7 @@ namespace manifold
         "$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
-      if (result.size() != 2)
+      if (result.size() < 5)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "exit element" << std::endl;

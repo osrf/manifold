@@ -20,6 +20,7 @@ set (gtest_sources
   Exit_TEST.cc
   Lane_TEST.cc
   ParkingSpot_TEST.cc
+  ParserUtils_TEST.cc
   Perimeter_TEST.cc
   RNDF_TEST.cc
   Segment_TEST.cc

@@ -72,7 +72,7 @@ namespace manifold
       public: bool Valid() const;
 
       /// \brief Equality operator, result = this == _other
-      /// \param[in] _other Exit to check for equality
+      /// \param[in] _other Exit to check for equality.
       /// \return true if this == _other
       public: bool operator==(const Exit &_other) const;
 
