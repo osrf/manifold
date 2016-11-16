@@ -264,7 +264,7 @@ TEST(RNDFTest, Load)
     std::string rndfPath(std::string(PROJECT_SOURCE_PATH) +
       "/test/rndf/roadA.rndf");
     RNDF rndf(rndfPath);
-    //EXPECT_TRUE(rndf.Valid());
+    // EXPECT_TRUE(rndf.Valid());
   }
 }
 

@@ -31,6 +31,7 @@ namespace manifold
     class Checkpoint;
     class Exit;
     class LanePrivate;
+    class UniqueId;
     class Waypoint;
 
     /// \brief A class that represents a road lane composed by a set of
@@ -298,11 +299,11 @@ namespace manifold
       private: bool ParseHeader(std::ifstream &_rndfFile,
                                 const int _segmentId,
                                 const int _laneId,
-                                int &_width,
+                                double &_width,
                                 Lane::Marking &_leftBoundary,
                                 Lane::Marking &_rightBoundary,
                                 std::vector<rndf::Checkpoint> &_checkpoints,
-                                std::vector<rndf::Waypoint> &_stops,
+                                std::vector<rndf::UniqueId> &_stops,
                                 std::vector<rndf::Exit> &_exits,
                                 int &_lineNumber);
 

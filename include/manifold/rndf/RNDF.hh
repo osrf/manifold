@@ -179,74 +179,7 @@ namespace manifold
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
 
-      /// \def
-      public: enum class ParserState
-      {
-        COMMENT,
-        GENERAL,
-        SEGMENTS,
-        LANES,
-        ZONES,
-        PERIMETER,
-        PARKING_SPOT,
-        UNKNOWN
-      };
-
-      /// \brief ToDo
-      private: void ChangeState(const ParserState &_newState);
-
-      /// \brief ToDo
-      private: std::string ParseString(const std::string &_line,
-                                       const std::string &_token,
-                                       bool &_valid);
-
-      /// \brief ToDo
-      private: int ParseInteger(const std::string &_line,
-                                const std::string &_token,
-                                bool &_valid);
-
-      /// \brief ToDo
-      private: int ParseInteger(const std::string &_line,
-                                bool &_valid);
-
-      /// \brief ToDo
-      private: Lane::Marking ParseBoundary(const std::string &_line,
-                                           bool &_valid);
-
-      /// \brief ToDo
-      private: void ParseCheckpoint(const std::string &_line,
-                                    const int _major,
-                                    const int _minor,
-                                    int &_patch,
-                                    int &_checkpointId,
-                                    bool &_valid);
-
-      /// \brief ToDo
-      private: void ParseStop(const std::string &_line,
-                              const int _segmentId,
-                              const int _laneId,
-                              int &_waypointId,
-                              bool &_valid);
-
-      /// \brief ToDo
-      private: void ParseExit(const std::string &_line,
-                              const int _segmentId,
-                              const int _laneId,
-                              int &_waypointId,
-                              UniqueId &_id,
-                              bool &_valid);
-
-      /// \brief ToDo
-      private: void ParsePerimeter(const std::string &_line,
-                                   const int _zoneId,
-                                   bool &_valid);
-
-      /// \brief ToDo
-      private: void ParseSpot(const std::string &_line,
-                              const int _zoneId,
-                              int &_spotId,
-                              bool &_valid);
-
+      /// \brief ToDo.
       private: bool ParseHeader(std::ifstream &_rndfFile,
                                 std::string &_formatVersion,
                                 std::string &_creationDate,

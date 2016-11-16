@@ -77,9 +77,7 @@ Perimeter::~Perimeter()
 bool Perimeter::Parse(std::ifstream &_rndfFile, const int _zoneId,
   rndf::Perimeter &_perimeter, int &_lineNumber)
 {
-  std::smatch result;
   std::string lineread;
-
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 

@@ -22,11 +22,14 @@
 #include <string>
 
 #include "manifold/Helpers.hh"
+#include "manifold/rndf/Exit.hh"
+#include "manifold/rndf/Lane.hh"
 
 namespace manifold
 {
   namespace rndf
   {
+
     /// \brief Regular expression that captures a non-empty string with a
     /// maximum length of 128 characters without containing any spaces,
     /// backslashes or stars.
@@ -50,8 +53,12 @@ namespace manifold
     /// maximum value of 32768.
     static const std::string kRgxNonNegative = "(0|" + kPositiveData + ")";
 
-    /// \brief A comment.
+    /// \brief ToDo.
     static const std::string kRgxDouble = "(-?[0-9]*\\.?[0-9]+)";
+
+    /// \brief ToDo.
+    static const std::string kRgxUniqueId = kRgxPositive + "\\." +
+      kRgxPositive + "\\." + kRgxPositive;
 
     /// \brief A comment.
     static const std::string kRgxComment = "\\/\\*[^\\*\\/]*\\*\\/";
@@ -88,6 +95,39 @@ namespace manifold
                          const std::string &_delimiter,
                          int &_value,
                          int &_lineNumber);
+
+    /// \brief ToDo.
+    MANIFOLD_VISIBLE
+    bool parseLaneWidth(const std::string &_input,
+                        int &_value,
+                        int &_lineNumber);
+
+    /// \brief ToDo
+    bool parseBoundary(const std::string &_input,
+                       Lane::Marking &_boundary,
+                       int &_lineNumber);
+
+    /// \brief ToDo
+    bool parseCheckpoint(const std::string &_input,
+                         const int _segmentId,
+                         const int _laneId,
+                         Checkpoint &_checkpoint,
+                         int &_lineNumber);
+
+    /// \brief ToDo
+    bool parseStop(const std::string &_input,
+                   const int _segmentId,
+                   const int _laneId,
+                   UniqueId &_stop,
+                   int &_lineNumber);
+
+    /// \brief ToDo
+    bool parseExit(const std::string &_input,
+                   const int _segmentId,
+                   const int _laneId,
+                   Exit &_exit,
+                   int &_lineNumber);
+
   }
 }
 #endif
