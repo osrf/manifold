@@ -58,6 +58,17 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Waypoint();
 
+      ///////////
+      /// Parsing
+      ///////////
+
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         const int _segmentId,
+                         const int _laneId,
+                         rndf::Waypoint &_waypoint,
+                         int &_lineNumber);
+
       /// \brief Get the unique identifier of the waypoint.
       /// \return The waypoint Id.
       public: int Id() const;

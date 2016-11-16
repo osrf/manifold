@@ -18,10 +18,12 @@
 #ifndef MANIFOLD_RNDF_RNDF_HH_
 #define MANIFOLD_RNDF_RNDF_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "manifold/rndf/Lane.hh"
 #include "manifold/Helpers.hh"
 
 namespace manifold
@@ -31,6 +33,7 @@ namespace manifold
     // Forward declarations.
     class RNDFPrivate;
     class Segment;
+    class UniqueId;
     class Zone;
 
     /// \brief ToDo.
@@ -39,8 +42,17 @@ namespace manifold
       /// \brief Constructor.
       public: RNDF();
 
+      /// \brief Constructor.
+      /// \param[in] _filepath Path to an existing RNDF file.
+      public: explicit RNDF(const std::string &_filepath);
+
       /// \brief Destructor.
       public: virtual ~RNDF();
+
+      ///////////
+      /// Parsing
+      ///////////
+      public: bool Parse(std::ifstream &_rndfFile);
 
       ////////
       /// Name
@@ -166,6 +178,12 @@ namespace manifold
 
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                std::string &_formatVersion,
+                                std::string &_creationDate,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

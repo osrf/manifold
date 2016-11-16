@@ -47,6 +47,16 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Perimeter();
 
+      ///////////
+      /// Parsing
+      ///////////
+
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         const int _zoneId,
+                         rndf::Perimeter &_perimeter,
+                         int &_lineNumber);
+
       ////////////////////
       /// Perimeter points
       ////////////////////
@@ -141,6 +151,13 @@ namespace manifold
       /// \param[in] _other The new perimeter.
       /// \return A reference to this instance.
       public: Perimeter &operator=(const Perimeter &_other);
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                const int _zoneId,
+                                const int _perimeterId,
+                                std::vector<rndf::Exit> &_exits,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

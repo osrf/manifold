@@ -15,6 +15,7 @@
  *
 */
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <ignition/math/Helpers.hh>
@@ -214,7 +215,7 @@ TEST(RNDFTest, Version)
 TEST(RNDFTest, Validation)
 {
   RNDF rndf;
-  EXPECT_TRUE(rndf.Valid());
+  EXPECT_FALSE(rndf.Valid());
 
   // Create a valid waypoint.
   ignition::math::SphericalCoordinates::SurfaceType st =
@@ -244,6 +245,27 @@ TEST(RNDFTest, Validation)
 
   // The segment is not valid (missing Id).
   EXPECT_TRUE(rndf.Valid());
+}
+
+//////////////////////////////////////////////////
+/// \brief Load a RNDF from a file.
+TEST(RNDFTest, Load)
+{
+  // {
+  //   // Load an inexistent file.
+  //   std::string rndfPath(std::string(PROJECT_SOURCE_PATH) +
+  //     "/test/rndf/__inexistent__.rndf");
+  //   RNDF rndf(rndfPath);
+  //   EXPECT_FALSE(rndf.Valid());
+  // }
+
+  {
+    // Load an existent file.
+    std::string rndfPath(std::string(PROJECT_SOURCE_PATH) +
+      "/test/rndf/roadA.rndf");
+    RNDF rndf(rndfPath);
+    // EXPECT_TRUE(rndf.Valid());
+  }
 }
 
 //////////////////////////////////////////////////

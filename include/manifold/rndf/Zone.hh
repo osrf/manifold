@@ -53,6 +53,11 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Zone();
 
+      /// \brief ToDo.
+      public: bool Parse(std::ifstream &_rndfFile,
+                         rndf::Zone &_zone,
+                         int &_lineNumber);
+
       ///////
       /// Id
       ///////
@@ -157,6 +162,12 @@ namespace manifold
       /// \param[in] _other The new zone.
       /// \return A reference to this instance.
       public: Zone &operator=(const Zone &_other);
+
+      /// \brief ToDo.
+      private: bool ParseHeader(std::ifstream &_rndfFile,
+                                const int _zoneId,
+                                std::string &_zoneName,
+                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

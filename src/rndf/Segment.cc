@@ -21,7 +21,11 @@
 #include <string>
 #include <vector>
 
+#include <regex>
+#include <fstream>
+
 #include "manifold/rndf/Lane.hh"
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/Segment.hh"
 
 using namespace manifold;
@@ -88,6 +92,46 @@ Segment::Segment(const Segment &_other)
 //////////////////////////////////////////////////
 Segment::~Segment()
 {
+}
+
+//////////////////////////////////////////////////
+bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
+  int &_lineNumber)
+{
+  int segmentId;
+  if (!parsePositive(_rndfFile, "segment", segmentId, _lineNumber))
+    return false;
+
+  int numLanes;
+  if (!parsePositive(_rndfFile, "num_lanes", numLanes, _lineNumber))
+    return false;
+
+  // Parse optional segment header (containing the segment name).
+  std::string segmentName;
+  if (!this->ParseHeader(_rndfFile, segmentId, segmentName, _lineNumber))
+    return false;
+
+  std::vector<rndf::Lane> lanes;
+  for (auto i = 0; i < numLanes; ++i)
+  {
+    // Parse a lane.
+    rndf::Lane lane;
+    if (!lane.Parse(_rndfFile, segmentId, lane, _lineNumber))
+      return false;
+
+    lanes.push_back(lane);
+  }
+
+  // Parse "end_segment".
+  if (!parseDelimiter(_rndfFile, "end_segment", _lineNumber))
+    return false;
+
+  // Populate the segment.
+  _segment.SetId(segmentId);
+  _segment.Lanes() = lanes;
+  _segment.SetName(segmentName);
+
+  return true;
 }
 
 //////////////////////////////////////////////////
@@ -227,4 +271,49 @@ Segment &Segment::operator=(const Segment &_other)
   this->Lanes() = _other.Lanes();
   this->SetName(_other.Name());
   return *this;
+}
+
+//////////////////////////////////////////////////
+bool Segment::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
+  std::string &_segmentName, int &_lineNumber)
+{
+  _segmentName = "";
+
+  std::regex rgxHeader("^segment_name (" + kRgxString +
+    ")\\s*(" + kRgxComment + ")?$");
+  std::regex rgxLaneId("^lane " + std::to_string(_segmentId) + "\\." +
+    kRgxPositive + "$");
+  std::smatch result;
+
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  // Check if we found the "lane" element.
+  // If this is the case we should leave.
+  std::regex_search(lineread, result, rgxLaneId);
+  if (result.size() >= 2)
+  {
+    // Restore the file position and line number.
+    // ParseHeader() shouldn't have any effect.
+    _rndfFile.seekg(oldPos);
+    _lineNumber = oldLineNumber;
+    return true;
+  }
+
+  std::regex_search(lineread, result, rgxHeader);
+  if (result.size() <= 2)
+  {
+    // Invalid or header element.
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse segment header "
+              << "element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  _segmentName = result[1];
+  return true;
 }
