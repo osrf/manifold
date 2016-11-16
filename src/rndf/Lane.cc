@@ -591,8 +591,13 @@ bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
     if (result[1] == "lane_width")
     {
       int widthFeet;
-      if (!parseLaneWidth(lineread, widthFeet, _lineNumber))
+      if (!parseLaneWidth(lineread, widthFeet))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane width element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
+      }
 
       // Convert from feet to meters.
       _width = widthFeet * 0.3048;
@@ -600,24 +605,36 @@ bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
     }
     else if (result[1] == "left_boundary")
     {
-      if (!parseBoundary(lineread, _leftBoundary, _lineNumber))
+      if (!parseBoundary(lineread, _leftBoundary))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane boundary element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
+      }
 
       leftBoundaryFound = true;
     }
     else if (result[1] == "right_boundary")
     {
-      if (!parseBoundary(lineread, _rightBoundary, _lineNumber))
+      if (!parseBoundary(lineread, _rightBoundary))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane boundary element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
+      }
 
       rightBoundaryFound = true;
     }
     else if (result[1] == "checkpoint")
     {
       rndf::Checkpoint checkpoint;
-      if (!parseCheckpoint(lineread, _segmentId, _laneId, checkpoint,
-        _lineNumber))
+      if (!parseCheckpoint(lineread, _segmentId, _laneId, checkpoint))
       {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane checkpoint element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
       }
 
@@ -626,16 +643,26 @@ bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
     else if (result[1] == "stop")
     {
       rndf::UniqueId stop;
-      if (!parseStop(lineread, _segmentId, _laneId, stop, _lineNumber))
+      if (!parseStop(lineread, _segmentId, _laneId, stop))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane stop element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
+      }
 
       _stops.push_back(stop);
     }
     else if (result[1] == "exit")
     {
       rndf::Exit exit;
-      if (!parseExit(lineread, _segmentId, _laneId, exit, _lineNumber))
+      if (!parseExit(lineread, _segmentId, _laneId, exit))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane exit element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
+      }
 
       _exits.push_back(exit);
     }

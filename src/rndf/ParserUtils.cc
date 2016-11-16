@@ -144,19 +144,13 @@ namespace manifold
     }
 
     //////////////////////////////////////////////////
-    bool parseLaneWidth(const std::string &_input, int &_value,
-      int &_lineNumber)
+    bool parseLaneWidth(const std::string &_input, int &_value)
     {
       std::regex rgxLaneWidth("^lane_width " + kRgxNonNegative + "$");
       std::smatch result;
       std::regex_search(_input, result, rgxLaneWidth);
       if (result.size() < 2)
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane width element" << std::endl;
-        std::cerr << " \"" << _input << "\"" << std::endl;
         return false;
-      }
 
       std::string::size_type sz;
       _value = std::stoi(result[1], &sz);
@@ -164,8 +158,7 @@ namespace manifold
     }
 
     //////////////////////////////////////////////////
-    bool parseBoundary(const std::string &_input, Lane::Marking &_boundary,
-      int &_lineNumber)
+    bool parseBoundary(const std::string &_input, Lane::Marking &_boundary)
     {
       _boundary = Lane::Marking::UNDEFINED;
 
@@ -174,12 +167,7 @@ namespace manifold
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 3)
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane boundary element" << std::endl;
-        std::cerr << " \"" << _input << "\"" << std::endl;
         return false;
-      }
 
       std::string boundary = result[2];
       if (boundary == "double_yellow")
@@ -198,7 +186,7 @@ namespace manifold
 
     //////////////////////////////////////////////////
     bool parseCheckpoint(const std::string &_input, const int _segmentId,
-      const int _laneId, Checkpoint &_checkpoint, int &_lineNumber)
+      const int _laneId, Checkpoint &_checkpoint)
     {
       std::regex rgx("^checkpoint " + std::to_string(_segmentId) + "\\." +
         std::to_string(_laneId) + "\\." + kRgxPositive + " " + kRgxPositive +
@@ -206,12 +194,7 @@ namespace manifold
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 3)
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "checkpoint element" << std::endl;
-        std::cerr << " \"" << _input << "\"" << std::endl;
         return false;
-      }
 
       std::string::size_type sz;
       _checkpoint.SetCheckpointId(std::stoi(result[2], &sz));
@@ -221,19 +204,14 @@ namespace manifold
 
     //////////////////////////////////////////////////
     bool parseStop(const std::string &_input, const int _segmentId,
-      const int _laneId, UniqueId &_stop, int &_lineNumber)
+      const int _laneId, UniqueId &_stop)
     {
       std::regex rgx("^stop " + std::to_string(_segmentId) + "\\." +
         std::to_string(_laneId) + "\\." + kRgxPositive + "$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 2)
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "stop element" << std::endl;
-        std::cerr << " \"" << _input << "\"" << std::endl;
         return false;
-      }
 
       std::string::size_type sz;
       _stop.SetSegmentId(_segmentId);
@@ -244,7 +222,7 @@ namespace manifold
 
     //////////////////////////////////////////////////
     bool parseExit(const std::string &_input, const int _segmentId,
-      const int _laneId, Exit &_exit, int &_lineNumber)
+      const int _laneId, Exit &_exit)
     {
       std::regex rgx("^exit " + std::to_string(_segmentId) + "\\." +
         std::to_string(_laneId) + "\\." + kRgxPositive + " " + kRgxUniqueId +
@@ -252,12 +230,7 @@ namespace manifold
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 5)
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "exit element" << std::endl;
-        std::cerr << " \"" << _input << "\"" << std::endl;
         return false;
-      }
 
       std::string::size_type sz;
       UniqueId exitId(_segmentId, _laneId, std::stoi(result[1], &sz));

@@ -99,38 +99,33 @@ namespace manifold
     /// \brief ToDo.
     MANIFOLD_VISIBLE
     bool parseLaneWidth(const std::string &_input,
-                        int &_value,
-                        int &_lineNumber);
+                        int &_value);
 
     /// \brief ToDo
     MANIFOLD_VISIBLE
     bool parseBoundary(const std::string &_input,
-                       Lane::Marking &_boundary,
-                       int &_lineNumber);
+                       Lane::Marking &_boundary);
 
     /// \brief ToDo
     MANIFOLD_VISIBLE
     bool parseCheckpoint(const std::string &_input,
                          const int _segmentId,
                          const int _laneId,
-                         Checkpoint &_checkpoint,
-                         int &_lineNumber);
+                         Checkpoint &_checkpoint);
 
     /// \brief ToDo
     MANIFOLD_VISIBLE
     bool parseStop(const std::string &_input,
                    const int _segmentId,
                    const int _laneId,
-                   UniqueId &_stop,
-                   int &_lineNumber);
+                   UniqueId &_stop);
 
     /// \brief ToDo
     MANIFOLD_VISIBLE
     bool parseExit(const std::string &_input,
                    const int _segmentId,
                    const int _laneId,
-                   Exit &_exit,
-                   int &_lineNumber);
+                   Exit &_exit);
 
   }
 }

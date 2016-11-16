@@ -31,20 +31,19 @@ using namespace rndf;
 /// \brief Check the function that parses a line with a lane width.
 TEST(ParserUtilsTest, laneWidth)
 {
-  int lineN = 0;
   int width;
 
-  EXPECT_FALSE(parseLaneWidth("xxx 1", width, lineN));
-  EXPECT_FALSE(parseLaneWidth("lane_width", width, lineN));
-  EXPECT_FALSE(parseLaneWidth("lane_width -1", width, lineN));\
-  EXPECT_FALSE(parseLaneWidth("lane_width 1 ", width, lineN));
-  EXPECT_FALSE(parseLaneWidth(" lane_width 1", width, lineN));
-  EXPECT_FALSE(parseLaneWidth("lane_width 1 2", width, lineN));
-  EXPECT_FALSE(parseLaneWidth("lane_width 32769", width, lineN));
-  EXPECT_FALSE(parseLaneWidth("lane_width    50", width, lineN));
-  EXPECT_TRUE(parseLaneWidth("lane_width 0", width, lineN));
+  EXPECT_FALSE(parseLaneWidth("xxx 1"           , width));
+  EXPECT_FALSE(parseLaneWidth("lane_width"      , width));
+  EXPECT_FALSE(parseLaneWidth("lane_width -1"   , width));
+  EXPECT_FALSE(parseLaneWidth("lane_width 1 "   , width));
+  EXPECT_FALSE(parseLaneWidth(" lane_width 1"   , width));
+  EXPECT_FALSE(parseLaneWidth("lane_width 1 2"  , width));
+  EXPECT_FALSE(parseLaneWidth("lane_width 32769", width));
+  EXPECT_FALSE(parseLaneWidth("lane_width    50", width));
+  EXPECT_TRUE(parseLaneWidth("lane_width 0"     , width));
   EXPECT_EQ(width, 0);
-  EXPECT_TRUE(parseLaneWidth("lane_width 32768", width, lineN));
+  EXPECT_TRUE(parseLaneWidth("lane_width 32768" , width));
   EXPECT_EQ(width, 32768);
 }
 
@@ -52,29 +51,26 @@ TEST(ParserUtilsTest, laneWidth)
 /// \brief Check the function that parses a line with a lane boundary.
 TEST(ParserUtilsTest, laneBoundary)
 {
-  int lineN = 0;
-  Lane::Marking boundary;
+  Lane::Marking b;
 
   for (const auto &side : {"left", "right"})
   {
     std::string delim = side + std::string("_boundary");
-    EXPECT_FALSE(parseBoundary("xxx double_yellow", boundary, lineN));
-    EXPECT_FALSE(parseBoundary(delim, boundary, lineN));
-    EXPECT_FALSE(parseBoundary(delim + " xxx", boundary, lineN));
-    EXPECT_FALSE(parseBoundary(delim + " double_yellow ", boundary, lineN));
-    EXPECT_FALSE(parseBoundary(" " + delim + " double_yellow", boundary,
-      lineN));
-    EXPECT_FALSE(parseBoundary(delim + " double_yellow solid_yellow",
-      boundary, lineN));
-    EXPECT_FALSE(parseBoundary(delim + "   double_yellow", boundary, lineN));
-    EXPECT_TRUE(parseBoundary(delim + " double_yellow", boundary, lineN));
-    EXPECT_EQ(boundary, Lane::Marking::DOUBLE_YELLOW);
-    EXPECT_TRUE(parseBoundary(delim + " solid_yellow", boundary, lineN));
-    EXPECT_EQ(boundary, Lane::Marking::SOLID_YELLOW);
-    EXPECT_TRUE(parseBoundary(delim + " solid_white", boundary, lineN));
-    EXPECT_EQ(boundary, Lane::Marking::SOLID_WHITE);
-    EXPECT_TRUE(parseBoundary(delim + " broken_white", boundary, lineN));
-    EXPECT_EQ(boundary, Lane::Marking::BROKEN_WHITE);
+    EXPECT_FALSE(parseBoundary("xxx double_yellow"                        , b));
+    EXPECT_FALSE(parseBoundary(delim                                      , b));
+    EXPECT_FALSE(parseBoundary(delim       + " xxx"                       , b));
+    EXPECT_FALSE(parseBoundary(delim       + " double_yellow "            , b));
+    EXPECT_FALSE(parseBoundary(" " + delim + " double_yellow"             , b));
+    EXPECT_FALSE(parseBoundary(delim       + " double_yellow solid_yellow", b));
+    EXPECT_FALSE(parseBoundary(delim       + "   double_yellow"           , b));
+    EXPECT_TRUE(parseBoundary(delim        + " double_yellow"             , b));
+    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_TRUE(parseBoundary(delim        + " solid_yellow"              , b));
+    EXPECT_EQ(b, Lane::Marking::SOLID_YELLOW);
+    EXPECT_TRUE(parseBoundary(delim        + " solid_white"               , b));
+    EXPECT_EQ(b, Lane::Marking::SOLID_WHITE);
+    EXPECT_TRUE(parseBoundary(delim        + " broken_white"              , b));
+    EXPECT_EQ(b, Lane::Marking::BROKEN_WHITE);
   }
 }
 
@@ -82,30 +78,29 @@ TEST(ParserUtilsTest, laneBoundary)
 /// \brief Check the function that parses a line with a checkpoint.
 TEST(ParserUtilsTest, checkPoint)
 {
-  int lineN = 0;
   Checkpoint cp;
 
-  EXPECT_FALSE(parseCheckpoint("xxx 1.2.3 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1", 1, 9, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1", 9, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.0 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 0", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 -1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 32769", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.0 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.32769 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.-1 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint(" checkpoint 1.2.3 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint  1.2.3 1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3  1", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1 ", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 x", 1, 2, cp, lineN));
-  EXPECT_FALSE(parseCheckpoint("checkpoint xxx 1", 1, 2, cp, lineN));
-  EXPECT_TRUE(parseCheckpoint("checkpoint 1.2.3 1", 1, 2, cp, lineN));
+  EXPECT_FALSE(parseCheckpoint("xxx 1.2.3 1"           , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1"    , 1, 9, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1"    , 9, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1"          , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3"      , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.0 1"    , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 0"    , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 -1"   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 32769", 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.0 1"    , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.32769 1", 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.-1 1"   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint(" checkpoint 1.2.3 1"   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint  1.2.3 1"   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3  1"   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1 "   , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 x"    , 1, 2, cp));
+  EXPECT_FALSE(parseCheckpoint("checkpoint xxx 1"      , 1, 2, cp));
+  EXPECT_TRUE(parseCheckpoint("checkpoint 1.2.3 1"     , 1, 2, cp));
   EXPECT_EQ(cp, Checkpoint(1, 3));
-  EXPECT_TRUE(parseCheckpoint("checkpoint 1.2.32768 1", 1, 2, cp, lineN));
+  EXPECT_TRUE(parseCheckpoint("checkpoint 1.2.32768 1" , 1, 2, cp));
   EXPECT_EQ(cp, Checkpoint(1, 32768));
 }
 
@@ -113,24 +108,23 @@ TEST(ParserUtilsTest, checkPoint)
 /// \brief Check the function that parses a line with a stop.
 TEST(ParserUtilsTest, stop)
 {
-  int lineN = 0;
   UniqueId stop;
 
-  EXPECT_FALSE(parseStop("xxx 1.2.3", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("1.2.3", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop xxx", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.3", 1, 9, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.3", 9, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.0", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.-1", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.32769", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop(" stop 1.2.3", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop  1.2.3", 1, 2, stop, lineN));
-  EXPECT_FALSE(parseStop("stop 1.2.3 ", 1, 2, stop, lineN));
-  EXPECT_TRUE(parseStop("stop 1.2.3", 1, 2, stop, lineN));
+  EXPECT_FALSE(parseStop("xxx 1.2.3"     , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop"          , 1, 2, stop));
+  EXPECT_FALSE(parseStop("1.2.3"         , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop xxx"      , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.3"    , 1, 9, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.3"    , 9, 2, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.0"    , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.-1"   , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.32769", 1, 2, stop));
+  EXPECT_FALSE(parseStop(" stop 1.2.3"   , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop  1.2.3"   , 1, 2, stop));
+  EXPECT_FALSE(parseStop("stop 1.2.3 "   , 1, 2, stop));
+  EXPECT_TRUE(parseStop("stop 1.2.3"     , 1, 2, stop));
   EXPECT_EQ(stop, UniqueId(1, 2, 3));
-  EXPECT_TRUE(parseStop("stop 1.2.32768", 1, 2, stop, lineN));
+  EXPECT_TRUE(parseStop("stop 1.2.32768" , 1, 2, stop));
   EXPECT_EQ(stop, UniqueId(1, 2, 32768));
 }
 
@@ -138,36 +132,35 @@ TEST(ParserUtilsTest, stop)
 /// \brief Check the function that parses a line with an exit.
 TEST(ParserUtilsTest, exit)
 {
-  int lineN = 0;
   Exit exit;
 
-  EXPECT_FALSE(parseExit("xxx 1.2.3 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit xxx 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 xxx", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4", 1, 9, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4", 9, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 0.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.0.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.0", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 -2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.-3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.-4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 32769.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.32769.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.32769", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.-1 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.0 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.32769 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit(" exit 1.2.3 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit  1.2.3 2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3  2.3.4", 1, 2, exit, lineN));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4 ", 1, 2, exit, lineN));
-  EXPECT_TRUE(parseExit("exit 1.2.3 2.3.4", 1, 2, exit, lineN));
+  EXPECT_FALSE(parseExit("xxx 1.2.3 2.3.4"     , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit xxx 2.3.4"      , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 xxx"      , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4"    , 1, 9, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4"    , 9, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3"          , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 0.3.4"    , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.0.4"    , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.0"    , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 -2.3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.-3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.-4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 32769.3.4", 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.32769.4", 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.32769", 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.-1 2.3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.0 2.3.4"    , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.32769 2.3.4", 1, 2, exit));
+  EXPECT_FALSE(parseExit(" exit 1.2.3 2.3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit  1.2.3 2.3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3  2.3.4"   , 1, 2, exit));
+  EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4 "   , 1, 2, exit));
+  EXPECT_TRUE(parseExit("exit 1.2.3 2.3.4"     , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
-  EXPECT_TRUE(parseExit("exit 1.2.32768 2.3.4", 1, 2, exit, lineN));
+  EXPECT_TRUE(parseExit("exit 1.2.32768 2.3.4" , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 32768), UniqueId(2, 3, 4)));
-  EXPECT_TRUE(parseExit("exit 1.2.3 2.3.32768", 1, 2, exit, lineN));
+  EXPECT_TRUE(parseExit("exit 1.2.3 2.3.32768" , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 32768)));
 }
 
