@@ -39,7 +39,7 @@ namespace manifold
         ++_lineNumber;
 
         // Ignore blank lines or lines that only contains comments.
-        std::regex rgxIgnore("^\\s*(" + kRgxComment +  ")?\\s*$");
+        std::regex rgxIgnore("^\\s*(" + kRgxComment + ")?\\s*$");
         if (!std::regex_match(_line, rgxIgnore))
           break;
       }
@@ -55,8 +55,8 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxName("^" + _delimiter + " (" + kRgxString + ")\\s*(" +
-        kRgxComment +  ")?$");
+      std::regex rgxName("^" + _delimiter + "\\s+(" + kRgxString + ")\\s*(" +
+        kRgxComment +  ")?\\s*$");
       std::smatch result;
       std::regex_search(lineread, result, rgxName);
       if (result.size() < 2)
@@ -81,7 +81,7 @@ namespace manifold
       std::string lineread;
       nextRealLine(_rndfFile, lineread, _lineNumber);
 
-      std::regex rgxDelim("^" + _delimiter + "$");
+      std::regex rgxDelim("^" + _delimiter + "\\s*(" + kRgxComment + ")?\\s*$");
       if (!std::regex_match(lineread, rgxDelim))
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse delimiter ["
@@ -101,10 +101,11 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxNumSegments("^" + _delimiter + " " + kRgxPositive + "$");
+      std::regex rgxNumSegments("^" + _delimiter + "\\s+" + kRgxPositive +
+        "\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(lineread, result, rgxNumSegments);
-      if (result.size() != 2)
+      if (result.size() < 2)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << _delimiter << " element" << std::endl;
@@ -125,10 +126,11 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxNumSegments("^" + _delimiter + " " + kRgxNonNegative + "$");
+      std::regex rgxNumSegments("^" + _delimiter + "\\s+" +
+        kRgxNonNegative + "\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(lineread, result, rgxNumSegments);
-      if (result.size() != 2)
+      if (result.size() < 2)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << _delimiter << " element" << std::endl;

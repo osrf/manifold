@@ -272,16 +272,19 @@ TEST_F(ParserUtilsTest, nonNegative)
   // The four element is the expected non-negative value parsed.
   std::vector<std::tuple<std::string, bool, int, int>> testCases =
   {
-    std::make_tuple(""               , false, 1, 0),
-    std::make_tuple("\n\n"           , false, 3, 0),
-    std::make_tuple("\n\n2"          , false, 3, 0),
-    std::make_tuple("\n\n delim 2"   , false, 3, 0),
-    std::make_tuple("\n\ndelim  2"   , false, 3, 0),
-    std::make_tuple("\n\ndelim 2 "   , false, 3, 0),
-    std::make_tuple("\n\ndelim -1"   , false, 3, 0),
-    std::make_tuple("\n\ndelim 32769", false, 3, 0),
-    std::make_tuple("\n\ndelim 0"    , true , 3, 0),
-    std::make_tuple("\n\ndelim 32768", true , 3, 32768),
+    std::make_tuple(""                            , false, 1, 0),
+    std::make_tuple("\n\n"                        , false, 3, 0),
+    std::make_tuple("\n\n2"                       , false, 3, 0),
+    std::make_tuple("\n\n delim 2"                , false, 3, 0),
+    std::make_tuple("\n\ndelim -1"                , false, 3, 0),
+    std::make_tuple("\n\ndelim 32769"             , false, 3, 0),
+    std::make_tuple("\n\ndelim 2 /*bad"           , false, 3, 0),
+    std::make_tuple("\n\ndelim 0"                 , true , 3, 0),
+    std::make_tuple("\n\ndelim  2"                , true, 3, 2),
+    std::make_tuple("\n\ndelim 2 "                , true, 3, 2),
+    std::make_tuple("\n\ndelim 32768"             , true, 3, 32768),
+    std::make_tuple("\n\ndelim 2  /* comment */"  , true, 3, 2),
+    std::make_tuple("\n\ndelim 2/*  comment  */  ", true, 3, 2),
   };
 
   for (auto const &testCase : testCases)
@@ -321,16 +324,19 @@ TEST_F(ParserUtilsTest, positive)
   // The four element is the expected positive value parsed.
   std::vector<std::tuple<std::string, bool, int, int>> testCases =
   {
-    std::make_tuple(""               , false, 1, 0),
-    std::make_tuple("\n\n"           , false, 3, 0),
-    std::make_tuple("\n\n2"          , false, 3, 0),
-    std::make_tuple("\n\n delim 2"   , false, 3, 0),
-    std::make_tuple("\n\ndelim  2"   , false, 3, 0),
-    std::make_tuple("\n\ndelim 2 "   , false, 3, 0),
-    std::make_tuple("\n\ndelim -1"   , false, 3, 0),
-    std::make_tuple("\n\ndelim 32769", false, 3, 0),
-    std::make_tuple("\n\ndelim 0"    , false, 3, 0),
-    std::make_tuple("\n\ndelim 32768", true , 3, 32768),
+    std::make_tuple(""                            , false, 1, 0),
+    std::make_tuple("\n\n"                        , false, 3, 0),
+    std::make_tuple("\n\n2"                       , false, 3, 0),
+    std::make_tuple("\n\n delim 2"                , false, 3, 0),
+    std::make_tuple("\n\ndelim -1"                , false, 3, 0),
+    std::make_tuple("\n\ndelim 32769"             , false, 3, 0),
+    std::make_tuple("\n\ndelim 0"                 , false, 3, 0),
+    std::make_tuple("\n\ndelim 2 /* bad"          , false, 3, 0),
+    std::make_tuple("\n\ndelim  2"                , true, 3, 2),
+    std::make_tuple("\n\ndelim 2 "                , true, 3, 2),
+    std::make_tuple("\n\ndelim 32768"             , true , 3, 32768),
+    std::make_tuple("\n\ndelim 2 /* comment */"   , true, 3, 2),
+    std::make_tuple("\n\ndelim 2/*  comment  */  ", true, 3, 2),
   };
 
   for (auto const &testCase : testCases)
@@ -369,12 +375,16 @@ TEST_F(ParserUtilsTest, delimiter)
   // The third element is the expected line value.
   std::vector<std::tuple<std::string, bool, int>> testCases =
   {
-    std::make_tuple(""          , false, 1),
-    std::make_tuple("\n\n"      , false, 3),
-    std::make_tuple("\n\nxxx"   , false, 3),
-    std::make_tuple("\n\n delim", false, 3),
-    std::make_tuple("\n\ndelim ", false, 3),
-    std::make_tuple("\n\ndelim" , true , 3),
+    std::make_tuple(""                              , false, 1),
+    std::make_tuple("\n\n"                          , false, 3),
+    std::make_tuple("\n\nxxx"                       , false, 3),
+    std::make_tuple("\n\n delim"                    , false, 3),
+    std::make_tuple("\n\n delim /* bad"             , false, 3),
+    std::make_tuple("\n\ndelim "                    , true, 3),
+    std::make_tuple("\n\ndelim  "                   , true, 3),
+    std::make_tuple("\n\ndelim"                     , true , 3),
+    std::make_tuple("\n\ndelim/*comment*/"          , true , 3),
+    std::make_tuple("\n\ndelim  /*  comment  */  "  , true , 3),
   };
 
   for (auto const &testCase : testCases)
@@ -412,19 +422,23 @@ TEST_F(ParserUtilsTest, string)
   // The four element is the expected value parsed.
   std::vector<std::tuple<std::string, bool, int, std::string>> testCases =
   {
-    std::make_tuple(""                         , false, 1, ""),
-    std::make_tuple("\n\n"                     , false, 3, ""),
-    std::make_tuple("\n\naValue"               , false, 3, ""),
-    std::make_tuple("\n\n delim aValue"        , false, 3, ""),
-    std::make_tuple("\n\ndelim  aValue"        , false, 3, ""),
-    std::make_tuple("\n\ndelim aValue\\"       , false, 3, ""),
-    std::make_tuple("\n\ndelim aValue*"        , false, 3, ""),
-    std::make_tuple("\n\ndelim aVa lue"        , false, 3, ""),
-    std::make_tuple("\n\ndelim " + kIinvalidStr, false, 3, ""),
-    std::make_tuple("\n\ndelim aValue"         , true , 3, "aValue"),
-    std::make_tuple("\n\ndelim 12"             , true , 3, "12"),
-    std::make_tuple("\n\ndelim aValue "        , true , 3, "aValue"),
-    std::make_tuple("\n\ndelim " + kLongStr    , true , 3, kLongStr),
+    std::make_tuple(""                                   , false, 1, ""),
+    std::make_tuple("\n\n"                               , false, 3, ""),
+    std::make_tuple("\n\naValue"                         , false, 3, ""),
+    std::make_tuple("\n\n delim aValue"                  , false, 3, ""),
+    std::make_tuple("\n\ndelim aValue\\"                 , false, 3, ""),
+    std::make_tuple("\n\ndelim aValue*"                  , false, 3, ""),
+    std::make_tuple("\n\ndelim aVa lue"                  , false, 3, ""),
+    std::make_tuple("\n\ndelim " + kIinvalidStr          , false, 3, ""),
+    std::make_tuple("\n\ndelim aValue /*bad"             , false, 3, ""),
+    std::make_tuple("\n\ndelim aValue"                   , true , 3, "aValue"),
+    std::make_tuple("\n\ndelim  aValue"                  , true , 3, "aValue"),
+    std::make_tuple("\n\ndelim aValue  "                 , true , 3, "aValue"),
+    std::make_tuple("\n\ndelim 12"                       , true , 3, "12"),
+    std::make_tuple("\n\ndelim aValue "                  , true , 3, "aValue"),
+    std::make_tuple("\n\ndelim " + kLongStr              , true , 3, kLongStr),
+    std::make_tuple("\n\ndelim aValue/*comment */"       , true , 3, "aValue"),
+    std::make_tuple("\n\ndelim aValue  /*  comment  */  ", true , 3, "aValue"),
   };
 
   for (auto const &testCase : testCases)
