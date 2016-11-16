@@ -39,10 +39,8 @@ namespace manifold
         ++_lineNumber;
 
         // Ignore blank lines or lines that only contains comments.
-        std::smatch result;
         std::regex rgxIgnore("^\\s*(" + kRgxComment +  ")?\\s*$");
-        std::regex_search(_line, result, rgxIgnore);
-        if (result.size() == 0)
+        if (!std::regex_match(_line, rgxIgnore))
           break;
       }
 
@@ -146,7 +144,8 @@ namespace manifold
     //////////////////////////////////////////////////
     bool parseLaneWidth(const std::string &_input, int &_value)
     {
-      std::regex rgxLaneWidth("^lane_width " + kRgxNonNegative + "$");
+      std::regex rgxLaneWidth("^lane_width\\s+" + kRgxNonNegative + "\\s*(" +
+        kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgxLaneWidth);
       if (result.size() < 2)
@@ -162,8 +161,8 @@ namespace manifold
     {
       _boundary = Lane::Marking::UNDEFINED;
 
-      std::regex rgx("^(left|right)_boundary (double_yellow|solid_yellow|"
-        "solid_white|broken_white)$");
+      std::regex rgx("^(left|right)_boundary\\s+(double_yellow|solid_yellow|"
+        "solid_white|broken_white)\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 3)
@@ -188,9 +187,9 @@ namespace manifold
     bool parseCheckpoint(const std::string &_input, const int _segmentId,
       const int _laneId, Checkpoint &_checkpoint)
     {
-      std::regex rgx("^checkpoint " + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + " " + kRgxPositive +
-        "$");
+      std::regex rgx("^checkpoint\\s+" + std::to_string(_segmentId) + "\\." +
+        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxPositive +
+        "\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 3)
@@ -206,8 +205,9 @@ namespace manifold
     bool parseStop(const std::string &_input, const int _segmentId,
       const int _laneId, UniqueId &_stop)
     {
-      std::regex rgx("^stop " + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + "$");
+      std::regex rgx("^stop\\s+" + std::to_string(_segmentId) + "\\." +
+        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s*(" + kRgxComment +
+        ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 2)
@@ -224,9 +224,9 @@ namespace manifold
     bool parseExit(const std::string &_input, const int _segmentId,
       const int _laneId, Exit &_exit)
     {
-      std::regex rgx("^exit " + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + " " + kRgxUniqueId +
-        "$");
+      std::regex rgx("^exit\\s+" + std::to_string(_segmentId) + "\\." +
+        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxUniqueId +
+        "\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgx);
       if (result.size() < 5)
