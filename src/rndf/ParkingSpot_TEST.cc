@@ -15,7 +15,11 @@
  *
 */
 
+#include <iostream>
 #include <map>
+#include <string>
+#include <tuple>
+#include <vector>
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -223,13 +227,54 @@ TEST(ParkingSpot, assignment)
 /// \brief Check parsing a parking spot from a file.
 TEST_F(ParkingSpotTest, parse)
 {
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(34.587347), lon1(-117.366326), lon2(-117.366275);
+  ignition::math::Angle heading(0.0);
+  double elev = 354.1;
+
+  ignition::math::SphericalCoordinates sc1(st, lat, lon1, elev, heading);
+  ignition::math::SphericalCoordinates sc2(st, lat, lon2, elev, heading);
+
+  Waypoint waypoint1(1, sc1);
+  Waypoint waypoint2(2, sc1);
+
+  Checkpoint checkpoint(130, 2);
+
+  double spotWidth = 12 * 0.3048;
+
+  // Parking spot #1 (no options).
+  ParkingSpot expectedSpot1(1);
+  expectedSpot1.AddWaypoint(waypoint1);
+  expectedSpot1.AddWaypoint(waypoint2);
+
+  // Parking spot #2 (checkpoint option).
+  ParkingSpot expectedSpot2(1);
+  expectedSpot2.AddWaypoint(waypoint1);
+  expectedSpot2.AddWaypoint(waypoint2);
+  expectedSpot2.Checkpoint() = checkpoint;
+
+  // Parking spot #3 (width option).
+  ParkingSpot expectedSpot3(1);
+  expectedSpot3.AddWaypoint(waypoint1);
+  expectedSpot3.AddWaypoint(waypoint2);
+  expectedSpot3.SetWidth(spotWidth);
+
+  // Parking spot #4 (checkpoint and width options).
+  ParkingSpot expectedSpot4(1);
+  expectedSpot4.AddWaypoint(waypoint1);
+  expectedSpot4.AddWaypoint(waypoint2);
+  expectedSpot4.Checkpoint() = checkpoint;
+  expectedSpot4.SetWidth(spotWidth);
+
   // The first element is the content to be parsed.
   // The second element is the expected return value.
-  // The third element is the expected line value.
-  std::vector<std::tuple<std::string, bool>> testCases =
+  // The third element is the test Id.
+  // The forth element is the expected line value.
+  std::vector<std::tuple<std::string, bool, int, int>> testCases =
   {
-    std::make_tuple(""                              , false),
-    std::make_tuple("\n\n"                          , false),
+    std::make_tuple(""                              , false, 0, 1),
+    std::make_tuple("\n\n"                          , false, 1, 3),
     // Missing spot.
     std::make_tuple(
       "\n\n"
@@ -238,7 +283,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , false),
+                                                    , false, 2, 3),
     // Invalid spot Id.
     std::make_tuple(
       "\n\n"
@@ -247,7 +292,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot"
-                                                    , false),
+                                                    , false, 3, 3),
     // Invalid spot Id.
     std::make_tuple(
       "\n\n"
@@ -256,14 +301,14 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot"
-                                                    , false),
+                                                    , false, 4, 3),
     // Waypoints missing.
     std::make_tuple(
       "\n\n"
-      "spot 61.2\n"
+      "spot 61.1\n"
       "checkpoint  61.1.2  130\n"
       "end_spot\n"
-                                                    , false),
+                                                    , false, 5, 5),
     // Invalid waypoint.
     std::make_tuple(
       "\n\n"
@@ -272,7 +317,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , false),
+                                                    , false, 6, 5),
     // Invalid waypoint.
     std::make_tuple(
       "\n\n"
@@ -281,7 +326,7 @@ TEST_F(ParkingSpotTest, parse)
       "68.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , false),
+                                                    , false, 7, 5),
     // Invalid waypoint.
     std::make_tuple(
       "\n\n"
@@ -290,7 +335,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.8.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , false),
+                                                    , false, 8, 5),
     // Missing "end_spot" terminator.
     std::make_tuple(
       "\n\n"
@@ -298,7 +343,7 @@ TEST_F(ParkingSpotTest, parse)
       "checkpoint  61.1.2  130\n"
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
-                                                    , false),
+                                                    , false, 9, 7),
     // Missing "end_spot" terminator and find the next spot.
     std::make_tuple(
       "\n\n"
@@ -307,7 +352,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "spot"
-                                                    , false),
+                                                    , false, 10, 7),
     // No options.
     std::make_tuple(
       "\n/* comment */\n"
@@ -315,7 +360,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326/* comment */\n"
       "61.1.2  34.587347 -117.366275 /* comment */  \n"
       "end_spot\n"
-                                                    , true),
+                                                    , true, 11, 6),
     // Checkpoint option.
     std::make_tuple(
       "\n/* comment */\n"
@@ -324,7 +369,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326/* comment */\n"
       "61.1.2  34.587347 -117.366275 /* comment */  \n"
       "end_spot\n"
-                                                    , true),
+                                                    , true, 12, 7),
     // Width options.
     std::make_tuple(
       "\n\n"
@@ -333,7 +378,7 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , true),
+                                                    , true, 13, 7),
     // Both options.
     std::make_tuple(
       "\n\n"
@@ -343,16 +388,18 @@ TEST_F(ParkingSpotTest, parse)
       "61.1.1  34.587347 -117.366326\n"
       "61.1.2  34.587347 -117.366275\n"
       "end_spot\n"
-                                                    , true),
+                                                    , true, 14, 8),
   };
 
   for (auto const &testCase : testCases)
   {
     int line = 0;
     std::string content = std::get<0>(testCase);
+    int testId = std::get<2>(testCase);
 
     // Expectations.
     bool expectedResult = std::get<1>(testCase);
+    int expectedLine = std::get<3>(testCase);
 
     // Write the content of this test case into the test file.
     this->PopulateFile(content);
@@ -363,7 +410,49 @@ TEST_F(ParkingSpotTest, parse)
 
     // Check expectations.
     ParkingSpot spot;
-    EXPECT_EQ(spot.Load(f, 61, line), expectedResult);
+    bool res;
+    EXPECT_EQ(res = spot.Load(f, 61, line), expectedResult);
+    EXPECT_EQ(line, expectedLine);
+    if (res)
+    {
+      switch (testId)
+      {
+        case 11:
+          EXPECT_EQ(spot.Id(), 1);
+          ASSERT_EQ(spot.NumWaypoints(), 2u);
+          EXPECT_EQ(spot.Waypoints().at(0), waypoint1);
+          EXPECT_EQ(spot.Waypoints().at(1), waypoint2);
+          EXPECT_FLOAT_EQ(spot.Width(), 0);
+          EXPECT_FALSE(spot.Checkpoint().Valid());
+          break;
+        case 12:
+          EXPECT_EQ(spot.Id(), 1);
+          ASSERT_EQ(spot.NumWaypoints(), 2u);
+          EXPECT_EQ(spot.Waypoints().at(0), waypoint1);
+          EXPECT_EQ(spot.Waypoints().at(1), waypoint2);
+          EXPECT_FLOAT_EQ(spot.Width(), 0);
+          EXPECT_EQ(spot.Checkpoint(), checkpoint);
+          break;
+        case 13:
+          EXPECT_EQ(spot.Id(), 1);
+          ASSERT_EQ(spot.NumWaypoints(), 2u);
+          EXPECT_EQ(spot.Waypoints().at(0), waypoint1);
+          EXPECT_EQ(spot.Waypoints().at(1), waypoint2);
+          EXPECT_FLOAT_EQ(spot.Width(), spotWidth);
+          EXPECT_FALSE(spot.Checkpoint().Valid());
+          break;
+        case 14:
+          EXPECT_EQ(spot.Id(), 1);
+          ASSERT_EQ(spot.NumWaypoints(), 2u);
+          EXPECT_EQ(spot.Waypoints().at(0), waypoint1);
+          EXPECT_EQ(spot.Waypoints().at(1), waypoint2);
+          EXPECT_EQ(spot.Checkpoint(), checkpoint);
+          EXPECT_FLOAT_EQ(spot.Width(), spotWidth);
+          break;
+        default:
+          break;
+      };
+    }
   }
 }
 

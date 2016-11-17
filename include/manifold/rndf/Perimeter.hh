@@ -29,8 +29,65 @@ namespace manifold
   {
     // Forward declarations.
     class Exit;
+    class PerimeterHeaderPrivate;
     class PerimeterPrivate;
     class Waypoint;
+
+    /// \internal
+    /// \brief An internal private perimeter header class.
+    class PerimeterHeader
+    {
+      /// \brief Default constructor.
+      public: PerimeterHeader();
+
+      /// \brief Destructor.
+      public: ~PerimeterHeader() = default;
+
+      /// \brief Load a perimeter header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The zone Id in which the spot is located.
+      /// \param[in] _perimeterId The perimeter Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a perimeter header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _zoneId,
+                        const int _spotId,
+                        int &_lineNumber);
+
+      /////////
+      /// Exits
+      /////////
+
+      /// \brief Get the number of exits stored.
+      /// \return The number of exits in the current lane.
+      public: unsigned int NumExits() const;
+
+      /// \brief Get a mutable reference to the vector of exits.
+      /// \return A mutable reference to the vector of exits.
+      public: std::vector<Exit> &Exits();
+
+      /// \brief Get the vector of stops. The elements are waypoint Ids.
+      /// \return The vector of stops.
+      public: const std::vector<Exit> &Exits() const;
+
+      /// \brief Add a new exit.
+      /// \param[in] _newExit The exit to add.
+      /// \return True when the exit was successfully added or
+      /// false otherwise (e.g. if the exit  was already existing or invalid).
+      public: bool AddExit(const Exit &_newExit);
+
+      /// \brief Remove an existing exit.
+      /// \param[in] _exit The exit to be removed.
+      /// \return True when the exit was successfully deleted
+      /// or false otherwise (e.g. if the exit was not found or invalid).
+      public: bool RemoveExit(const Exit &_exit);
+
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<PerimeterHeaderPrivate> dataPtr;
+    };
 
     /// \brief ToDo.
     class MANIFOLD_VISIBLE Perimeter

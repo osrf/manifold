@@ -34,6 +34,7 @@ namespace manifold
     class ParkingSpotHeaderPrivate;
     class Waypoint;
 
+    /// \internal
     /// \brief An internal private spot header class.
     class ParkingSpotHeader
     {
@@ -41,7 +42,21 @@ namespace manifold
       public: ParkingSpotHeader();
 
       /// \brief Destructor.
-      public: ~ParkingSpotHeader();
+      public: ~ParkingSpotHeader() = default;
+
+      /// \brief Load a parking spot header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The zone Id in which the spot is located.
+      /// \param[in] _spotId The spot Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a parking spot header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _zoneId,
+                        const int _spotId,
+                        int &_lineNumber);
 
       /////////
       /// Width
@@ -67,7 +82,7 @@ namespace manifold
       /// \return The checkpoint.
       public: const rndf::Checkpoint &Checkpoint() const;
 
-      ///
+      /// \brief Smart pointer to private data.
       private: std::unique_ptr<ParkingSpotHeaderPrivate> dataPtr;
     };
 
@@ -206,22 +221,6 @@ namespace manifold
       /// \param[in] _other The new parking spot.
       /// \return A reference to this instance.
       public: ParkingSpot &operator=(const ParkingSpot &_other);
-
-      /// \brief Parse a parking spot header from an input stream coming from a
-      ///  text file. The expected format is the one specified on the RNDF spec.
-      /// \param[in, out] _rndfFile Input file stream.
-      /// \param[in] _zoneId The zone Id in which the spot is located.
-      /// \param[in] _spotId The spot Id.
-      /// \param[out] _spot The parsed parking spot.
-      /// \param[in, out] _lineNumber Line number pointed by the stream position
-      /// indicator.
-      /// \return True if a parking spot block was found and parsed or false
-      /// otherwise (e.g.: EoF or incorrect format found).
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                const int _zoneId,
-                                const int _spotId,
-                                ParkingSpotHeader &_header,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

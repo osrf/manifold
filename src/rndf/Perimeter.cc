@@ -35,6 +35,20 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for PerimeterHeader class.
+    class PerimeterHeaderPrivate
+    {
+      /// \brief Default constructor.
+      public: PerimeterHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~PerimeterHeaderPrivate() = default;
+
+      /// \brief Collection of exits.
+      public: std::vector<Exit> exits;
+    };
+
+    /// \internal
     /// \brief Private data for Perimeter class.
     class PerimeterPrivate
     {
@@ -48,11 +62,73 @@ namespace manifold
       public: std::vector<Waypoint> points;
 
       /// Below are the optional perimeter header members.
-
-      /// \brief Collection of exits.
-      public: std::vector<Exit> exits;
+      public: PerimeterHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+PerimeterHeader::PerimeterHeader()
+{
+  this->dataPtr.reset(new PerimeterHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+unsigned int PerimeterHeader::NumExits() const
+{
+  return this->dataPtr->exits.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<Exit> &PerimeterHeader::Exits()
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+const std::vector<Exit> &PerimeterHeader::Exits() const
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+bool PerimeterHeader::AddExit(const Exit &_newExit)
+{
+  // Validate the exit unique Id.
+  if (!_newExit.ExitId().Valid())
+  {
+    std::cerr << "PerimeterHeader::AddExit() Invalid exit Id: ["
+              << _newExit.ExitId() << "]" << std::endl;
+    return false;
+  }
+
+  // Validate the entry unique Id.
+  if (!_newExit.EntryId().Valid())
+  {
+    std::cerr << "PerimeterHeader::AddExit() Invalid entry Id: ["
+              << _newExit.EntryId() << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the exit already exists.
+  if (std::find(this->dataPtr->exits.begin(),
+        this->dataPtr->exits.end(), _newExit) != this->dataPtr->exits.end())
+  {
+    std::cerr << "PerimeterHeader::AddExit() error: Existing exit" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->exits.push_back(_newExit);
+  assert(this->NumExits() == this->dataPtr->exits.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool PerimeterHeader::RemoveExit(const Exit &_exit)
+{
+  return (this->dataPtr->exits.erase(std::remove(
+    this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
+      this->dataPtr->exits.end()) != this->dataPtr->exits.end());
 }
 
 //////////////////////////////////////////////////
@@ -208,59 +284,31 @@ bool Perimeter::RemovePoint(const int _wpId)
 //////////////////////////////////////////////////
 unsigned int Perimeter::NumExits() const
 {
-  return this->dataPtr->exits.size();
+  return this->dataPtr->header.NumExits();
 }
 
 //////////////////////////////////////////////////
 std::vector<Exit> &Perimeter::Exits()
 {
-  return this->dataPtr->exits;
+  return this->dataPtr->header.Exits();
 }
 
 //////////////////////////////////////////////////
 const std::vector<Exit> &Perimeter::Exits() const
 {
-  return this->dataPtr->exits;
+  return this->dataPtr->header.Exits();
 }
 
 //////////////////////////////////////////////////
 bool Perimeter::AddExit(const Exit &_newExit)
 {
-  // Validate the exit unique Id.
-  if (!_newExit.ExitId().Valid())
-  {
-    std::cerr << "[Perimeter::AddExit() Invalid exit Id: ["
-              << _newExit.ExitId() << "]" << std::endl;
-    return false;
-  }
-
-  // Validate the entry unique Id.
-  if (!_newExit.EntryId().Valid())
-  {
-    std::cerr << "[Perimeter::AddExit() Invalid entry Id: ["
-              << _newExit.EntryId() << "]" << std::endl;
-    return false;
-  }
-
-  // Check whether the exit already exists.
-  if (std::find(this->dataPtr->exits.begin(),
-        this->dataPtr->exits.end(), _newExit) != this->dataPtr->exits.end())
-  {
-    std::cerr << "[Perimeter::AddExit() error: Existing exit" << std::endl;
-    return false;
-  }
-
-  this->dataPtr->exits.push_back(_newExit);
-  assert(this->NumExits() == this->dataPtr->exits.size());
-  return true;
+  return this->dataPtr->header.AddExit(_newExit);
 }
 
 //////////////////////////////////////////////////
 bool Perimeter::RemoveExit(const Exit &_exit)
 {
-  return (this->dataPtr->exits.erase(std::remove(
-    this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
-      this->dataPtr->exits.end()) != this->dataPtr->exits.end());
+  return this->dataPtr->header.RemoveExit(_exit);
 }
 
 //////////////////////////////////////////////////
