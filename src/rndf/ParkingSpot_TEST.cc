@@ -19,19 +19,23 @@
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
+#include "gtest/gtest.h"
+#include "manifold/test_config.h"
 #include "manifold/rndf/Checkpoint.hh"
 #include "manifold/rndf/ParkingSpot.hh"
 #include "manifold/rndf/Waypoint.hh"
-#include "manifold/test_config.h"
-
-#include "gtest/gtest.h"
 
 using namespace manifold;
 using namespace rndf;
 
+// The fixture for testing ParkingSpot class.
+class ParkingSpotTest : public testing::FileParserUtils
+{
+};
+
 //////////////////////////////////////////////////
 /// \brief Check id-related accessors.
-TEST(ParkingSpotTest, id)
+TEST(ParkingSpot, id)
 {
   int id = 1;
   ParkingSpot spot(id);
@@ -53,7 +57,7 @@ TEST(ParkingSpotTest, id)
 
 //////////////////////////////////////////////////
 /// \brief Check waypoints-related functions.
-TEST(ParkingSpotTest, waypoints)
+TEST(ParkingSpot, waypoints)
 {
   int id = 1;
   ParkingSpot spot(id);
@@ -118,7 +122,7 @@ TEST(ParkingSpotTest, waypoints)
 
 //////////////////////////////////////////////////
 /// \brief Check parking spot width.
-TEST(ParkingSpotTest, Width)
+TEST(ParkingSpot, Width)
 {
   int id = 1;
   ParkingSpot spot(id);
@@ -137,7 +141,7 @@ TEST(ParkingSpotTest, Width)
 
 //////////////////////////////////////////////////
 /// \brief Check checkpoints-related functions.
-TEST(ParkingSpotTest, checkpoints)
+TEST(ParkingSpot, checkpoints)
 {
   int id = 1;
   ParkingSpot spot(id);
@@ -161,7 +165,7 @@ TEST(ParkingSpotTest, checkpoints)
 
 //////////////////////////////////////////////////
 /// \brief Check function that validates the Id of a parking spot.
-TEST(ParkingSpotTest, valid)
+TEST(ParkingSpot, valid)
 {
   std::map<int, bool> cases =
   {
@@ -183,7 +187,7 @@ TEST(ParkingSpotTest, valid)
 
 //////////////////////////////////////////////////
 /// \brief Check [in]equality operators.
-TEST(ParkingSpotTest, equality)
+TEST(ParkingSpot, equality)
 {
   int id1 = 1;
   ParkingSpot ps1(id1);
@@ -202,7 +206,7 @@ TEST(ParkingSpotTest, equality)
 
 //////////////////////////////////////////////////
 /// \brief Check assignment operator.
-TEST(ParkingSpotTest, assignment)
+TEST(ParkingSpot, assignment)
 {
   int id1 = 1;
   ParkingSpot ps1(id1);
@@ -213,6 +217,154 @@ TEST(ParkingSpotTest, assignment)
 
   ps2 = ps1;
   EXPECT_EQ(ps1, ps2);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check parsing a parking spot from a file.
+TEST_F(ParkingSpotTest, parse)
+{
+  // The first element is the content to be parsed.
+  // The second element is the expected return value.
+  // The third element is the expected line value.
+  std::vector<std::tuple<std::string, bool>> testCases =
+  {
+    std::make_tuple(""                              , false),
+    std::make_tuple("\n\n"                          , false),
+    // Missing spot.
+    std::make_tuple(
+      "\n\n"
+      "xxx 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , false),
+    // Invalid spot Id.
+    std::make_tuple(
+      "\n\n"
+      "spot\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot"
+                                                    , false),
+    // Invalid spot Id.
+    std::make_tuple(
+      "\n\n"
+      "spot xxx\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot"
+                                                    , false),
+    // Waypoints missing.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.2\n"
+      "checkpoint  61.1.2  130\n"
+      "end_spot\n"
+                                                    , false),
+    // Invalid waypoint.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , false),
+    // Invalid waypoint.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "68.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , false),
+    // Invalid waypoint.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "61.8.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , false),
+    // Missing "end_spot" terminator.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+                                                    , false),
+    // Missing "end_spot" terminator and find the next spot.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "spot"
+                                                    , false),
+    // No options.
+    std::make_tuple(
+      "\n/* comment */\n"
+      "spot 61.1/* comment */\n"
+      "61.1.1  34.587347 -117.366326/* comment */\n"
+      "61.1.2  34.587347 -117.366275 /* comment */  \n"
+      "end_spot\n"
+                                                    , true),
+    // Checkpoint option.
+    std::make_tuple(
+      "\n/* comment */\n"
+      "spot 61.1/* comment */\n"
+      "checkpoint  61.1.2  130 /* comment */\n"
+      "61.1.1  34.587347 -117.366326/* comment */\n"
+      "61.1.2  34.587347 -117.366275 /* comment */  \n"
+      "end_spot\n"
+                                                    , true),
+    // Width options.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "spot_width  12\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , true),
+    // Both options.
+    std::make_tuple(
+      "\n\n"
+      "spot 61.1\n"
+      "spot_width  12\n"
+      "checkpoint  61.1.2  130\n"
+      "61.1.1  34.587347 -117.366326\n"
+      "61.1.2  34.587347 -117.366275\n"
+      "end_spot\n"
+                                                    , true),
+  };
+
+  for (auto const &testCase : testCases)
+  {
+    int line = 0;
+    std::string content = std::get<0>(testCase);
+
+    // Expectations.
+    bool expectedResult = std::get<1>(testCase);
+
+    // Write the content of this test case into the test file.
+    this->PopulateFile(content);
+    std::ifstream f(this->fileName);
+
+    // Leave this comment for knowing wich test case failed if needed.
+    std::cout << "Testing [" << content << "]" << std::endl;
+
+    // Check expectations.
+    ParkingSpot spot;
+    EXPECT_EQ(spot.Load(f, 61, line), expectedResult);
+  }
 }
 
 //////////////////////////////////////////////////

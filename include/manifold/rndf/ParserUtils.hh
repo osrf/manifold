@@ -155,7 +155,8 @@ namespace manifold
                          int &_lineNumber);
 
     /// \brief Checks if a string matches the following expression:
-    /// "lane_width <NON_NEGATIVE> [<COMMENT>]".
+    /// "<DELIMITER> <NON_NEGATIVE> [<COMMENT>]".
+    /// <DELIMITER> is a string such as "RNDF_name".
     /// <NON_NEGATIVE> is an integer value between [0, 32768].
     /// <COMMENT> is an optional element delimited by "/*" and "*/" and is
     /// always placed at the end of the line.
@@ -164,8 +165,9 @@ namespace manifold
     /// \return True if the input string matched the expression or false
     /// otherwise.
     MANIFOLD_VISIBLE
-    bool parseLaneWidth(const std::string &_input,
-                        int &_value);
+    bool parseNonNegative(const std::string &_input,
+                          const std::string &_delimiter,
+                          int &_value);
 
     /// \brief Checks if a string matches the following expression:
     /// "left_boundary <BOUNDARY> [<COMMENT>]" or.

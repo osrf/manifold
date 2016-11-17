@@ -52,10 +52,10 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~ParkingSpotPrivate() = default;
 
-      /// \brief Unique checkpoint identifier. E.g.: 1
+      /// \brief Parking spot identifier. E.g.: 1
       public: int id;
 
-      /// \brief The (normally two) waypoints that define the spot.
+      /// \brief The two waypoints that define the spot.
       public: std::vector<Waypoint> waypoints;
 
       /// Below are the optional spot header members.
@@ -102,8 +102,8 @@ ParkingSpot::~ParkingSpot()
 }
 
 //////////////////////////////////////////////////
-bool ParkingSpot::Parse(std::ifstream &_rndfFile, const int _zoneId,
-  rndf::ParkingSpot &_spot, int &_lineNumber)
+bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
+  int &_lineNumber)
 {
   std::smatch result;
   std::string lineread;
@@ -112,8 +112,8 @@ bool ParkingSpot::Parse(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Parse the "spot Id" .
-  std::regex rgxSpotId("^spot " + std::to_string(_zoneId) + "\\." +
-    kRgxPositive + "$");
+  std::regex rgxSpotId("^spot\\s+" + std::to_string(_zoneId) + "\\." +
+    kRgxPositive + "\\s*(" + kRgxComment +  ")?\\s*$");
   std::regex_search(lineread, result, rgxSpotId);
   if (result.size() < 2)
   {
@@ -126,7 +126,7 @@ bool ParkingSpot::Parse(std::ifstream &_rndfFile, const int _zoneId,
   int spotId = std::stoi(result[1], &sz);
 
   // Parse optional parking spot header.
-  int width = 0;
+  double width = 0;
   rndf::Checkpoint checkpoint;
   if (!this->ParseHeader(_rndfFile, _zoneId, spotId, width, checkpoint,
     _lineNumber))
@@ -150,10 +150,10 @@ bool ParkingSpot::Parse(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Populate the spot.
-  _spot.SetId(spotId);
-  _spot.Waypoints() = waypoints;
-  _spot.SetWidth(width);
-  _spot.Checkpoint() = checkpoint;
+  this->SetId(spotId);
+  this->Waypoints() = waypoints;
+  this->SetWidth(width);
+  this->Checkpoint() = checkpoint;
 
   return true;
 }
@@ -320,19 +320,16 @@ const Checkpoint &ParkingSpot::Checkpoint() const
 
 //////////////////////////////////////////////////
 bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
-  const int _spotId, int &_width, rndf::Checkpoint &_checkpoint,
+  const int _spotId, double &_width, rndf::Checkpoint &_checkpoint,
   int &_lineNumber)
 {
-  _width = 0;
+  double width = 0;
+  rndf::Checkpoint cp;
 
   bool checkpointFound = false;
   bool widthFound = false;
-  std::regex rgxHeader("^((spot_width) kRgxPositive)|("
-    "(checkpoint) " + std::to_string(_zoneId) + "\\." +
-    std::to_string(_spotId) + "\\." + kRgxPositive + " " + kRgxPositive + ")$");
-  std::regex rgxWaypointId("^" + std::to_string(_zoneId) + "\\." +
-    std::to_string(_spotId) + "\\." + kRgxPositive + " " + kRgxDouble + " " +
-    kRgxDouble + "$");
+
+  std::regex rgxHeader("^(spot_width|checkpoint|" + kRgxUniqueId + ") ");
 
   for (auto i = 0; i < 2; ++i)
   {
@@ -343,22 +340,11 @@ bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
     if (!nextRealLine(_rndfFile, lineread, _lineNumber))
       return false;
 
-    // Check if we found the "waypoint" element.
-    // If this is the case we should leave.
-    if (std::regex_match(lineread, rgxWaypointId))
-    {
-      // Restore the file position and line number.
-      // ParseHeader() shouldn't have any effect.
-      _rndfFile.seekg(oldPos);
-      _lineNumber = oldLineNumber;
-      return true;
-    }
-
     std::smatch result;
     std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() <= 3) ||
-        (result[1] == "spot_width" && widthFound) ||
-        (result[1] == "checkpoint" && checkpointFound))
+    if ((result.size() < 2)                              ||
+        (result[1] == "spot_width"  && widthFound)       ||
+        (result[1] == "checkpoint"  && checkpointFound))
     {
       // Invalid or repeated header element.
       std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot header "
@@ -367,20 +353,49 @@ bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
       return false;
     }
 
-    std::string::size_type sz;
+    assert(result.size() >= 2);
+
     if (result[1] == "spot_width")
     {
-      // Save the width in meters (from feet).
-      _width = std::stoi(result[2], &sz) * 0.3048;
+      int widthFeet;
+      if (!parseNonNegative(lineread, "spot_width", widthFeet))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "spot width element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      // Convert from feet to meters.
+      width = widthFeet * 0.3048;
       widthFound = true;
+    }
+    else if (result[1] == "checkpoint")
+    {
+      if (!parseCheckpoint(lineread, _zoneId, _spotId, cp))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "spot checkpoint element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      checkpointFound = true;
     }
     else
     {
-      _checkpoint.SetWaypointId(std::stoi(result[2], &sz));
-      _checkpoint.SetCheckpointId(std::stoi(result[5], &sz));
-      checkpointFound = true;
+      // This is the end of the header and the start of the waypoint section.
+      // Restore the file position and line number.
+      // ParseHeader() shouldn't have any effect.
+      _rndfFile.seekg(oldPos);
+      _lineNumber = oldLineNumber;
+      break;
     }
   }
+
+  // Populate the header.
+  _width = width;
+  _checkpoint = cp;
 
   return true;
 }

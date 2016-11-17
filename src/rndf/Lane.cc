@@ -591,7 +591,7 @@ bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
     if (result[1] == "lane_width")
     {
       int widthFeet;
-      if (!parseLaneWidth(lineread, widthFeet))
+      if (!parseNonNegative(lineread, "lane_width", widthFeet))
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << "lane width element" << std::endl;

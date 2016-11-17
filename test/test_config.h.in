@@ -24,6 +24,8 @@
 #define MANIFOLD_VERSION_FULL "@PROJECT_VERSION_FULL@"
 
 #include <climits>
+#include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <random>
 #include <string>
@@ -38,6 +40,7 @@
   #include <unistd.h>
 #endif
 
+#include "gtest/gtest.h"
 #include "manifold/Helpers.hh"
 
 #if (_MSC_VER >= 1400) // Visual Studio 2005
@@ -184,6 +187,45 @@ namespace testing
 
     return std::to_string(d(randGenerator));
   }
+
+  // The fixture for testing classes.
+  class FileParserUtils : public ::testing::Test
+  {
+    /// \brief Code here will be called immediately after the constructor
+    /// (right before each test).
+    virtual void SetUp()
+    {
+      this->fileName = getRandomNumber() + ".txt";
+    }
+
+    /// \brief Code here will be called immediately after each test
+    /// (right before the destructor).
+    virtual void TearDown()
+    {
+      if (this->testFile.is_open())
+        this->testFile.close();
+      std::remove(this->fileName.c_str());
+    }
+
+    /// \brief
+    protected: void PopulateFile(const std::string &_content)
+    {
+      if (this->testFile.is_open())
+        this->testFile.close();
+      this->testFile.open(this->fileName);
+      this->testFile << _content << std::endl;
+    }
+
+    /// \brief The name of the test file created.
+    protected: std::string fileName;
+
+    /// \brief If file content is not empty, its value will be used to populate
+    /// a text file and check some parser functions.
+    protected: std::string fileContent = "";
+
+    /// \brief A test file.
+    protected: std::ofstream testFile;
+  };
 }
 
 #endif  // header guard

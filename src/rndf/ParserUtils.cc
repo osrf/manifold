@@ -15,6 +15,7 @@
  *
 */
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -67,6 +68,7 @@ namespace manifold
         return false;
       }
 
+      assert(result.size() >= 2);
       _value = result[1];
       return true;
     }
@@ -79,7 +81,8 @@ namespace manifold
         return false;
 
       std::string lineread;
-      nextRealLine(_rndfFile, lineread, _lineNumber);
+      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+        return false;
 
       std::regex rgxDelim("^" + _delimiter + "\\s*(" + kRgxComment + ")?\\s*$");
       if (!std::regex_match(lineread, rgxDelim))
@@ -113,6 +116,7 @@ namespace manifold
         return false;
       }
 
+      assert(result.size() >= 2);
       std::string::size_type sz;
       _value = std::stoi(result[1], &sz);
       return true;
@@ -138,21 +142,24 @@ namespace manifold
         return false;
       }
 
+      assert(result.size() >= 2);
       std::string::size_type sz;
       _value = std::stoi(result[1], &sz);
       return true;
     }
 
     //////////////////////////////////////////////////
-    bool parseLaneWidth(const std::string &_input, int &_value)
+    bool parseNonNegative(const std::string &_input,
+      const std::string &_delimiter, int &_value)
     {
-      std::regex rgxLaneWidth("^lane_width\\s+" + kRgxNonNegative + "\\s*(" +
-        kRgxComment + ")?\\s*$");
+      std::regex rgxLaneWidth("^" + _delimiter + "\\s+" + kRgxNonNegative +
+        "\\s*(" + kRgxComment + ")?\\s*$");
       std::smatch result;
       std::regex_search(_input, result, rgxLaneWidth);
       if (result.size() < 2)
         return false;
 
+      assert(result.size() >= 2);
       std::string::size_type sz;
       _value = std::stoi(result[1], &sz);
       return true;
@@ -170,6 +177,7 @@ namespace manifold
       if (result.size() < 3)
         return false;
 
+      assert(result.size() >= 3);
       std::string boundary = result[2];
       if (boundary == "double_yellow")
         _boundary = Lane::Marking::DOUBLE_YELLOW;
@@ -197,6 +205,7 @@ namespace manifold
       if (result.size() < 3)
         return false;
 
+      assert(result.size() >= 3);
       std::string::size_type sz;
       _checkpoint.SetCheckpointId(std::stoi(result[2], &sz));
       _checkpoint.SetWaypointId(std::stoi(result[1], &sz));
@@ -215,6 +224,7 @@ namespace manifold
       if (result.size() < 2)
         return false;
 
+      assert(result.size() >= 2);
       std::string::size_type sz;
       _stop.SetSegmentId(_segmentId);
       _stop.SetLaneId(_laneId);
@@ -234,6 +244,7 @@ namespace manifold
       if (result.size() < 5)
         return false;
 
+      assert(result.size() >= 5);
       std::string::size_type sz;
       UniqueId exitId(_segmentId, _laneId, std::stoi(result[1], &sz));
       UniqueId entryId(std::stoi(result[2], &sz), std::stoi(result[3], &sz),

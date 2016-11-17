@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_PARKINGSPOT_HH_
 #define MANIFOLD_RNDF_PARKINGSPOT_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <vector>
 
@@ -32,28 +33,34 @@ namespace manifold
     class ParkingSpotPrivate;
     class Waypoint;
 
-    /// \brief ToDo.
+    /// \brief An abstraction for representing a parking spot within a zone.
     class MANIFOLD_VISIBLE ParkingSpot
     {
       /// \brief Default constructor.
       public: ParkingSpot();
 
-      /// \brief Default constructor.
+      /// \brief Constructor.
       /// \param[in] _spotId Parking spot Id (a positive number).
       public: explicit ParkingSpot(const int _spotId);
 
-      /// \brief Default constructor.
+      /// \brief Copy constructor.
       /// \param[in] _other Other parking spot.
       public: ParkingSpot(const ParkingSpot &_other);
 
       /// \brief Destructor.
       public: virtual ~ParkingSpot();
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         const int _zoneId,
-                         rndf::ParkingSpot &_spot,
-                         int &_lineNumber);
+      /// \brief Load a parking spot from an input stream coming from a text
+      /// file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The zone Id in which the spot is located.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a parking spot block was found and parsed or false
+      /// otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _zoneId,
+                        int &_lineNumber);
 
       ///////
       /// Id
@@ -90,7 +97,8 @@ namespace manifold
       /// \param[in] _wpId The waypoint Id.
       /// \param[out] _wp The waypoint requested.
       /// \return True if the waypoint was found or false otherwise.
-      public: bool Waypoint(const int _wpId, rndf::Waypoint &_wp) const;
+      public: bool Waypoint(const int _wpId,
+                            rndf::Waypoint &_wp) const;
 
       /// \brief Update an existing waypoint.
       /// \param[in] _wp The updated waypoint.
@@ -161,11 +169,20 @@ namespace manifold
       /// \return A reference to this instance.
       public: ParkingSpot &operator=(const ParkingSpot &_other);
 
-      /// \brief ToDo.
+      /// \brief Parse a parking spot header from an input stream coming from a
+      ///  text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The zone Id in which the spot is located.
+      /// \param[in] _spotId The spot Id.
+      /// \param[out] _spot The parsed parking spot.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a parking spot block was found and parsed or false
+      /// otherwise (e.g.: EoF or incorrect format found).
       private: bool ParseHeader(std::ifstream &_rndfFile,
                                 const int _zoneId,
                                 const int _spotId,
-                                int &_width,
+                                double &_width,
                                 rndf::Checkpoint &_checkpoint,
                                 int &_lineNumber);
 

@@ -124,7 +124,7 @@ bool Zone::Parse(std::ifstream &_rndfFile, rndf::Zone &_zone, int &_lineNumber)
   for (auto i = 0; i < numSpots; ++i)
   {
     rndf::ParkingSpot spot;
-    if (!spot.Parse(_rndfFile, zoneId, spot, _lineNumber))
+    if (!spot.Load(_rndfFile, zoneId, _lineNumber))
       return false;
 
     spots.push_back(spot);
