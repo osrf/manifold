@@ -31,7 +31,45 @@ namespace manifold
     // Forward declarations.
     class Checkpoint;
     class ParkingSpotPrivate;
+    class ParkingSpotHeaderPrivate;
     class Waypoint;
+
+    /// \brief An internal private spot header class.
+    class ParkingSpotHeader
+    {
+      /// \brief Default constructor.
+      public: ParkingSpotHeader();
+
+      /// \brief Destructor.
+      public: ~ParkingSpotHeader();
+
+      /////////
+      /// Width
+      /////////
+
+      /// \brief Get the parking spot width in meters.
+      /// \return Return the parking spot width in meters.
+      public: double Width() const;
+
+      /// \brief Set the parking spot width.
+      /// \param[in] _newWidth The new width in meters.
+      public: bool SetWidth(const double _newWidth);
+
+      //////////////
+      /// Checkpoint
+      //////////////
+
+      /// \brief Get a mutable reference to the checkpoint.
+      /// \return A mutable reference to the checkpoint.
+      public: rndf::Checkpoint &Checkpoint();
+
+      /// \brief Get the checkpoint.
+      /// \return The checkpoint.
+      public: const rndf::Checkpoint &Checkpoint() const;
+
+      ///
+      private: std::unique_ptr<ParkingSpotHeaderPrivate> dataPtr;
+    };
 
     /// \brief An abstraction for representing a parking spot within a zone.
     class MANIFOLD_VISIBLE ParkingSpot
@@ -182,8 +220,7 @@ namespace manifold
       private: bool ParseHeader(std::ifstream &_rndfFile,
                                 const int _zoneId,
                                 const int _spotId,
-                                double &_width,
-                                rndf::Checkpoint &_checkpoint,
+                                ParkingSpotHeader &_header,
                                 int &_lineNumber);
 
       /// \internal

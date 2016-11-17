@@ -35,14 +35,30 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for ParkingSpotHeader class.
+    class ParkingSpotHeaderPrivate
+    {
+      /// \brief Default constructor.
+      public: ParkingSpotHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~ParkingSpotHeaderPrivate() = default;
+
+      /// \brief Spot width in meters.
+      public: double width = 0.0;
+
+      /// \brief If the waypoint is a checkpoint.
+      public: Checkpoint checkpoint;
+    };
+
+    /// \internal
     /// \brief Private data for ParkingSpot class.
     class ParkingSpotPrivate
     {
       /// \brief Constructor.
       /// \param[in] _id Parking spot Id.
       public: explicit ParkingSpotPrivate(const int _spotId)
-        : id(_spotId),
-          width(0.0)
+        : id(_spotId)
       {
       }
 
@@ -59,14 +75,51 @@ namespace manifold
       public: std::vector<Waypoint> waypoints;
 
       /// Below are the optional spot header members.
-
-      /// \brief Spot width in meters.
-      public: double width = 0.0;
-
-      /// \brief If the waypoint is a checkpoint.
-      public: Checkpoint checkpoint;
+      public: ParkingSpotHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+ParkingSpotHeader::ParkingSpotHeader()
+{
+  this->dataPtr.reset(new ParkingSpotHeaderPrivate());
+  this->dataPtr->width = 0;
+}
+
+//////////////////////////////////////////////////
+ParkingSpotHeader::~ParkingSpotHeader()
+{
+}
+
+//////////////////////////////////////////////////
+double ParkingSpotHeader::Width() const
+{
+  return this->dataPtr->width;
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpotHeader::SetWidth(const double _newWidth)
+{
+  bool valid = _newWidth > 0;
+  if (!valid)
+    return false;
+
+  this->dataPtr->width = _newWidth;
+  return true;
+}
+
+
+//////////////////////////////////////////////////
+Checkpoint &ParkingSpotHeader::Checkpoint()
+{
+  return this->dataPtr->checkpoint;
+}
+
+//////////////////////////////////////////////////
+const Checkpoint &ParkingSpotHeader::Checkpoint() const
+{
+  return this->dataPtr->checkpoint;
 }
 
 //////////////////////////////////////////////////
@@ -126,10 +179,8 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
   int spotId = std::stoi(result[1], &sz);
 
   // Parse optional parking spot header.
-  double width = 0;
-  rndf::Checkpoint checkpoint;
-  if (!this->ParseHeader(_rndfFile, _zoneId, spotId, width, checkpoint,
-    _lineNumber))
+  ParkingSpotHeader header;
+  if (!this->ParseHeader(_rndfFile, _zoneId, spotId, header, _lineNumber))
   {
     return false;
   }
@@ -152,8 +203,8 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
   // Populate the spot.
   this->SetId(spotId);
   this->Waypoints() = waypoints;
-  this->SetWidth(width);
-  this->Checkpoint() = checkpoint;
+  this->SetWidth(header.Width());
+  this->Checkpoint() = header.Checkpoint();
 
   return true;
 }
@@ -288,7 +339,7 @@ ParkingSpot &ParkingSpot::operator=(const ParkingSpot &_other)
 //////////////////////////////////////////////////
 double ParkingSpot::Width() const
 {
-  return this->dataPtr->width;
+  return this->dataPtr->header.Width();
 }
 
 //////////////////////////////////////////////////
@@ -302,26 +353,25 @@ bool ParkingSpot::SetWidth(const double _newWidth)
     return false;
   }
 
-  this->dataPtr->width = _newWidth;
+  this->dataPtr->header.SetWidth(_newWidth);
   return true;
 }
 
 //////////////////////////////////////////////////
 Checkpoint &ParkingSpot::Checkpoint()
 {
-  return this->dataPtr->checkpoint;
+  return this->dataPtr->header.Checkpoint();
 }
 
 //////////////////////////////////////////////////
 const Checkpoint &ParkingSpot::Checkpoint() const
 {
-  return this->dataPtr->checkpoint;
+  return this->dataPtr->header.Checkpoint();
 }
 
 //////////////////////////////////////////////////
 bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
-  const int _spotId, double &_width, rndf::Checkpoint &_checkpoint,
-  int &_lineNumber)
+  const int _spotId, ParkingSpotHeader &_header, int &_lineNumber)
 {
   double width = 0;
   rndf::Checkpoint cp;
@@ -394,8 +444,8 @@ bool ParkingSpot::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
   }
 
   // Populate the header.
-  _width = width;
-  _checkpoint = cp;
+  _header.SetWidth(width);
+  _header.Checkpoint() = cp;
 
   return true;
 }
