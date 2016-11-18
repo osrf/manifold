@@ -196,6 +196,40 @@ TEST(Zone, Validation)
 }
 
 //////////////////////////////////////////////////
+/// \brief Check [in]equality operators.
+TEST(Zone, equality)
+{
+  int id1 = 1;
+  Zone zone1(id1);
+
+  int id2 = 2;
+  Zone zone2(id2);
+
+  Zone zone3(id1);
+
+  EXPECT_FALSE(zone1 == zone2);
+  EXPECT_TRUE(zone1 != zone2);
+
+  EXPECT_TRUE(zone1 == zone3);
+  EXPECT_FALSE(zone1 != zone3);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check assignment operator.
+TEST(Zone, assignment)
+{
+  int id1 = 1;
+  Zone zone1(id1);
+
+  int id2 = 2;
+  Zone zone2(id2);
+  EXPECT_NE(zone1, zone2);
+
+  zone2 = zone1;
+  EXPECT_EQ(zone1, zone2);
+}
+
+//////////////////////////////////////////////////
 /// \brief Check loading a zone from a text file.
 TEST_F(ZoneTest, Load)
 {
@@ -206,7 +240,7 @@ TEST_F(ZoneTest, Load)
   std::vector<std::tuple<std::string, bool, int, int>> testCases =
   {
     std::make_tuple(""                              , false, 0, 1),
-    std::make_tuple("\n\n"                          , false, 1, 3),
+    std::make_tuple("\n\n"                          , false, 0, 3),
     // Missing zone.
     std::make_tuple(
       "\n\n"
@@ -221,7 +255,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 2, 3),
+                                                    , false, 0, 3),
     // Invalid zone Id.
     std::make_tuple(
       "\n\n"
@@ -236,7 +270,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 3, 3),
+                                                    , false, 0, 3),
     // Invalid zone Id.
     std::make_tuple(
       "\n\n"
@@ -251,7 +285,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 4, 3),
+                                                    , false, 0, 3),
     // num_spots missing.
     std::make_tuple(
       "\n\n"
@@ -265,7 +299,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 5, 4),
+                                                    , false, 0, 4),
     // Missing num_spots value.
     std::make_tuple(
       "\n\n"
@@ -280,7 +314,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 6, 4),
+                                                    , false, 0, 4),
     // Invalid num_spots value.
     std::make_tuple(
       "\n\n"
@@ -295,7 +329,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 7, 4),
+                                                    , false, 0, 4),
     // Invalid num_spots value.
     std::make_tuple(
       "\n\n"
@@ -310,7 +344,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 8, 4),
+                                                    , false, 0, 4),
     // Missign zone_name.
     std::make_tuple(
       "\n\n"
@@ -325,7 +359,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 9, 5),
+                                                    , false, 0, 5),
     // Missign zone_name value.
     std::make_tuple(
       "\n\n"
@@ -340,7 +374,13 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 10, 5),
+                                                    , false, 0, 5),
+    // Missing most of the fields.
+    std::make_tuple(
+      "\n\n"
+      "zone  67\n"
+      "num_spots 0\n"
+                                                    , false, 0, 5),
     // Missing "end_zone" terminator.
     std::make_tuple(
       "\n\n"
@@ -354,7 +394,7 @@ TEST_F(ZoneTest, Load)
       "67.0.2  34.581078 -117.361760\n"
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
-                                                     , false, 11, 13),
+                                                     , false, 0, 13),
     // Wrong "end_zone" terminator.
     std::make_tuple(
       "\n\n"
@@ -369,7 +409,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end\n"
-                                                    , false, 12, 13),
+                                                    , false, 0, 13),
     // Missing "end_zone" terminator and found the next zone.
     std::make_tuple(
       "\n\n"
@@ -384,7 +424,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "zone 68\n"
-                                                    , false, 13, 13),
+                                                    , false, 0, 13),
     // Missing "spots".
     std::make_tuple(
       "\n\n"
@@ -399,7 +439,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , false, 14, 13),
+                                                    , false, 0, 13),
     // More "spots" than the expected number.
     std::make_tuple(
       "\n\n"
@@ -420,7 +460,7 @@ TEST_F(ZoneTest, Load)
       "67.1.2  34.583738 -117.368955 /* Finish Spot Checkpoint */\n"
       "end_spot\n"
       "end_zone\n"
-                                                    , false, 15, 13),
+                                                    , false, 0, 13),
     // Invalid zone Id in the spot.
     std::make_tuple(
       "\n\n"
@@ -441,7 +481,7 @@ TEST_F(ZoneTest, Load)
       "68.1.2  34.583738 -117.368955 /* Finish Spot Checkpoint */\n"
       "end_spot\n"
       "end_zone\n"
-                                                    , false, 15, 13),
+                                                    , false, 0, 13),
     // No options.
     std::make_tuple(
       "\n/* comment */\n"
@@ -455,7 +495,7 @@ TEST_F(ZoneTest, Load)
       "67.0.3  34.580865 -117.361852\n"
       "end_perimeter\n"
       "end_zone\n"
-                                                    , true, 16, 12),
+                                                    , true, 1, 12),
     // Name option.
     std::make_tuple(
       "\n/* comment */\n"
@@ -476,7 +516,7 @@ TEST_F(ZoneTest, Load)
       "67.1.2  34.583738 -117.368955 /* Finish Spot Checkpoint */\n"
       "end_spot\n"
       "end_zone  /* comment */\n"
-                                                    , true, 17, 19),
+                                                    , true, 2, 19),
   };
 
   for (auto const &testCase : testCases)
@@ -505,12 +545,12 @@ TEST_F(ZoneTest, Load)
     {
       switch (testId)
       {
-        case 16:
+        case 1:
           EXPECT_EQ(zone.Id(), 67);
           EXPECT_EQ(zone.NumSpots(), 0u);
           EXPECT_EQ(zone.Perimeter().NumPoints(), 3u);
           break;
-        case 17:
+        case 2:
           EXPECT_EQ(zone.Id(), 67);
           ASSERT_EQ(zone.NumSpots(), 1u);
           ASSERT_EQ(zone.Perimeter().NumPoints(), 3u);

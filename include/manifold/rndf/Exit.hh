@@ -18,6 +18,8 @@
 #ifndef MANIFOLD_RNDF_EXIT_HH_
 #define MANIFOLD_RNDF_EXIT_HH_
 
+#include <iosfwd>
+
 #include "manifold/Helpers.hh"
 #include "manifold/rndf/UniqueId.hh"
 
@@ -29,6 +31,7 @@ namespace manifold
     /// an entry waypoint. The waypoints are represented with their unique Id.
     class MANIFOLD_VISIBLE Exit
     {
+      /// \brief Default constructor.
       public: Exit();
 
       /// \brief Constructor.
@@ -45,12 +48,23 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Exit();
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         const int major,
-                         const int minor,
-                         rndf::Exit &_exit,
-                         int &_lineNumber);
+      /// \brief Load an exit from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _x The expected "x" value from an x.y.z Id.
+      /// \param[in] _y The expected "y" value from an x.y.z Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a zone block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _x,
+                        const int _y,
+                        int &_lineNumber);
+
+      //////////
+      /// ExitId
+      //////////
 
       /// \brief Get the unique Id of the exit waypoint.
       /// \return The unique Id of the exit waypoint.
@@ -60,6 +74,10 @@ namespace manifold
       /// \return A mutable reference to the unique Id of the exit waypoint.
       public: UniqueId &ExitId();
 
+      ///////////
+      /// EntryId
+      ///////////
+
       /// \brief Get the unique Id of the entry waypoint.
       /// \return The unique Id of the entry waypoint.
       public: const UniqueId &EntryId() const;
@@ -68,8 +86,16 @@ namespace manifold
       /// \return A mutable reference to the unique Id of the entry waypoint.
       public: UniqueId &EntryId();
 
+      //////////////
+      /// Validation
+      //////////////
+
       /// \return True if the exit is valid.
       public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
 
       /// \brief Equality operator, result = this == _other
       /// \param[in] _other Exit to check for equality.

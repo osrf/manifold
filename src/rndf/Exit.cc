@@ -15,8 +15,11 @@
  *
 */
 
+#include <cassert>
+#include <fstream>
 #include <iostream>
 #include <regex>
+#include <string>
 #include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/UniqueId.hh"
@@ -65,8 +68,8 @@ Exit::~Exit()
 }
 
 //////////////////////////////////////////////////
-bool Exit::Parse(std::ifstream &_rndfFile, const int _major, const int _minor,
-  rndf::Exit &_exit, int &_lineNumber)
+bool Exit::Load(std::ifstream &_rndfFile, const int _x, const int _y,
+  int &_lineNumber)
 {
   std::smatch result;
   std::string lineread;
@@ -75,13 +78,15 @@ bool Exit::Parse(std::ifstream &_rndfFile, const int _major, const int _minor,
     return false;
 
   // Parse the "exit" .
-  std::regex rgxLaneId("^exit\\s+" + std::to_string(_major) + "\\." +
-    std::to_string(_minor) + "\\." + kRgxPositive + "\\s+" + kRgxPositive +
+  std::regex rgxLaneId("^exit\\s+" + std::to_string(_x) + "\\." +
+    std::to_string(_y) + "\\." + kRgxPositive + "\\s+" + kRgxPositive +
     "\\." + kRgxPositive + "\\." + kRgxPositive + "\\s*(" + kRgxComment +
     ")?\\s*$");
   std::regex_search(lineread, result, rgxLaneId);
   if (result.size() < 5)
     return false;
+
+  assert(result.size() >= 5);
 
   std::string::size_type sz;
   int id = std::stoi(result[1], &sz);
@@ -90,10 +95,10 @@ bool Exit::Parse(std::ifstream &_rndfFile, const int _major, const int _minor,
   int entryWaypointId = std::stoi(result[4], &sz);
 
   // Populate the exit.
-  UniqueId exitId(_major, _minor, id);
+  UniqueId exitId(_x, _y, id);
   UniqueId entryId(entrySegmentId, entryLaneId, entryWaypointId);
-  _exit.ExitId() = exitId;
-  _exit.EntryId() = entryId;
+  this->ExitId() = exitId;
+  this->EntryId() = entryId;
 
   return true;
 }

@@ -84,7 +84,7 @@ bool PerimeterHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
 
   // We should leave if we don't find the "exit" element.
   rndf::Exit exit;
-  while (exit.Parse(_rndfFile, _zoneId, _perimeterId, exit, _lineNumber))
+  while (exit.Load(_rndfFile, _zoneId, _perimeterId, _lineNumber))
   {
     this->AddExit(exit);
     oldPos = _rndfFile.tellg();
