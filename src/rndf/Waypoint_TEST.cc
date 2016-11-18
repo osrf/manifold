@@ -16,6 +16,9 @@
 */
 
 #include <map>
+#include <string>
+#include <tuple>
+#include <vector>
 #include <ignition/math/Angle.hh>
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
@@ -27,9 +30,14 @@
 using namespace manifold;
 using namespace rndf;
 
+// The fixture for testing the Waypoint class.
+class WaypointTest : public testing::FileParserUtils
+{
+};
+
 //////////////////////////////////////////////////
 /// \brief Check id-related accessors.
-TEST(WaypointTest, id)
+TEST(Waypoint, id)
 {
   // Default surface type
   ignition::math::SphericalCoordinates::SurfaceType st =
@@ -58,7 +66,7 @@ TEST(WaypointTest, id)
 
 //////////////////////////////////////////////////
 /// \brief Check location-related accessors.
-TEST(WaypointTest, location)
+TEST(Waypoint, location)
 {
   // Default surface type
   ignition::math::SphericalCoordinates::SurfaceType st =
@@ -81,7 +89,7 @@ TEST(WaypointTest, location)
 
 //////////////////////////////////////////////////
 /// \brief Check function that validates the Id of a waypoint.
-TEST(WaypointTest, valid)
+TEST(Waypoint, valid)
 {
   std::map<int, bool> cases =
   {
@@ -109,7 +117,7 @@ TEST(WaypointTest, valid)
 
 //////////////////////////////////////////////////
 /// \brief Check [in]equality operators.
-TEST(WaypointTest, equality)
+TEST(Waypoint, equality)
 {
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
@@ -139,7 +147,7 @@ TEST(WaypointTest, equality)
 
 //////////////////////////////////////////////////
 /// \brief Check assignment operator.
-TEST(WaypointTest, assignment)
+TEST(Waypoint, assignment)
 {
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
@@ -156,6 +164,115 @@ TEST(WaypointTest, assignment)
 
   wp2 = wp1;
   EXPECT_EQ(wp1, wp2);
+}
+
+//////////////////////////////////////////////////
+/// \brief Check loading a waypoint from a file.
+TEST_F(WaypointTest, load)
+{
+  // The first element is the content to be parsed.
+  // The second element is the expected return value.
+  // The third element is the test Id.
+  // The forth element is the expected line value.
+  std::vector<std::tuple<std::string, bool, int, int>> testCases =
+  {
+    std::make_tuple(""                              , false, 0, 1),
+    std::make_tuple("\n\n"                          , false, 1, 3),
+    // Missing waypoint Id.
+    std::make_tuple(
+      "\n\n"
+      "34.579979 -117.365607\n"
+                                                    , false, 2, 3),
+    // Invalid waypoint Id.
+    std::make_tuple(
+      "\n\n"
+      "0.3.1 34.579979 -117.365607\n"
+                                                    , false, 3, 3),
+
+    // Unexpected waypoint Id (it should be 6.
+    std::make_tuple(
+      "\n\n"
+      "5.3.1 34.579979 -117.365607\n"
+                                                    , false, 3, 3),
+
+    // Unexpected lane Id (it should be 3.
+    std::make_tuple(
+      "\n\n"
+      "6.9.1 34.579979 -117.365607\n"
+                                                    , false, 3, 3),
+
+    // Missing latitude.
+    std::make_tuple(
+      "\n\n"
+      "6.3.1 -117.365607\n"
+                                                    , false, 4, 3),
+
+    // Missing longitude.
+    std::make_tuple(
+      "\n\n"
+      "6.3.1 34.579979\n"
+                                                    , false, 5, 3),
+    // Ivalid latitude.
+    std::make_tuple(
+      "\n\n"
+      "6.3.1 xxx -117.365607\n"
+                                                    , false, 6, 3),
+
+    // Invalid longitude.
+    std::make_tuple(
+      "\n\n"
+      "6.3.1 34.579979 xxx\n"
+                                                    , false, 7, 3),
+    std::make_tuple(
+      "\n\n"
+      "6.3.1  34.579979   -117.365607 /* a comment  */ \n"
+                                                    , true, 8, 3),
+  };
+
+  for (auto const &testCase : testCases)
+  {
+    int line = 0;
+    std::string content = std::get<0>(testCase);
+    int testId = std::get<2>(testCase);
+
+    // Expectations.
+    bool expectedResult = std::get<1>(testCase);
+    int expectedLine = std::get<3>(testCase);
+
+    // Write the content of this test case into the test file.
+    this->PopulateFile(content);
+    std::ifstream f(this->fileName);
+
+    // Leave this comment for knowing wich test case failed if needed.
+    std::cout << "Testing [" << content << "]" << std::endl;
+
+    // Check expectations.
+    Waypoint w;
+    bool res;
+    EXPECT_EQ(res = w.Load(f, 6, 3, line), expectedResult);
+    EXPECT_EQ(line, expectedLine);
+    if (res)
+    {
+      switch (testId)
+      {
+        case 8:
+        {
+          ignition::math::SphericalCoordinates::SurfaceType st =
+            ignition::math::SphericalCoordinates::EARTH_WGS84;
+          ignition::math::Angle lat(34.579979), lon(-117.365607);
+          ignition::math::Angle heading(0.0);
+          double elev = 0.0;
+          ignition::math::SphericalCoordinates loc(st, lat, lon, elev, heading);
+
+          EXPECT_EQ(w.Id(), 1);
+          EXPECT_EQ(w.Location(), loc);
+          break;
+        }
+        default:
+          break;
+      };
+    }
+  }
 }
 
 //////////////////////////////////////////////////

@@ -37,7 +37,6 @@ class PerimeterTest : public testing::FileParserUtils
 {
 };
 
-
 //////////////////////////////////////////////////
 /// \brief Check points-related functions.
 TEST(Perimeter, points)
@@ -491,7 +490,7 @@ TEST_F(PerimeterTest, load)
       "61.0.3 34.587440 -117.366444\n"
       "end_perimeter\n"
                                                     , true, 26, 9),
-    // Two exits/
+    // Two exits.
     std::make_tuple(
       "\n\n"
       "perimeter 61.0\n"

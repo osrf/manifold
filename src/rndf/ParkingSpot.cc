@@ -265,7 +265,7 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
   for (auto i = 0; i < 2; ++i)
   {
     rndf::Waypoint waypoint;
-    if (!waypoint.Parse(_rndfFile, _zoneId, spotId, waypoint, _lineNumber))
+    if (!waypoint.Load(_rndfFile, _zoneId, spotId, _lineNumber))
       return false;
 
     waypoints.push_back(waypoint);

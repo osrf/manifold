@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_WAYPOINT_WAYPOINT_HH_
 #define MANIFOLD_WAYPOINT_WAYPOINT_HH_
 
+#include <iosfwd>
 #include <memory>
 
 #include "manifold/Helpers.hh"
@@ -62,12 +63,23 @@ namespace manifold
       /// Parsing
       ///////////
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         const int _segmentId,
-                         const int _laneId,
-                         rndf::Waypoint &_waypoint,
-                         int &_lineNumber);
+      /// \brief Load a waypoint from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _segmentId The segment Id in which the waypoint is located.
+      /// \param[in] _laneId The lane Id in which the waypoint is located.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a waypoint block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _segmentId,
+                        const int _laneId,
+                        int &_lineNumber);
+
+      ///////
+      /// Id
+      ///////
 
       /// \brief Get the unique identifier of the waypoint.
       /// \return The waypoint Id.
@@ -79,13 +91,25 @@ namespace manifold
       /// If the Id is not valid, the operation won't have any effect.
       public: bool SetId(const int _id);
 
+      ////////////
+      /// Location
+      ////////////
+
       /// \brief Get a mutable reference to the waypoint location.
       /// \return A mutable reference to the waypoint location.
       public: ignition::math::SphericalCoordinates &Location();
 
+      //////////////
+      /// Validation
+      //////////////
+
       /// \return True if the waypoint Id is valid. A valid waypoint Id is a
       /// positive number.
       public: bool Valid() const;
+
+      /////////////
+      /// Operators
+      /////////////
 
       /// \brief Equality operator, result = this == _other
       /// \param[in] _other Waypoint to check for equality.

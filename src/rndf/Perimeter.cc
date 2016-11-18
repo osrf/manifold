@@ -209,7 +209,7 @@ bool Perimeter::Load(std::ifstream &_rndfFile, const int _zoneId,
   for (auto i = 0; i < numPoints; ++i)
   {
     rndf::Waypoint waypoint;
-    if (!waypoint.Parse(_rndfFile, _zoneId, 0, waypoint, _lineNumber))
+    if (!waypoint.Load(_rndfFile, _zoneId, 0, _lineNumber))
       return false;
 
     perimeterPoints.push_back(waypoint);

@@ -160,7 +160,7 @@ bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
   for (auto i = 0; i < numWaypoints; ++i)
   {
     rndf::Waypoint waypoint;
-    if (!waypoint.Parse(_rndfFile, _segmentId, laneId, waypoint, _lineNumber))
+    if (!waypoint.Load(_rndfFile, _segmentId, laneId, _lineNumber))
       return false;
 
     waypoints.push_back(waypoint);

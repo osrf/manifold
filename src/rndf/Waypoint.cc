@@ -15,8 +15,11 @@
  *
 */
 
+#include <cassert>
+#include <fstream>
 #include <iostream>
 #include <regex>
+#include <string>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "manifold/rndf/ParserUtils.hh"
@@ -93,16 +96,15 @@ Waypoint::~Waypoint()
 }
 
 //////////////////////////////////////////////////
-bool Waypoint::Parse(std::ifstream &_rndfFile, const int _segmentId,
-  const int _laneId, rndf::Waypoint &_waypoint, int &_lineNumber)
+bool Waypoint::Load(std::ifstream &_rndfFile, const int _segmentId,
+  const int _laneId, int &_lineNumber)
 {
-  std::smatch result;
   std::string lineread;
-
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
   // Parse the "waypoint" .
+  std::smatch result;
   std::regex rgxWaypointId("^" + std::to_string(_segmentId) + "\\." +
     std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxDouble +
     "\\s+" + kRgxDouble + "\\s*(" + kRgxComment +  ")?\\s*$");
@@ -114,13 +116,16 @@ bool Waypoint::Parse(std::ifstream &_rndfFile, const int _segmentId,
     std::cerr << " \"" << lineread << "\"" << std::endl;
     return false;
   }
+
+  assert(result.size() >= 3);
+
   std::string::size_type sz;
   int waypointId = std::stoi(result[1], &sz);
   double latitude  = std::stod(result[2], &sz);
   double longitude = std::stod(result[3], &sz);
 
   // Populate the waypoint.
-  _waypoint.SetId(waypointId);
+  this->SetId(waypointId);
 
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
@@ -130,7 +135,7 @@ bool Waypoint::Parse(std::ifstream &_rndfFile, const int _segmentId,
   double elev = 0.0;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
 
-  _waypoint.Location() = sc;
+  this->Location() = sc;
 
   return true;
 }
