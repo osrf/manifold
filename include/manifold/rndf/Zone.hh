@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_ZONE_HH_
 #define MANIFOLD_RNDF_ZONE_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,9 +32,52 @@ namespace manifold
     // Forward declarations.
     class ParkingSpot;
     class Perimeter;
+    class ZoneHeaderPrivate;
     class ZonePrivate;
 
-    /// \brief ToDo.
+    /// \internal
+    /// \brief An internal private zone header class.
+    class ZoneHeader
+    {
+      /// \brief Default constructor.
+      public: ZoneHeader();
+
+      /// \brief Destructor.
+      public: ~ZoneHeader() = default;
+
+      /// \brief Load a zone header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The expected zone Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a zone header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _zoneId,
+                        int &_lineNumber);
+
+      ////////
+      /// Name
+      ////////
+
+      /// \brief Get the zone name. E.g.: "North_parking_lot".
+      /// \return The zone name.
+      public: std::string Name() const;
+
+      /// \brief Set the zone name. E.g.: "North_parking_lot".
+      /// \param[in] _name The new name.
+      public: void SetName(const std::string &_name) const;
+
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<ZoneHeaderPrivate> dataPtr;
+    };
+
+    /// \brief An abstraction for representing areas within free vehicle
+    /// movement is permitted. The zone is determined by a polygonal boundary
+    /// defined by perimeter points. Some perimeter points are identified as
+    /// entry and exit points into the zone area. A zone may also include one
+    /// or more parking spots, each specified by a pair of waypoints.
     class MANIFOLD_VISIBLE Zone
     {
       /// \brief Default constructor.
@@ -53,10 +97,15 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~Zone();
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         rndf::Zone &_zone,
-                         int &_lineNumber);
+      /// \brief Load a zone from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a zone block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        int &_lineNumber);
 
       ///////
       /// Id
@@ -141,6 +190,7 @@ namespace manifold
       /// Validation
       //////////////
 
+      /// \brief Whether the current object is valid or not.
       /// \return True if the zone is valid.
       public: bool Valid() const;
 
@@ -162,12 +212,6 @@ namespace manifold
       /// \param[in] _other The new zone.
       /// \return A reference to this instance.
       public: Zone &operator=(const Zone &_other);
-
-      /// \brief ToDo.
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                const int _zoneId,
-                                std::string &_zoneName,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

@@ -142,7 +142,7 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
   for (auto i = 0; i < numZones; ++i)
   {
     rndf::Zone zone;
-    if (!zone.Parse(_rndfFile, zone, lineNumber))
+    if (!zone.Load(_rndfFile, lineNumber))
       return false;
 
     zones.push_back(zone);

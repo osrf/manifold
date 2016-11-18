@@ -36,6 +36,20 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for ZoneHeader class.
+    class ZoneHeaderPrivate
+    {
+      /// \brief Default constructor.
+      public: ZoneHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~ZoneHeaderPrivate() = default;
+
+      /// \brief Zone name.
+      public: std::string name = "";
+    };
+
+    /// \internal
     /// \brief Private data for Zone class.
     class ZonePrivate
     {
@@ -49,7 +63,7 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~ZonePrivate() = default;
 
-      /// \brief Unique zone identifier. E.g.: 1
+      /// \brief Zone identifier. E.g.: 1
       public: int id = 0;
 
       /// \brief Optional parking spots.
@@ -59,11 +73,72 @@ namespace manifold
       public: Perimeter perimeter;
 
       /// Below are the optional zone header members.
-
-      /// \brief Zone name.
-      public: std::string name;
+      public: ZoneHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+ZoneHeader::ZoneHeader()
+{
+  this->dataPtr.reset(new ZoneHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+bool ZoneHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
+  int &_lineNumber)
+{
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxPerimeterId("^perimeter\\s+" + std::to_string(_zoneId) +
+    "\\.0\\s*(" + kRgxComment + ")?\\s*$");
+
+  // Check if we found the "perimeter" element.
+  // If this is the case we should leave.
+  if (std::regex_match(lineread, rgxPerimeterId))
+  {
+    // Restore the file position and line number.
+    // ParseHeader() shouldn't have any effect.
+    _rndfFile.seekg(oldPos);
+    _lineNumber = oldLineNumber;
+    return true;
+  }
+
+  std::regex rgxHeader("^zone_name\\s+(" + kRgxString +
+    ")\\s*(" + kRgxComment + ")?$");
+  std::smatch result;
+
+  std::regex_search(lineread, result, rgxHeader);
+  if (result.size() <= 2)
+  {
+    // Invalid or header element.
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse zone header "
+              << "element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  assert(result.size() > 2);
+
+  this->SetName(result[1]);
+  return true;
+}
+
+//////////////////////////////////////////////////
+std::string ZoneHeader::Name() const
+{
+  return this->dataPtr->name;
+}
+
+//////////////////////////////////////////////////
+void ZoneHeader::SetName(const std::string &_name) const
+{
+  this->dataPtr->name = _name;
 }
 
 //////////////////////////////////////////////////
@@ -98,7 +173,7 @@ Zone::~Zone()
 }
 
 //////////////////////////////////////////////////
-bool Zone::Parse(std::ifstream &_rndfFile, rndf::Zone &_zone, int &_lineNumber)
+bool Zone::Load(std::ifstream &_rndfFile, int &_lineNumber)
 {
   int zoneId;
   if (!parsePositive(_rndfFile, "zone", zoneId, _lineNumber))
@@ -108,10 +183,9 @@ bool Zone::Parse(std::ifstream &_rndfFile, rndf::Zone &_zone, int &_lineNumber)
   if (!parseNonNegative(_rndfFile, "num_spots", numSpots, _lineNumber))
     return false;
 
-  // Parse optional zone header (containing the zone name).
-  std::string zoneName;
-  std::cout << "ParseZoneHeader" << std::endl;
-  if (!this->ParseHeader(_rndfFile, zoneId, zoneName, _lineNumber))
+  // Parse the optional zone header.
+  ZoneHeader header;
+  if (!header.Load(_rndfFile, zoneId, _lineNumber))
     return false;
 
   // Parse the perimeter.
@@ -135,9 +209,10 @@ bool Zone::Parse(std::ifstream &_rndfFile, rndf::Zone &_zone, int &_lineNumber)
     return false;
 
   // Populate the zone.
-  _zone.SetId(zoneId);
-  _zone.Spots() = spots;
-  _zone.SetName(zoneName);
+  this->SetId(zoneId);
+  this->Spots() = spots;
+  this->Perimeter() = perimeter;
+  this->SetName(header.Name());
 
   return true;
 }
@@ -253,13 +328,13 @@ const rndf::Perimeter &Zone::Perimeter() const
 //////////////////////////////////////////////////
 std::string Zone::Name() const
 {
-  return this->dataPtr->name;
+  return this->dataPtr->header.Name();
 }
 
 //////////////////////////////////////////////////
 void Zone::SetName(const std::string &_name) const
 {
-  this->dataPtr->name = _name;
+  this->dataPtr->header.SetName(_name);
 }
 
 //////////////////////////////////////////////////
@@ -288,49 +363,4 @@ Zone &Zone::operator=(const Zone &_other)
   this->Perimeter() = _other.Perimeter();
   this->SetName(_other.Name());
   return *this;
-}
-
-//////////////////////////////////////////////////
-bool Zone::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
-  std::string &_zoneName, int &_lineNumber)
-{
-  _zoneName = "";
-
-  std::regex rgxHeader("^zone_name (" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
-  std::regex rgxPerimeterId("^perimeter " + std::to_string(_zoneId) + "\\.0$");
-  std::smatch result;
-
-  auto oldPos = _rndfFile.tellg();
-  int oldLineNumber = _lineNumber;
-
-  std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
-  std::cout << "Processing [" << lineread << "]" << std::endl;
-
-  // Check if we found the "perimeter" element.
-  // If this is the case we should leave.
-  if (std::regex_match(lineread, rgxPerimeterId))
-  {
-    // Restore the file position and line number.
-    // ParseHeader() shouldn't have any effect.
-    _rndfFile.seekg(oldPos);
-    _lineNumber = oldLineNumber;
-    return true;
-  }
-
-  std::regex_search(lineread, result, rgxHeader);
-  if (result.size() <= 2)
-  {
-    // Invalid or header element.
-    std::cerr << "[Line " << _lineNumber << "]: Unable to parse zone header "
-              << "element" << std::endl;
-    std::cerr << " \"" << lineread << "\"" << std::endl;
-    return false;
-  }
-
-  _zoneName = result[1];
-  return true;
 }
