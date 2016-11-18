@@ -25,15 +25,17 @@ namespace manifold
 {
   namespace rndf
   {
-    /// \brief A unique id of the form x.y.z, where x,y.z are all positive
-    /// numbers.
+    /// \brief A unique id of the form x.y.z, where x and z are positive
+    /// numbers and y is non-negative. The reason to support this is because
+    /// the perimeter Ids are always 0.
     class MANIFOLD_VISIBLE UniqueId
     {
+      /// \brief Default constructor.
       public: UniqueId();
 
       /// \brief Constructor.
       /// \param[in] _segmentId Segment Id (a positive number).
-      /// \param[in] _laneId Lane Id (a positive number).
+      /// \param[in] _laneId Lane Id (a non-negative number).
       /// \param[in] _waypointId Waypoint Id (a positive number).
       /// \sa Valid.
       public: explicit UniqueId(const int _segmentId,
@@ -80,16 +82,17 @@ namespace manifold
       /// \sa Valid.
       public: bool SetWaypointId(const int _id);
 
+      /// \brief Whether the object is valid or not.
       /// \return True if the unique Id is valid.
       public: bool Valid() const;
 
       /// \brief Equality operator, result = this == _other
-      /// \param[in] _other UniqueId to check for equality
+      /// \param[in] _other UniqueId to check for equality.
       /// \return true if this == _other
       public: bool operator==(const UniqueId &_other) const;
 
       /// \brief Inequality
-      /// \param[in] _other UniqueId to check for inequality
+      /// \param[in] _other UniqueId to check for inequality.
       /// \return true if this != _other
       public: bool operator!=(const UniqueId &_other) const;
 

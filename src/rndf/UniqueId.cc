@@ -94,7 +94,7 @@ int UniqueId::LaneId() const
 //////////////////////////////////////////////////
 bool UniqueId::SetLaneId(const int _id)
 {
-  // We allow 0 here because a perimter Id is 0.
+  // We allow 0 here because a perimeter Id is always 0.
   bool valid = _id >= 0;
   if (valid)
     this->laneId = _id;

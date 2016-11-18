@@ -39,7 +39,7 @@ class WaypointTest : public testing::FileParserUtils
 /// \brief Check id-related accessors.
 TEST(Waypoint, id)
 {
-  // Default surface type
+  // Default surface type.
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
   ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
@@ -68,7 +68,7 @@ TEST(Waypoint, id)
 /// \brief Check location-related accessors.
 TEST(Waypoint, location)
 {
-  // Default surface type
+  // Default surface type.
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
   ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
