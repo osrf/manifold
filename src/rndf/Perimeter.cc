@@ -17,8 +17,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
 #include <iostream>
 #include <regex>
+#include <string>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -71,6 +73,30 @@ namespace manifold
 PerimeterHeader::PerimeterHeader()
 {
   this->dataPtr.reset(new PerimeterHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+bool PerimeterHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
+  const int _perimeterId, int &_lineNumber)
+{
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  // We should leave if we don't find the "exit" element.
+  rndf::Exit exit;
+  while (exit.Parse(_rndfFile, _zoneId, _perimeterId, exit, _lineNumber))
+  {
+    this->AddExit(exit);
+    oldPos = _rndfFile.tellg();
+    oldLineNumber = _lineNumber;
+  }
+
+  // Restore the file position and line number.
+  // The next nextRealLine() call should point to the next element that is not
+  // part of the header.
+  _rndfFile.seekg(oldPos);
+  _lineNumber = oldLineNumber;
+  return true;
 }
 
 //////////////////////////////////////////////////
@@ -150,15 +176,16 @@ Perimeter::~Perimeter()
 }
 
 //////////////////////////////////////////////////
-bool Perimeter::Parse(std::ifstream &_rndfFile, const int _zoneId,
-  rndf::Perimeter &_perimeter, int &_lineNumber)
+bool Perimeter::Load(std::ifstream &_rndfFile, const int _zoneId,
+  int &_lineNumber)
 {
   std::string lineread;
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
   // Parse the "perimeter Id" .
-  std::regex rgxPerimeterId("^perimeter " + std::to_string(_zoneId) + "\\.0$");
+  std::regex rgxPerimeterId("^perimeter\\s+" + std::to_string(_zoneId) +
+    "\\.0\\s*(" + kRgxComment + ")?\\s*$");
   if (!std::regex_match(lineread, rgxPerimeterId))
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse perimeter "
@@ -173,14 +200,14 @@ bool Perimeter::Parse(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Parse optional perimeter header.
-  std::vector<rndf::Exit> exits;
-  if (!this->ParseHeader(_rndfFile, _zoneId, 0, exits, _lineNumber))
+  PerimeterHeader header;
+  if (!header.Load(_rndfFile, _zoneId, 0, _lineNumber))
     return false;
 
+  // Parse the perimeter points.
   std::vector<rndf::Waypoint> perimeterPoints;
   for (auto i = 0; i < numPoints; ++i)
   {
-    // Parse a perimeterpoint.
     rndf::Waypoint waypoint;
     if (!waypoint.Parse(_rndfFile, _zoneId, 0, waypoint, _lineNumber))
       return false;
@@ -193,8 +220,8 @@ bool Perimeter::Parse(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Populate the perimeter.
-  _perimeter.Points() = perimeterPoints;
-  _perimeter.Exits() = exits;
+  this->Points() = perimeterPoints;
+  this->Exits() = header.Exits();
 
   return true;
 }
@@ -359,28 +386,4 @@ Perimeter &Perimeter::operator=(const Perimeter &_other)
   this->Points() = _other.Points();
   this->Exits() = _other.Exits();
   return *this;
-}
-
-//////////////////////////////////////////////////
-bool Perimeter::ParseHeader(std::ifstream &_rndfFile, const int _zoneId,
-  const int _perimeterId, std::vector<rndf::Exit> &_exits, int &_lineNumber)
-{
-  auto oldPos = _rndfFile.tellg();
-  int oldLineNumber = _lineNumber;
-
-  // We should leave if we don't find the "exit" element.
-  rndf::Exit exit;
-  while (exit.Parse(_rndfFile, _zoneId, _perimeterId, exit, _lineNumber))
-  {
-    _exits.push_back(exit);
-    oldPos = _rndfFile.tellg();
-    oldLineNumber = _lineNumber;
-  }
-
-  // Restore the file position and line number.
-  // The next nextRealLine() call should point to the next element that is not
-  // part of the header.
-  _rndfFile.seekg(oldPos);
-  _lineNumber = oldLineNumber;
-  return true;
 }

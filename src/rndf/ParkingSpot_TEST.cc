@@ -224,8 +224,8 @@ TEST(ParkingSpot, assignment)
 }
 
 //////////////////////////////////////////////////
-/// \brief Check parsing a parking spot from a file.
-TEST_F(ParkingSpotTest, parse)
+/// \brief Check loading a parking spot from a file.
+TEST_F(ParkingSpotTest, load)
 {
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
@@ -242,30 +242,6 @@ TEST_F(ParkingSpotTest, parse)
   Checkpoint checkpoint(130, 2);
 
   double spotWidth = 12 * 0.3048;
-
-  // Parking spot #1 (no options).
-  ParkingSpot expectedSpot1(1);
-  expectedSpot1.AddWaypoint(waypoint1);
-  expectedSpot1.AddWaypoint(waypoint2);
-
-  // Parking spot #2 (checkpoint option).
-  ParkingSpot expectedSpot2(1);
-  expectedSpot2.AddWaypoint(waypoint1);
-  expectedSpot2.AddWaypoint(waypoint2);
-  expectedSpot2.Checkpoint() = checkpoint;
-
-  // Parking spot #3 (width option).
-  ParkingSpot expectedSpot3(1);
-  expectedSpot3.AddWaypoint(waypoint1);
-  expectedSpot3.AddWaypoint(waypoint2);
-  expectedSpot3.SetWidth(spotWidth);
-
-  // Parking spot #4 (checkpoint and width options).
-  ParkingSpot expectedSpot4(1);
-  expectedSpot4.AddWaypoint(waypoint1);
-  expectedSpot4.AddWaypoint(waypoint2);
-  expectedSpot4.Checkpoint() = checkpoint;
-  expectedSpot4.SetWidth(spotWidth);
 
   // The first element is the content to be parsed.
   // The second element is the expected return value.

@@ -39,19 +39,19 @@ UniqueId::UniqueId(const int _segmentId, const int _laneId,
   {
     std::cerr << "[UniqueId()] Invalid segment Id[" << _segmentId
               << "]" << std::endl;
-    sId = 0;
+    sId = -1;
   }
-  if (_laneId <= 0)
+  if (_laneId < 0)
   {
     std::cerr << "[UniqueId()] Invalid lane Id[" << _laneId
               << "]" << std::endl;
-    lId = 0;
+    lId = -1;
   }
   if (_waypointId <= 0)
   {
     std::cerr << "[UniqueId()] Invalid waypoint Id[" << _waypointId
               << "]" << std::endl;
-    wId = 0;
+    wId = -1;
   }
 
   this->segmentId = sId;
@@ -94,7 +94,8 @@ int UniqueId::LaneId() const
 //////////////////////////////////////////////////
 bool UniqueId::SetLaneId(const int _id)
 {
-  bool valid = _id > 0;
+  // We allow 0 here because a perimter Id is 0.
+  bool valid = _id >= 0;
   if (valid)
     this->laneId = _id;
   return valid;
@@ -118,7 +119,7 @@ bool UniqueId::SetWaypointId(const int _id)
 //////////////////////////////////////////////////
 bool UniqueId::Valid() const
 {
-  return this->SegmentId() > 0 && this->LaneId() > 0 && this->WaypointId() > 0;
+  return this->SegmentId() > 0 && this->LaneId() >= 0 && this->WaypointId() > 0;
 }
 
 //////////////////////////////////////////////////

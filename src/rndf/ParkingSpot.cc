@@ -243,7 +243,7 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
 
   // Parse the "spot Id" .
   std::regex rgxSpotId("^spot\\s+" + std::to_string(_zoneId) + "\\." +
-    kRgxPositive + "\\s*(" + kRgxComment +  ")?\\s*$");
+    kRgxPositive + "\\s*(" + kRgxComment + ")?\\s*$");
   std::regex_search(lineread, result, rgxSpotId);
   if (result.size() < 2)
   {

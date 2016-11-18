@@ -75,9 +75,10 @@ bool Exit::Parse(std::ifstream &_rndfFile, const int _major, const int _minor,
     return false;
 
   // Parse the "exit" .
-  std::regex rgxLaneId("^exit " + std::to_string(_major) + "\\." +
-    std::to_string(_minor) + "\\" + kRgxPositive + " " + kRgxPositive +
-    "\\." + kRgxPositive + "\\." + kRgxPositive + "$");
+  std::regex rgxLaneId("^exit\\s+" + std::to_string(_major) + "\\." +
+    std::to_string(_minor) + "\\." + kRgxPositive + "\\s+" + kRgxPositive +
+    "\\." + kRgxPositive + "\\." + kRgxPositive + "\\s*(" + kRgxComment +
+    ")?\\s*$");
   std::regex_search(lineread, result, rgxLaneId);
   if (result.size() < 5)
     return false;

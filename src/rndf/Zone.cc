@@ -116,7 +116,7 @@ bool Zone::Parse(std::ifstream &_rndfFile, rndf::Zone &_zone, int &_lineNumber)
 
   // Parse the perimeter.
   rndf::Perimeter perimeter;
-  if (!perimeter.Parse(_rndfFile, zoneId, perimeter, _lineNumber))
+  if (!perimeter.Load(_rndfFile, zoneId, _lineNumber))
     return false;
 
   // Parse parking spots.

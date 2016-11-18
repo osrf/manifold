@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_PERIMETER_HH_
 #define MANIFOLD_RNDF_PERIMETER_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <vector>
 
@@ -89,10 +90,13 @@ namespace manifold
       private: std::unique_ptr<PerimeterHeaderPrivate> dataPtr;
     };
 
-    /// \brief ToDo.
+    /// \brief Abstraction for representing a perimeter as a collection of
+    /// perimeter points. A perimeter point can be tagged as "exit" if it's
+    /// posible to leave the zone (represented by the perimeter) and jump to a
+    /// different segment.
     class MANIFOLD_VISIBLE Perimeter
     {
-      /// \brief Constructor.
+      /// \brief Default constructor.
       /// \sa Valid.
       public: Perimeter();
 
@@ -109,10 +113,9 @@ namespace manifold
       ///////////
 
       /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         const int _zoneId,
-                         rndf::Perimeter &_perimeter,
-                         int &_lineNumber);
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _zoneId,
+                        int &_lineNumber);
 
       ////////////////////
       /// Perimeter points
@@ -208,13 +211,6 @@ namespace manifold
       /// \param[in] _other The new perimeter.
       /// \return A reference to this instance.
       public: Perimeter &operator=(const Perimeter &_other);
-
-      /// \brief ToDo.
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                const int _zoneId,
-                                const int _perimeterId,
-                                std::vector<rndf::Exit> &_exits,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.
