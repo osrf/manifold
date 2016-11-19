@@ -38,6 +38,23 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for RNDFHeader class.
+    class RNDFPrivate
+    {
+      /// \brief Default constructor.
+      public: RNDFPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~RNDFPrivate() = default;
+
+      /// \brief Format version.
+      public: std::string version;
+
+      /// \brief Creation date.
+      public: std::string date;
+    };
+
+    /// \internal
     /// \brief Private data for RNDF class.
     class RNDFPrivate
     {
@@ -380,9 +397,10 @@ bool RNDF::ParseHeader(std::ifstream &_rndfFile, std::string &_formatVersion,
   _formatVersion = "";
   _creationDate = "";
 
-  std::regex rgxHeader("^(format_version|creation_date) (" + kRgxString +
+  std::regex rgxHeader("^(format_version|creation_date)\\s+(" + kRgxString +
     ")\\s*(" + kRgxComment + ")?$");
-  std::regex rgxSegmentId("^segment " + kRgxPositive + "$");
+  std::regex rgxSegmentId("^segment\\s+" + kRgxPositive +
+    "\\s*(" + kRgxComment + ")?\\s*$");
   std::smatch result;
   for (auto i = 0; i < 2; ++i)
   {

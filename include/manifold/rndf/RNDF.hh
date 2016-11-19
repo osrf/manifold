@@ -36,6 +36,54 @@ namespace manifold
     class UniqueId;
     class Zone;
 
+    // \internal
+    /// \brief An internal private RNDF header class.
+    class RNDFHeader
+    {
+      /// \brief Default constructor.
+      public: RNDFHeader();
+
+      /// \brief Destructor.
+      public: ~RNDFHeader() = default;
+
+      /// \brief Load a RNDF header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a RNDF header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        int &_lineNumber);
+
+      ///////////
+      /// Version
+      ///////////
+
+      /// \brief Get the format version. E.g.: "2.3.6".
+      /// \return The format version.
+      public: std::string Version() const;
+
+      /// \brief Set the format version.
+      /// \param[in] _version The new version.
+      public: void SetVersion(const std::string &_version) const;
+
+      ////////
+      /// Date
+      ////////
+
+      /// \brief Get the creation date.
+      /// \return The creation date.
+      public: std::string Date() const;
+
+      /// \brief Set the creation date.
+      /// \param[in] _date The new creation date.
+      public: void SetDate(const std::string &_newDate) const;
+
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<RNDFHeaderPrivate> dataPtr;
+    };
+
     /// \brief ToDo.
     class MANIFOLD_VISIBLE RNDF
     {
@@ -52,7 +100,13 @@ namespace manifold
       ///////////
       /// Parsing
       ///////////
-      public: bool Parse(std::ifstream &_rndfFile);
+
+      /// \brief Load a RNDF from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \return True if the entire RNDF was correctly parsed or false
+      /// otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile);
 
       ////////
       /// Name
@@ -178,12 +232,6 @@ namespace manifold
 
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
-
-      /// \brief ToDo.
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                std::string &_formatVersion,
-                                std::string &_creationDate,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.
