@@ -131,7 +131,7 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
   for (auto i = 0; i < numSegments; ++i)
   {
     rndf::Segment segment;
-    if (!segment.Parse(_rndfFile, segment, lineNumber))
+    if (!segment.Load(_rndfFile, lineNumber))
       return false;
 
     segments.push_back(segment);

@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_SEGMENT_HH_
 #define MANIFOLD_RNDF_SEGMENT_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,9 +31,50 @@ namespace manifold
   {
     // Forward declarations.
     class Lane;
+    class SegmentHeaderPrivate;
     class SegmentPrivate;
 
-    /// \brief ToDo.
+    // \internal
+    /// \brief An internal private segment header class.
+    class SegmentHeader
+    {
+      /// \brief Default constructor.
+      public: SegmentHeader();
+
+      /// \brief Destructor.
+      public: ~SegmentHeader() = default;
+
+      /// \brief Load a segment header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _segmentId The next expected segment Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a segment header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _segmentId,
+                        int &_lineNumber);
+
+      ////////
+      /// Name
+      ////////
+
+      /// \brief Get the segment name. E.g.: "Wisconsin_Ave".
+      /// \return The segment name.
+      public: std::string Name() const;
+
+      /// \brief Set the segment name. E.g.: "Wisconsin_Ave".
+      /// \param[in] _name The new name.
+      public: void SetName(const std::string &_name) const;
+
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<SegmentHeaderPrivate> dataPtr;
+    };
+
+    /// \brief Abstraction for representing road segments. A road network is
+    /// composed by one or more segments, each of which comprises one or more
+    /// lanes.
     class MANIFOLD_VISIBLE Segment
     {
       /// \brief Default constructor.
@@ -56,10 +98,15 @@ namespace manifold
       /// Parsing
       ///////////
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         rndf::Segment &_segment,
-                         int &_lineNumber);
+      /// \brief Load a segment from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a segment block was found and parsed or false
+      /// otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        int &_lineNumber);
 
       ///////
       /// Id
@@ -154,12 +201,6 @@ namespace manifold
       /// \param[in] _other The new segment.
       /// \return A reference to this instance.
       public: Segment &operator=(const Segment &_other);
-
-      /// \brief ToDo.
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                const int _segmentId,
-                                std::string &_segmentName,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

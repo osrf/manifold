@@ -36,6 +36,20 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for SegmentHeader class.
+    class SegmentHeaderPrivate
+    {
+      /// \brief Default constructor.
+      public: SegmentHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~SegmentHeaderPrivate() = default;
+
+      /// \brief Zone name.
+      public: std::string name = "";
+    };
+
+    /// \internal
     /// \brief Private data for Segment class.
     class SegmentPrivate
     {
@@ -56,11 +70,72 @@ namespace manifold
       public: std::vector<rndf::Lane> lanes;
 
       /// Below are the optional segment header members.
-
-      /// \brief Segment name.
-      public: std::string name;
+      public: SegmentHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+SegmentHeader::SegmentHeader()
+{
+  this->dataPtr.reset(new SegmentHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
+  int &_lineNumber)
+{
+  auto oldPos = _rndfFile.tellg();
+  int oldLineNumber = _lineNumber;
+
+  std::string lineread;
+  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+    return false;
+
+  std::regex rgxLaneId("^lane\\s+" + std::to_string(_segmentId) + "\\." +
+    kRgxPositive + "\\s*(" + kRgxComment + ")?\\s*$");
+
+  // Check if we found the "lane" element.
+  // If this is the case we should leave.
+  if (std::regex_match(lineread, rgxLaneId))
+  {
+    // Restore the file position and line number.
+    // ParseHeader() shouldn't have any effect.
+    _rndfFile.seekg(oldPos);
+    _lineNumber = oldLineNumber;
+    return true;
+  }
+
+  std::regex rgxHeader("^segment_name\\s+(" + kRgxString +
+    ")\\s*(" + kRgxComment + ")?$");
+  std::smatch result;
+
+  std::regex_search(lineread, result, rgxHeader);
+  if (result.size() <= 2)
+  {
+    // Invalid or header element.
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse segment header "
+              << "element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  assert(result.size() > 2);
+
+  this->SetName(result[1]);
+  return true;
+}
+
+//////////////////////////////////////////////////
+std::string SegmentHeader::Name() const
+{
+  return this->dataPtr->name;
+}
+
+//////////////////////////////////////////////////
+void SegmentHeader::SetName(const std::string &_name) const
+{
+  this->dataPtr->name = _name;
 }
 
 //////////////////////////////////////////////////
@@ -95,8 +170,7 @@ Segment::~Segment()
 }
 
 //////////////////////////////////////////////////
-bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
-  int &_lineNumber)
+bool Segment::Load(std::ifstream &_rndfFile, int &_lineNumber)
 {
   int segmentId;
   if (!parsePositive(_rndfFile, "segment", segmentId, _lineNumber))
@@ -107,8 +181,8 @@ bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
     return false;
 
   // Parse optional segment header (containing the segment name).
-  std::string segmentName;
-  if (!this->ParseHeader(_rndfFile, segmentId, segmentName, _lineNumber))
+  SegmentHeader header;
+  if (!header.Load(_rndfFile, segmentId, _lineNumber))
     return false;
 
   std::vector<rndf::Lane> lanes;
@@ -127,9 +201,9 @@ bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
     return false;
 
   // Populate the segment.
-  _segment.SetId(segmentId);
-  _segment.Lanes() = lanes;
-  _segment.SetName(segmentName);
+  this->SetId(segmentId);
+  this->Lanes() = lanes;
+  this->SetName(header.Name());
 
   return true;
 }
@@ -233,13 +307,13 @@ bool Segment::RemoveLane(const int _laneId)
 //////////////////////////////////////////////////
 std::string Segment::Name() const
 {
-  return this->dataPtr->name;
+  return this->dataPtr->header.Name();
 }
 
 //////////////////////////////////////////////////
 void Segment::SetName(const std::string &_name) const
 {
-  this->dataPtr->name = _name;
+  this->dataPtr->header.SetName(_name);
 }
 
 //////////////////////////////////////////////////
@@ -271,49 +345,4 @@ Segment &Segment::operator=(const Segment &_other)
   this->Lanes() = _other.Lanes();
   this->SetName(_other.Name());
   return *this;
-}
-
-//////////////////////////////////////////////////
-bool Segment::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
-  std::string &_segmentName, int &_lineNumber)
-{
-  _segmentName = "";
-
-  std::regex rgxHeader("^segment_name (" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
-  std::regex rgxLaneId("^lane " + std::to_string(_segmentId) + "\\." +
-    kRgxPositive + "$");
-  std::smatch result;
-
-  auto oldPos = _rndfFile.tellg();
-  int oldLineNumber = _lineNumber;
-
-  std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
-  // Check if we found the "lane" element.
-  // If this is the case we should leave.
-  std::regex_search(lineread, result, rgxLaneId);
-  if (result.size() >= 2)
-  {
-    // Restore the file position and line number.
-    // ParseHeader() shouldn't have any effect.
-    _rndfFile.seekg(oldPos);
-    _lineNumber = oldLineNumber;
-    return true;
-  }
-
-  std::regex_search(lineread, result, rgxHeader);
-  if (result.size() <= 2)
-  {
-    // Invalid or header element.
-    std::cerr << "[Line " << _lineNumber << "]: Unable to parse segment header "
-              << "element" << std::endl;
-    std::cerr << " \"" << lineread << "\"" << std::endl;
-    return false;
-  }
-
-  _segmentName = result[1];
-  return true;
 }
