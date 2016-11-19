@@ -166,9 +166,9 @@ namespace manifold
     }
 
     //////////////////////////////////////////////////
-    bool parseBoundary(const std::string &_input, Lane::Marking &_boundary)
+    bool parseBoundary(const std::string &_input, Marking &_boundary)
     {
-      _boundary = Lane::Marking::UNDEFINED;
+      _boundary = Marking::UNDEFINED;
 
       std::regex rgx("^(left|right)_boundary\\s+(double_yellow|solid_yellow|"
         "solid_white|broken_white)\\s*(" + kRgxComment + ")?\\s*$");
@@ -180,13 +180,13 @@ namespace manifold
       assert(result.size() >= 3);
       std::string boundary = result[2];
       if (boundary == "double_yellow")
-        _boundary = Lane::Marking::DOUBLE_YELLOW;
+        _boundary = Marking::DOUBLE_YELLOW;
       else if (boundary == "solid_yellow")
-        _boundary = Lane::Marking::SOLID_YELLOW;
+        _boundary = Marking::SOLID_YELLOW;
       else if (boundary == "solid_white")
-        _boundary = Lane::Marking::SOLID_WHITE;
+        _boundary = Marking::SOLID_WHITE;
       else if (boundary == "broken_white")
-        _boundary = Lane::Marking::BROKEN_WHITE;
+        _boundary = Marking::BROKEN_WHITE;
       else
         return false;
 

@@ -62,9 +62,9 @@ namespace manifold
     static const std::string kRgxDouble = "(-?[0-9]*\\.?[0-9]+)";
 
     /// \brief Regular expression that captures a unique Id "x.y.z", where
-    /// 'x', 'y' and 'z' are positive numbers.
+    /// 'x', and 'z' are positive numbers and 'y' is non-negative.
     static const std::string kRgxUniqueId = kRgxPositive + "\\." +
-      kRgxPositive + "\\." + kRgxPositive;
+      kRgxNonNegative + "\\." + kRgxPositive;
 
     /// \brief Regular expression that captures a comment. A comment is
     /// delimited by "/*" and "*/" (C-style).
@@ -182,7 +182,7 @@ namespace manifold
     /// otherwise.
     MANIFOLD_VISIBLE
     bool parseBoundary(const std::string &_input,
-                       Lane::Marking &_boundary);
+                       Marking &_boundary);
 
     /// \brief Checks if a string matches the following expression:
     /// "checkpoint <WAYPOINT_ID> <CHECKPOINT_ID> [<COMMENT>]".

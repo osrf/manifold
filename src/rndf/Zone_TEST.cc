@@ -256,7 +256,7 @@ TEST_F(ZoneTest, Load)
       "end_perimeter\n"
       "end_zone\n"
                                                     , false, 0, 3),
-    // Invalid zone Id.
+    // Missing zone Id.
     std::make_tuple(
       "\n\n"
       "zone \n"
@@ -345,7 +345,7 @@ TEST_F(ZoneTest, Load)
       "end_perimeter\n"
       "end_zone\n"
                                                     , false, 0, 4),
-    // Missign zone_name.
+    // Missing zone_name.
     std::make_tuple(
       "\n\n"
       "zone  67\n"
@@ -360,7 +360,7 @@ TEST_F(ZoneTest, Load)
       "end_perimeter\n"
       "end_zone\n"
                                                     , false, 0, 5),
-    // Missign zone_name value.
+    // Missing zone_name value.
     std::make_tuple(
       "\n\n"
       "zone  67\n"

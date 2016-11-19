@@ -116,7 +116,7 @@ bool Segment::Parse(std::ifstream &_rndfFile, rndf::Segment &_segment,
   {
     // Parse a lane.
     rndf::Lane lane;
-    if (!lane.Parse(_rndfFile, segmentId, lane, _lineNumber))
+    if (!lane.Load(_rndfFile, segmentId, _lineNumber))
       return false;
 
     lanes.push_back(lane);

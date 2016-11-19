@@ -29,8 +29,8 @@ namespace manifold
     // Forward declarations.
     class CheckpointPrivate;
 
-    /// \brief A checkpoint is a waypoint that has to be visited. It has its
-    /// own Id.
+    /// \brief A checkpoint is a waypoint that has to be visited.
+    /// It also has its own Id.
     class MANIFOLD_VISIBLE Checkpoint
     {
       /// \brief Default constructor.
@@ -67,8 +67,8 @@ namespace manifold
 
       /// \brief Set the identifier of the waypoint.
       /// \param[in] _id New unique Id.
-      /// \return True if the operation succeed or false otherwise (e.g.: if the
-      /// id is not valid).
+      /// \return True if the operation succeed or false otherwise
+      /// (e.g.: if the id is not valid).
       /// \sa Valid.
       public: bool SetWaypointId(const int _id);
 

@@ -18,6 +18,7 @@
 #ifndef MANIFOLD_RNDF_LANE_HH_
 #define MANIFOLD_RNDF_LANE_HH_
 
+#include <iosfwd>
 #include <memory>
 #include <vector>
 
@@ -30,29 +31,190 @@ namespace manifold
     // Forward declarations.
     class Checkpoint;
     class Exit;
+    class LaneHeaderPrivate;
     class LanePrivate;
-    class UniqueId;
     class Waypoint;
+
+    /// \def Scope Different options for the lane boundaries.
+    enum class Marking
+    {
+      /// \brief Double yellow type.
+      DOUBLE_YELLOW,
+      /// \brief Solid yellow type.
+      SOLID_YELLOW,
+      /// \brief Solid white type.
+      SOLID_WHITE,
+      /// \brief Broken white,
+      BROKEN_WHITE,
+      /// \brief Undefined.
+      UNDEFINED,
+    };
+
+    /// \internal
+    /// \brief An internal private lane header class.
+    class LaneHeader
+    {
+      /// \brief Default constructor.
+      public: LaneHeader();
+
+      /// \brief Destructor.
+      public: ~LaneHeader() = default;
+
+      /// \brief Load a lane header from an input stream coming from a
+      /// text file. The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _segmentId The expected zone Id.
+      /// \param[in] _laneId The expected lane Id.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a lane header block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _segmentId,
+                        const int _laneId,
+                        int &_lineNumber);
+
+      /////////
+      /// Width
+      /////////
+
+      /// \brief Get the lane width in meters.
+      /// \return Return the lane width in meters.
+      public: double Width() const;
+
+      /// \brief Set the lane width.
+      /// \param[in] _newWidth The new width in meters.
+      public: bool SetWidth(const double _newWidth);
+
+      //////////////
+      /// Boundaries
+      //////////////
+
+      /// \brief Get the left boundary type.
+      /// \return The left boundary type.
+      public: Marking LeftBoundary() const;
+
+      /// \brief Set the new left boundary type.
+      /// \param[in] _boundary The new left boundary type.
+      public: void SetLeftBoundary(const Marking &_boundary);
+
+      /// \brief Get the right boundary type.
+      /// \return The right boundary type.
+      public: Marking RightBoundary() const;
+
+      /// \brief Set the new right boundary type.
+      /// \param[in] _boundary The new right boundary type.
+      public: void SetRightBoundary(const Marking &_boundary);
+
+      ///////////////
+      /// Checkpoints
+      ///////////////
+
+      /// \brief Get the number of checkpoints stored.
+      /// \return The number of checkpoints in the current lane.
+      public: unsigned int NumCheckpoints() const;
+
+      /// \brief Get a mutable reference to the vector of checkpoints;
+      /// \return A mutable reference to the vector of checkpoints.
+      public: std::vector<rndf::Checkpoint> &Checkpoints();
+
+      /// \brief Get the vector of checkpoints;
+      /// \return The vector of checkpoints.
+      public: const std::vector<rndf::Checkpoint> &Checkpoints() const;
+
+      /// \brief Get the details of one of the checkpoints with Id _cpId.
+      /// \param[in] _cpId The checkpoint Id.
+      /// \param[out] _cp The checkpoint requested.
+      /// \return True if the checkpoint was found or false otherwise.
+      public: bool Checkpoint(const int _cpId, rndf::Checkpoint &_cp) const;
+
+      /// \brief Update an existing checkpoint.
+      /// \param[in] _cp The updated checkpoint.
+      /// \return True if the checkpoint was found and updated or false
+      /// otherwise.
+      public: bool UpdateCheckpoint(const rndf::Checkpoint &_cp);
+
+      /// \brief Add a new checkpoint.
+      /// \param[in] _newCheckpoint A new checkpoint to be added.
+      /// \return True when the checkpoint was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the checkpoint was already existing
+      /// or invalid).
+      public: bool AddCheckpoint(const rndf::Checkpoint &_newCheckpoint);
+
+      /// \brief Remove an existing checkpoint.
+      /// \param[in] _cpId The checkpoint Id to be removed.
+      /// \return True when the checkpoint was successfully deleted
+      /// or false otherwise (e.g. if the Id of the checkpoint was not found
+      /// or invalid).
+      public: bool RemoveCheckpoint(const int _cpId);
+
+      /////////
+      /// Stops
+      /////////
+
+      /// \brief Get the number of stops stored.
+      /// \return The number of stops in the current lane.
+      public: unsigned int NumStops() const;
+
+      /// \brief Get a mutable reference to the vector of stops. The elements
+      /// are waypoint Ids.
+      /// \return A mutable reference to the vector of stops.
+      public: std::vector<int> &Stops();
+
+      /// \brief Get the vector of stops. The elements are waypoint Ids.
+      /// \return The vector of stops.
+      public: const std::vector<int> &Stops() const;
+
+      /// \brief Add a new stop.
+      /// \param[in] _waypointId The Id of a new waypoint considered a stop.
+      /// \return True when the stop was successfully added to the list or
+      /// false otherwise (e.g. if the Id of the waypoint was already existing
+      /// or invalid).
+      public: bool AddStop(const int _waypointId);
+
+      /// \brief Remove an existing stop.
+      /// \param[in] _waypointId The waypoint Id (of a stop sign) to be removed.
+      /// \return True when the waypoint was successfully deleted
+      /// or false otherwise (e.g. if the Id of the waypoint was not found
+      /// or invalid).
+      public: bool RemoveStop(const int _waypointId);
+
+      /////////
+      /// Exits
+      /////////
+
+      /// \brief Get the number of exits stored.
+      /// \return The number of exits in the current lane.
+      public: unsigned int NumExits() const;
+
+      /// \brief Get a mutable reference to the vector of exits.
+      /// \return A mutable reference to the vector of exits.
+      public: std::vector<Exit> &Exits();
+
+      /// \brief Get the vector of stops.
+      /// \return The vector of stops.
+      public: const std::vector<Exit> &Exits() const;
+
+      /// \brief Add a new exit.
+      /// \param[in] _newExit The exit to add.
+      /// \return True when the exit was successfully added or
+      /// false otherwise (e.g. if the exit  was already existing or invalid).
+      public: bool AddExit(const Exit &_newExit);
+
+      /// \brief Remove an existing exit.
+      /// \param[in] _exit The exit to be removed.
+      /// \return True when the exit was successfully deleted
+      /// or false otherwise (e.g. if the exit was not found or invalid).
+      public: bool RemoveExit(const Exit &_exit);
+
+      /// \brief Smart pointer to private data.
+      private: std::unique_ptr<LaneHeaderPrivate> dataPtr;
+    };
 
     /// \brief A class that represents a road lane composed by a set of
     /// waypoints.
     class MANIFOLD_VISIBLE Lane
     {
-      /// \def Scope Different options for the lane boundaries.
-      public: enum class Marking
-      {
-        /// \brief Double yellow type.
-        DOUBLE_YELLOW,
-        /// \brief Solid yellow type.
-        SOLID_YELLOW,
-        /// \brief Solid white type.
-        SOLID_WHITE,
-        /// \brief Broken white,
-        BROKEN_WHITE,
-        /// \brief Undefined.
-        UNDEFINED,
-      };
-
       /// \brief Default constructor.
       /// \sa Valid.
       public: Lane();
@@ -74,11 +236,15 @@ namespace manifold
       /// Parsing
       ///////////
 
-      /// \brief ToDo.
-      public: bool Parse(std::ifstream &_rndfFile,
-                         const int _segmentId,
-                         rndf::Lane &_lane,
-                         int &_lineNumber);
+      /// \brief Load a lane from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in, out] _segmentId Expected segment Id.
+      /// \return True if a lane block was found and parsed or
+      /// false otherwise (e.g.: EoF or incorrect format found).
+      public: bool Load(std::ifstream &_rndfFile,
+                        const int _segmentId,
+                        int &_lineNumber);
 
       ///////
       /// Id
@@ -294,18 +460,6 @@ namespace manifold
       /// \param[in] _other The new lane.
       /// \return A reference to this instance.
       public: Lane &operator=(const Lane &_other);
-
-      /// \brief ToDo.
-      private: bool ParseHeader(std::ifstream &_rndfFile,
-                                const int _segmentId,
-                                const int _laneId,
-                                double &_width,
-                                Lane::Marking &_leftBoundary,
-                                Lane::Marking &_rightBoundary,
-                                std::vector<rndf::Checkpoint> &_checkpoints,
-                                std::vector<rndf::UniqueId> &_stops,
-                                std::vector<rndf::Exit> &_exits,
-                                int &_lineNumber);
 
       /// \internal
       /// \brief Smart pointer to private data.

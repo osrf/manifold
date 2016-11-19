@@ -36,16 +36,43 @@ namespace manifold
   namespace rndf
   {
     /// \internal
+    /// \brief Private data for ZoneHeader class.
+    class LaneHeaderPrivate
+    {
+      /// \brief Default constructor.
+      public: LaneHeaderPrivate() = default;
+
+      /// \brief Destructor.
+      public: virtual ~LaneHeaderPrivate() = default;
+
+      /// \brief Lane width in meters (non-negative).
+      double width = 0.0;
+
+      /// \brief Left boundary type.
+      Marking leftBoundary = Marking::UNDEFINED;
+
+      /// \brief Right boundary type.
+      Marking rightBoundary = Marking::UNDEFINED;
+
+      /// \brief Collection of waypoints that are checkpoints.
+      std::vector<Checkpoint> checkpoints;
+
+      /// \brief Collection of waypoints that are stops. We just store the
+      /// waypoint Id.
+      std::vector<int> stops;
+
+      /// \brief Collection of exits.
+      std::vector<Exit> exits;
+    };
+
+    /// \internal
     /// \brief Private data for Lane class.
     class LanePrivate
     {
       /// \brief Constructor.
       /// \param[in] _id Lane Id.
       public: explicit LanePrivate(const int _id)
-        : id(_id),
-          width(0.0),
-          leftBoundary(Lane::Marking::UNDEFINED),
-          rightBoundary(Lane::Marking::UNDEFINED)
+        : id(_id)
       {
       }
 
@@ -59,27 +86,397 @@ namespace manifold
       public: std::vector<Waypoint> waypoints;
 
       /// Below are the optional lane header members.
-
-      /// \brief Lane width in meters (non-negative).
-      double width = 0.0;
-
-      /// \brief Left boundary type.
-      Lane::Marking leftBoundary = Lane::Marking::UNDEFINED;
-
-      /// \brief Right boundary type.
-      Lane::Marking rightBoundary = Lane::Marking::UNDEFINED;
-
-      /// \brief Collection of waypoints that are checkpoints.
-      std::vector<Checkpoint> checkpoints;
-
-      /// \brief Collection of waypoints that are stops. We just store the
-      /// waypoint Id.
-      std::vector<int> stops;
-
-      /// \brief Collection of exits.
-      std::vector<Exit> exits;
+      LaneHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+LaneHeader::LaneHeader()
+{
+  this->dataPtr.reset(new LaneHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
+  const int _laneId, int &_lineNumber)
+{
+  double width = 0;
+  Marking leftBoundary = Marking::UNDEFINED;
+  Marking rightBoundary = Marking::UNDEFINED;
+  std::vector<rndf::Checkpoint> checkpoints;
+  std::vector<int> stops;
+  std::vector<rndf::Exit> exits;
+
+  // The width and left/right boundary options can only appear once.
+  bool widthFound = false;
+  bool leftBoundaryFound = false;
+  bool rightBoundaryFound = false;
+
+  std::regex rgxHeader("^(lane_width|left_boundary|right_boundary|checkpoint|"
+    "stop|exit|" + kRgxUniqueId + ")\\s+");
+
+  bool done = false;
+
+  do
+  {
+    auto oldPos = _rndfFile.tellg();
+    int oldLineNumber = _lineNumber;
+
+    std::string lineread;
+    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+      return false;
+
+    std::smatch result;
+    std::regex_search(lineread, result, rgxHeader);
+    if ((result.size() < 2)                                   ||
+        (result[1] == "lane_width"     && widthFound)         ||
+        (result[1] == "left_boundary"  && leftBoundaryFound)  ||
+        (result[1] == "right_boundary" && rightBoundaryFound))
+    {
+      // Invalid or repeated header element.
+      std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane header "
+                << "element." << std::endl;
+      std::cerr << " \"" << lineread << "\"" << std::endl;
+      return false;
+    }
+
+    if (result[1] == "lane_width")
+    {
+      int widthFeet;
+      if (!parseNonNegative(lineread, "lane_width", widthFeet))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane width element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      // Convert from feet to meters.
+      width = widthFeet * 0.3048;
+      widthFound = true;
+    }
+    else if (result[1] == "left_boundary")
+    {
+      if (!parseBoundary(lineread, leftBoundary))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane boundary element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      leftBoundaryFound = true;
+    }
+    else if (result[1] == "right_boundary")
+    {
+      if (!parseBoundary(lineread, rightBoundary))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane boundary element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      rightBoundaryFound = true;
+    }
+    else if (result[1] == "checkpoint")
+    {
+      rndf::Checkpoint checkpoint;
+      if (!parseCheckpoint(lineread, _segmentId, _laneId, checkpoint))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane checkpoint element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      checkpoints.push_back(checkpoint);
+    }
+    else if (result[1] == "stop")
+    {
+      rndf::UniqueId stop;
+      if (!parseStop(lineread, _segmentId, _laneId, stop))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane stop element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      stops.push_back(stop.WaypointId());
+    }
+    else if (result[1] == "exit")
+    {
+      rndf::Exit exit;
+      if (!parseExit(lineread, _segmentId, _laneId, exit))
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << "lane exit element" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      exits.push_back(exit);
+    }
+    else
+    {
+      // This is the end of the header and the start of the waypoint section.
+      // Restore the file position and line number.
+      // ParseHeader() shouldn't have any effect.
+      _rndfFile.seekg(oldPos);
+      _lineNumber = oldLineNumber;
+      done = true;
+    }
+  } while (!done);
+
+  // Populate all fields.
+  this->SetWidth(width);
+  this->SetLeftBoundary(leftBoundary);
+  this->SetRightBoundary(rightBoundary);
+  this->Checkpoints() = checkpoints;
+  this->Stops() = stops;
+  this->Exits() = exits;
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+double LaneHeader::Width() const
+{
+  return this->dataPtr->width;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::SetWidth(const double _newWidth)
+{
+  bool valid = _newWidth >= 0;
+  if (!valid)
+  {
+    std::cerr << "LaneHeader::SetWidth() Invalid lane width [" << _newWidth
+              << "]" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->width = _newWidth;
+  return true;
+}
+
+//////////////////////////////////////////////////
+Marking LaneHeader::LeftBoundary() const
+{
+  return this->dataPtr->leftBoundary;
+}
+
+//////////////////////////////////////////////////
+void LaneHeader::SetLeftBoundary(const Marking &_boundary)
+{
+  this->dataPtr->leftBoundary = _boundary;
+}
+
+//////////////////////////////////////////////////
+Marking LaneHeader::RightBoundary() const
+{
+  return this->dataPtr->rightBoundary;
+}
+
+//////////////////////////////////////////////////
+void LaneHeader::SetRightBoundary(const Marking &_boundary)
+{
+  this->dataPtr->rightBoundary = _boundary;
+}
+
+//////////////////////////////////////////////////
+unsigned int LaneHeader::NumCheckpoints() const
+{
+  return this->dataPtr->checkpoints.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<rndf::Checkpoint> &LaneHeader::Checkpoints()
+{
+  return this->dataPtr->checkpoints;
+}
+
+//////////////////////////////////////////////////
+const std::vector<rndf::Checkpoint> &LaneHeader::Checkpoints() const
+{
+  return this->dataPtr->checkpoints;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::Checkpoint(const int _cpId, rndf::Checkpoint &_cp) const
+{
+  auto it = std::find_if(this->dataPtr->checkpoints.begin(),
+    this->dataPtr->checkpoints.end(),
+    [_cpId](const rndf::Checkpoint &_checkpoint)
+    {
+      return _checkpoint.CheckpointId() == _cpId;
+    });
+
+  bool found = it != this->dataPtr->checkpoints.end();
+  if (found)
+    _cp = *it;
+
+  return found;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::UpdateCheckpoint(const rndf::Checkpoint &_cp)
+{
+  auto it = std::find(this->dataPtr->checkpoints.begin(),
+    this->dataPtr->checkpoints.end(), _cp);
+
+  bool found = it != this->dataPtr->checkpoints.end();
+  if (found)
+    *it = _cp;
+
+  return found;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
+{
+  // Validate the checkpoint.
+  if (!_newCheckpoint.Valid())
+  {
+    std::cerr << "[Lane::AddCheckpoint() Invalid checkpoint: "
+              << "checkpointId [" << _newCheckpoint.CheckpointId() << "], "
+              << "waypointId [" << _newCheckpoint.WaypointId() << "]"
+              << std::endl;
+    return false;
+  }
+
+  // Check whether the checkpoint already exists.
+  if (std::find(this->dataPtr->checkpoints.begin(),
+        this->dataPtr->checkpoints.end(), _newCheckpoint) !=
+          this->dataPtr->checkpoints.end())
+  {
+    std::cerr << "[Lane::AddCheckpoint() error: Existing checkpoint"
+              << std::endl;
+    return false;
+  }
+
+  this->dataPtr->checkpoints.push_back(_newCheckpoint);
+  assert(this->NumCheckpoints() == this->dataPtr->checkpoints.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::RemoveCheckpoint(const int _cpId)
+{
+  rndf::Checkpoint cp(_cpId, 0);
+  return (this->dataPtr->checkpoints.erase(std::remove(
+    this->dataPtr->checkpoints.begin(), this->dataPtr->checkpoints.end(), cp),
+      this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
+}
+
+//////////////////////////////////////////////////
+unsigned int LaneHeader::NumStops() const
+{
+  return this->dataPtr->stops.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<int> &LaneHeader::Stops()
+{
+  return this->dataPtr->stops;
+}
+
+//////////////////////////////////////////////////
+const std::vector<int> &LaneHeader::Stops() const
+{
+  return this->dataPtr->stops;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::AddStop(const int _waypointId)
+{
+  // Validate the waypoint Id.
+  if (_waypointId <= 0)
+  {
+    std::cerr << "[Lane::AddStop() Invalid waypoint Id: [" << _waypointId
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the stop already exists.
+  if (std::find(this->dataPtr->stops.begin(),
+        this->dataPtr->stops.end(), _waypointId) != this->dataPtr->stops.end())
+  {
+    std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->stops.push_back(_waypointId);
+  assert(this->NumStops() == this->dataPtr->stops.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::RemoveStop(const int _waypointId)
+{
+  return (this->dataPtr->stops.erase(std::remove(
+    this->dataPtr->stops.begin(), this->dataPtr->stops.end(), _waypointId),
+      this->dataPtr->stops.end()) != this->dataPtr->stops.end());
+}
+
+//////////////////////////////////////////////////
+unsigned int LaneHeader::NumExits() const
+{
+  return this->dataPtr->exits.size();
+}
+
+//////////////////////////////////////////////////
+std::vector<Exit> &LaneHeader::Exits()
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+const std::vector<Exit> &LaneHeader::Exits() const
+{
+  return this->dataPtr->exits;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::AddExit(const Exit &_newExit)
+{
+  // Validate the exit unique Id.
+  if (!_newExit.ExitId().Valid())
+  {
+    std::cerr << "[Lane::AddExit() Invalid exit Id: [" << _newExit.ExitId()
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Validate the entry unique Id.
+  if (!_newExit.EntryId().Valid())
+  {
+    std::cerr << "[Lane::AddExit() Invalid entry Id: [" << _newExit.EntryId()
+              << "]" << std::endl;
+    return false;
+  }
+
+  // Check whether the exit already exists.
+  if (std::find(this->dataPtr->exits.begin(),
+        this->dataPtr->exits.end(), _newExit) != this->dataPtr->exits.end())
+  {
+    std::cerr << "[Lane::AddExit() error: Existing exit" << std::endl;
+    return false;
+  }
+
+  this->dataPtr->exits.push_back(_newExit);
+  assert(this->NumExits() == this->dataPtr->exits.size());
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool LaneHeader::RemoveExit(const Exit &_exit)
+{
+  return (this->dataPtr->exits.erase(std::remove(
+    this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
+      this->dataPtr->exits.end()) != this->dataPtr->exits.end());
 }
 
 //////////////////////////////////////////////////
@@ -114,8 +511,8 @@ Lane::~Lane()
 }
 
 //////////////////////////////////////////////////
-bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
-  rndf::Lane &_lane, int &_lineNumber)
+bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
+  int &_lineNumber)
 {
   std::smatch result;
   std::string lineread;
@@ -124,8 +521,8 @@ bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
     return false;
 
   // Parse the "lane ID" .
-  std::regex rgxLaneId("^lane " + std::to_string(_segmentId) + "\\." +
-    kRgxPositive + "$");
+  std::regex rgxLaneId("^lane\\s+" + std::to_string(_segmentId) + "\\." +
+    kRgxPositive + "\\s*(" + kRgxComment + ")?\\s*$");
   std::regex_search(lineread, result, rgxLaneId);
   if (result.size() < 2)
   {
@@ -143,17 +540,9 @@ bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
     return false;
 
   // Parse optional lane header.
-  double width;
-  Lane::Marking leftBoundary;
-  Lane::Marking rightBoundary;
-  std::vector<rndf::Checkpoint> checkpoints;
-  std::vector<rndf::UniqueId> stops;
-  std::vector<rndf::Exit> exits;
-  if (!this->ParseHeader(_rndfFile, _segmentId, laneId, width, leftBoundary,
-    rightBoundary, checkpoints, stops, exits, _lineNumber))
-  {
+  LaneHeader header;
+  if (!header.Load(_rndfFile, _segmentId, laneId, _lineNumber))
     return false;
-  }
 
   // Parse waypoints.
   std::vector<rndf::Waypoint> waypoints;
@@ -171,8 +560,14 @@ bool Lane::Parse(std::ifstream &_rndfFile, const int _segmentId,
     return false;
 
   // Populate the lane.
-  _lane.SetId(laneId);
-  _lane.Waypoints() = waypoints;
+  this->SetId(laneId);
+  this->Waypoints() = waypoints;
+  this->SetWidth(header.Width());
+  this->SetLeftBoundary(header.LeftBoundary());
+  this->SetRightBoundary(header.RightBoundary());
+  this->Checkpoints() = header.Checkpoints();
+  this->Stops() = header.Stops();
+  this->Exits() = header.Exits();
 
   return true;
 }
@@ -286,239 +681,139 @@ bool Lane::Valid() const
 //////////////////////////////////////////////////
 double Lane::Width() const
 {
-  return this->dataPtr->width;
+  return this->dataPtr->header.Width();
 }
 
 //////////////////////////////////////////////////
 bool Lane::SetWidth(const double _newWidth)
 {
-  bool valid = _newWidth >= 0;
-  if (!valid)
-  {
-    std::cerr << "Lane::SetWidth() Invalid lane width [" << _newWidth << "]"
-              << std::endl;
-    return false;
-  }
-
-  this->dataPtr->width = _newWidth;
-  return true;
+  return this->dataPtr->header.SetWidth(_newWidth);
 }
 
 //////////////////////////////////////////////////
-Lane::Marking Lane::LeftBoundary() const
+Marking Lane::LeftBoundary() const
 {
-  return this->dataPtr->leftBoundary;
+  return this->dataPtr->header.LeftBoundary();
 }
 
 //////////////////////////////////////////////////
-void Lane::SetLeftBoundary(const Lane::Marking &_boundary)
+void Lane::SetLeftBoundary(const Marking &_boundary)
 {
-  this->dataPtr->leftBoundary = _boundary;
+  this->dataPtr->header.SetLeftBoundary(_boundary);
 }
 
 //////////////////////////////////////////////////
-Lane::Marking Lane::RightBoundary() const
+Marking Lane::RightBoundary() const
 {
-  return this->dataPtr->rightBoundary;
+  return this->dataPtr->header.RightBoundary();
 }
 
 //////////////////////////////////////////////////
-void Lane::SetRightBoundary(const Lane::Marking &_boundary)
+void Lane::SetRightBoundary(const Marking &_boundary)
 {
-  this->dataPtr->rightBoundary = _boundary;
+  return this->dataPtr->header.SetRightBoundary(_boundary);
 }
 
 //////////////////////////////////////////////////
 unsigned int Lane::NumCheckpoints() const
 {
-  return this->dataPtr->checkpoints.size();
+  return this->dataPtr->header.NumCheckpoints();
 }
 
 //////////////////////////////////////////////////
 std::vector<rndf::Checkpoint> &Lane::Checkpoints()
 {
-  return this->dataPtr->checkpoints;
+  return this->dataPtr->header.Checkpoints();
 }
 
 //////////////////////////////////////////////////
 const std::vector<rndf::Checkpoint> &Lane::Checkpoints() const
 {
-  return this->dataPtr->checkpoints;
+  return this->dataPtr->header.Checkpoints();
 }
 
 //////////////////////////////////////////////////
 bool Lane::Checkpoint(const int _cpId, rndf::Checkpoint &_cp) const
 {
-  auto it = std::find_if(this->dataPtr->checkpoints.begin(),
-    this->dataPtr->checkpoints.end(),
-    [_cpId](const rndf::Checkpoint &_checkpoint)
-    {
-      return _checkpoint.CheckpointId() == _cpId;
-    });
-
-  bool found = it != this->dataPtr->checkpoints.end();
-  if (found)
-    _cp = *it;
-
-  return found;
+  return this->dataPtr->header.Checkpoint(_cpId, _cp);
 }
 
 //////////////////////////////////////////////////
 bool Lane::UpdateCheckpoint(const rndf::Checkpoint &_cp)
 {
-  auto it = std::find(this->dataPtr->checkpoints.begin(),
-    this->dataPtr->checkpoints.end(), _cp);
-
-  bool found = it != this->dataPtr->checkpoints.end();
-  if (found)
-    *it = _cp;
-
-  return found;
+  return this->dataPtr->header.UpdateCheckpoint(_cp);
 }
 
 //////////////////////////////////////////////////
 bool Lane::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
 {
-  // Validate the checkpoint.
-  if (!_newCheckpoint.Valid())
-  {
-    std::cerr << "[Lane::AddCheckpoint() Invalid checkpoint: "
-              << "checkpointId [" << _newCheckpoint.CheckpointId() << "], "
-              << "waypointId [" << _newCheckpoint.WaypointId() << "]"
-              << std::endl;
-    return false;
-  }
-
-  // Check whether the checkpoint already exists.
-  if (std::find(this->dataPtr->checkpoints.begin(),
-        this->dataPtr->checkpoints.end(), _newCheckpoint) !=
-          this->dataPtr->checkpoints.end())
-  {
-    std::cerr << "[Lane::AddCheckpoint() error: Existing checkpoint"
-              << std::endl;
-    return false;
-  }
-
-  this->dataPtr->checkpoints.push_back(_newCheckpoint);
-  assert(this->NumCheckpoints() == this->dataPtr->checkpoints.size());
-  return true;
+  return this->dataPtr->header.AddCheckpoint(_newCheckpoint);
 }
 
 //////////////////////////////////////////////////
 bool Lane::RemoveCheckpoint(const int _cpId)
 {
-  rndf::Checkpoint cp(_cpId, 0);
-  return (this->dataPtr->checkpoints.erase(std::remove(
-    this->dataPtr->checkpoints.begin(), this->dataPtr->checkpoints.end(), cp),
-      this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
+  return this->dataPtr->header.RemoveCheckpoint(_cpId);
 }
 
 //////////////////////////////////////////////////
 unsigned int Lane::NumStops() const
 {
-  return this->dataPtr->stops.size();
+  return this->dataPtr->header.NumStops();
 }
 
 //////////////////////////////////////////////////
 std::vector<int> &Lane::Stops()
 {
-  return this->dataPtr->stops;
+  return this->dataPtr->header.Stops();
 }
 
 //////////////////////////////////////////////////
 const std::vector<int> &Lane::Stops() const
 {
-  return this->dataPtr->stops;
+  return this->dataPtr->header.Stops();
 }
 
 //////////////////////////////////////////////////
 bool Lane::AddStop(const int _waypointId)
 {
-  // Validate the waypoint Id.
-  if (_waypointId <= 0)
-  {
-    std::cerr << "[Lane::AddStop() Invalid waypoint Id: [" << _waypointId
-              << "]" << std::endl;
-    return false;
-  }
-
-  // Check whether the stop already exists.
-  if (std::find(this->dataPtr->stops.begin(),
-        this->dataPtr->stops.end(), _waypointId) != this->dataPtr->stops.end())
-  {
-    std::cerr << "[Lane::AddStop() error: Existing waypoint" << std::endl;
-    return false;
-  }
-
-  this->dataPtr->stops.push_back(_waypointId);
-  assert(this->NumStops() == this->dataPtr->stops.size());
-  return true;
+  return this->dataPtr->header.AddStop(_waypointId);
 }
 
 //////////////////////////////////////////////////
 bool Lane::RemoveStop(const int _waypointId)
 {
-  return (this->dataPtr->stops.erase(std::remove(
-    this->dataPtr->stops.begin(), this->dataPtr->stops.end(), _waypointId),
-      this->dataPtr->stops.end()) != this->dataPtr->stops.end());
+  return this->dataPtr->header.RemoveStop(_waypointId);
 }
 
 //////////////////////////////////////////////////
 unsigned int Lane::NumExits() const
 {
-  return this->dataPtr->exits.size();
+  return this->dataPtr->header.NumExits();
 }
 
 //////////////////////////////////////////////////
 std::vector<Exit> &Lane::Exits()
 {
-  return this->dataPtr->exits;
+  return this->dataPtr->header.Exits();
 }
 
 //////////////////////////////////////////////////
 const std::vector<Exit> &Lane::Exits() const
 {
-  return this->dataPtr->exits;
+  return this->dataPtr->header.Exits();
 }
 
 //////////////////////////////////////////////////
 bool Lane::AddExit(const Exit &_newExit)
 {
-  // Validate the exit unique Id.
-  if (!_newExit.ExitId().Valid())
-  {
-    std::cerr << "[Lane::AddExit() Invalid exit Id: [" << _newExit.ExitId()
-              << "]" << std::endl;
-    return false;
-  }
-
-  // Validate the entry unique Id.
-  if (!_newExit.EntryId().Valid())
-  {
-    std::cerr << "[Lane::AddExit() Invalid entry Id: [" << _newExit.EntryId()
-              << "]" << std::endl;
-    return false;
-  }
-
-  // Check whether the exit already exists.
-  if (std::find(this->dataPtr->exits.begin(),
-        this->dataPtr->exits.end(), _newExit) != this->dataPtr->exits.end())
-  {
-    std::cerr << "[Lane::AddExit() error: Existing exit" << std::endl;
-    return false;
-  }
-
-  this->dataPtr->exits.push_back(_newExit);
-  assert(this->NumExits() == this->dataPtr->exits.size());
-  return true;
+  return this->dataPtr->header.AddExit(_newExit);
 }
 
 //////////////////////////////////////////////////
 bool Lane::RemoveExit(const Exit &_exit)
 {
-  return (this->dataPtr->exits.erase(std::remove(
-    this->dataPtr->exits.begin(), this->dataPtr->exits.end(), _exit),
-      this->dataPtr->exits.end()) != this->dataPtr->exits.end());
+  return this->dataPtr->header.RemoveExit(_exit);
 }
 
 //////////////////////////////////////////////////
@@ -545,137 +840,4 @@ Lane &Lane::operator=(const Lane &_other)
   this->Stops() = _other.Stops();
   this->Exits() = _other.Exits();
   return *this;
-}
-
-//////////////////////////////////////////////////
-bool Lane::ParseHeader(std::ifstream &_rndfFile, const int _segmentId,
-  const int _laneId, double &_width, Lane::Marking &_leftBoundary,
-  Lane::Marking &_rightBoundary, std::vector<rndf::Checkpoint> &_checkpoints,
-  std::vector<rndf::UniqueId> &_stops, std::vector<rndf::Exit> &_exits,
-  int &_lineNumber)
-{
-  // The width and left/right boundary options can only appear once.
-  bool widthFound = false;
-  bool leftBoundaryFound = false;
-  bool rightBoundaryFound = false;
-
-  std::regex rgxHeader("^(lane_width|left_boundary|right_boundary|checkpoint|"
-    "stop|exit|" + kRgxUniqueId + ") ");
-
-  _checkpoints.clear();
-  bool done = false;
-
-  do
-  {
-    auto oldPos = _rndfFile.tellg();
-    int oldLineNumber = _lineNumber;
-
-    std::string lineread;
-    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-      return false;
-
-    std::smatch result;
-    std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() < 2)                                   ||
-        (result[1] == "lane_width"     && widthFound)         ||
-        (result[1] == "left_boundary"  && leftBoundaryFound)  ||
-        (result[1] == "right_boundary" && rightBoundaryFound))
-    {
-      // Invalid or repeated header element.
-      std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane header "
-                << "element." << std::endl;
-      std::cerr << " \"" << lineread << "\"" << std::endl;
-      return false;
-    }
-
-    if (result[1] == "lane_width")
-    {
-      int widthFeet;
-      if (!parseNonNegative(lineread, "lane_width", widthFeet))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane width element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      // Convert from feet to meters.
-      _width = widthFeet * 0.3048;
-      widthFound = true;
-    }
-    else if (result[1] == "left_boundary")
-    {
-      if (!parseBoundary(lineread, _leftBoundary))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane boundary element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      leftBoundaryFound = true;
-    }
-    else if (result[1] == "right_boundary")
-    {
-      if (!parseBoundary(lineread, _rightBoundary))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane boundary element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      rightBoundaryFound = true;
-    }
-    else if (result[1] == "checkpoint")
-    {
-      rndf::Checkpoint checkpoint;
-      if (!parseCheckpoint(lineread, _segmentId, _laneId, checkpoint))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane checkpoint element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      _checkpoints.push_back(checkpoint);
-    }
-    else if (result[1] == "stop")
-    {
-      rndf::UniqueId stop;
-      if (!parseStop(lineread, _segmentId, _laneId, stop))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane stop element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      _stops.push_back(stop);
-    }
-    else if (result[1] == "exit")
-    {
-      rndf::Exit exit;
-      if (!parseExit(lineread, _segmentId, _laneId, exit))
-      {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << "lane exit element" << std::endl;
-        std::cerr << " \"" << lineread << "\"" << std::endl;
-        return false;
-      }
-
-      _exits.push_back(exit);
-    }
-    else
-    {
-      // This is the end of the header and the start of the waypoint section.
-      // Restore the file position and line number.
-      // ParseHeader() shouldn't have any effect.
-      _rndfFile.seekg(oldPos);
-      _lineNumber = oldLineNumber;
-      done = true;
-    }
-  } while (!done);
-
-  return true;
 }

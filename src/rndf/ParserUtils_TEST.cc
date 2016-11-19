@@ -275,7 +275,7 @@ TEST(ParserUtils, nonNegative)
 /// \brief Check the function that parses a line with a lane boundary.
 TEST(ParserUtils, laneBoundary)
 {
-  Lane::Marking b;
+  Marking b;
 
   for (const auto &side : {"left", "right"})
   {
@@ -287,21 +287,21 @@ TEST(ParserUtils, laneBoundary)
     EXPECT_FALSE(parseBoundary(delim       + " double_yellow solid_yellow", b));
     EXPECT_FALSE(parseBoundary(delim       + " double_yellow /* bad"      , b));
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow "            , b));
-    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow"             , b));
-    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + "   double_yellow"           , b));
-    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " solid_yellow"              , b));
-    EXPECT_EQ(b, Lane::Marking::SOLID_YELLOW);
+    EXPECT_EQ(b, Marking::SOLID_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " solid_white"               , b));
-    EXPECT_EQ(b, Lane::Marking::SOLID_WHITE);
+    EXPECT_EQ(b, Marking::SOLID_WHITE);
     EXPECT_TRUE(parseBoundary(delim        + " broken_white"              , b));
-    EXPECT_EQ(b, Lane::Marking::BROKEN_WHITE);
+    EXPECT_EQ(b, Marking::BROKEN_WHITE);
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow /*comment*/" , b));
-    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow  /*     */ " , b));
-    EXPECT_EQ(b, Lane::Marking::DOUBLE_YELLOW);
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
   }
 }
 
