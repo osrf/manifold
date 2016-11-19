@@ -387,7 +387,6 @@ TEST(ParserUtils, exit)
   EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4"                      , 9, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3"                            , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3 0.3.4"                      , 1, 2, exit));
-  EXPECT_FALSE(parseExit("exit 1.2.3 2.0.4"                      , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3 2.3.0"                      , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3 -2.3.4"                     , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3 2.-3.4"                     , 1, 2, exit));
@@ -416,6 +415,8 @@ TEST(ParserUtils, exit)
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
   EXPECT_TRUE(parseExit("exit 1.2.3 2.3.4  /*  comment*/   "     , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
+  EXPECT_TRUE(parseExit("exit 1.2.3 2.0.4"                      , 1, 2, exit));
+  EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 0, 4)));
 }
 
 //////////////////////////////////////////////////
