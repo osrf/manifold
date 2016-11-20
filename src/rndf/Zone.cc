@@ -64,7 +64,7 @@ namespace manifold
       public: virtual ~ZonePrivate() = default;
 
       /// \brief Zone identifier. E.g.: 1
-      public: int id = 0;
+      public: int id = -1;
 
       /// \brief Optional parking spots.
       public: std::vector<ParkingSpot> spots;
@@ -143,26 +143,23 @@ void ZoneHeader::SetName(const std::string &_name) const
 
 //////////////////////////////////////////////////
 Zone::Zone()
-  : Zone(0)
 {
+  this->dataPtr.reset(new ZonePrivate(-1));
 }
 
 //////////////////////////////////////////////////
 Zone::Zone(const int _id)
+  : Zone()
 {
-  int id = _id;
   if (_id <= 0)
-  {
-    std::cerr << "[Zone()] Invalid lane Id[" << _id << "]" << std::endl;
-    id = 0;
-  }
+    return;
 
-  this->dataPtr.reset(new ZonePrivate(id));
+  this->SetId(_id);
 }
 
 //////////////////////////////////////////////////
 Zone::Zone(const Zone &_other)
-  : Zone(_other.Id())
+  : Zone()
 {
   *this = _other;
 }
@@ -340,13 +337,19 @@ void Zone::SetName(const std::string &_name) const
 //////////////////////////////////////////////////
 bool Zone::Valid() const
 {
-  return this->Id() > 0 && this->Perimeter().Valid();
+  return this->Id() > 0            &&
+         this->Perimeter().Valid() &&
+         this->Perimeter().Valid();
 }
 
 //////////////////////////////////////////////////
 bool Zone::operator==(const Zone &_other) const
 {
-  return this->Id() == _other.Id();
+  bool valid = this->Id() == _other.Id();
+  for (auto const &s : this->Spots())
+    valid = valid && s.Valid();
+
+  return valid;
 }
 
 //////////////////////////////////////////////////

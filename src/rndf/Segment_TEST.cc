@@ -51,9 +51,10 @@ TEST(Segment, id)
   EXPECT_FALSE(segment.SetId(wrongId));
   EXPECT_EQ(segment.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in a Id = 0.
+  // Check that using the constructor with a wrong id results in an invalid
+  // segment.
   Segment wrongSegment(wrongId);
-  EXPECT_EQ(wrongSegment.Id(), 0);
+  EXPECT_FALSE(wrongSegment.Valid());
 }
 
 //////////////////////////////////////////////////

@@ -54,9 +54,9 @@ TEST(ParkingSpot, id)
   EXPECT_FALSE(spot.SetId(wrongId));
   EXPECT_EQ(spot.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in a Id = 0.
+  // Check that using the constructor with a wrong id results in an invalid spot
   ParkingSpot wrongSpot(wrongId);
-  EXPECT_EQ(wrongSpot.Id(), 0);
+  EXPECT_FALSE(wrongSpot.Valid());
 }
 
 //////////////////////////////////////////////////
@@ -185,7 +185,36 @@ TEST(ParkingSpot, valid)
     int id = usecase.first;
     ParkingSpot spot(id);
 
+    // An Id is not enough, we need two waypoints.
+    EXPECT_FALSE(spot.Valid());
+
+    // Create a valid waypoint.
+    ignition::math::SphericalCoordinates::SurfaceType st =
+      ignition::math::SphericalCoordinates::EARTH_WGS84;
+    ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+    double elev = 354.1;
+    ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+    Waypoint wp1;
+    wp1.SetId(1);
+    wp1.Location() = sc;
+
+    EXPECT_FALSE(spot.Valid());
+
+    Waypoint wp2;
+    wp2.SetId(2);
+    wp2.Location() = sc;
+
+    // Add the waypoints.
+    EXPECT_TRUE(spot.AddWaypoint(wp1));
+    EXPECT_TRUE(spot.AddWaypoint(wp2));
+
     EXPECT_EQ(spot.Valid(), usecase.second);
+
+    // Try to add a third waypoint (not allowed).
+    Waypoint wp3;
+    wp3.SetId(3);
+    wp3.Location() = sc;
+    EXPECT_FALSE(spot.AddWaypoint(wp3));
   }
 }
 

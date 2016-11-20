@@ -80,7 +80,7 @@ namespace manifold
       public: virtual ~LanePrivate() = default;
 
       /// \brief Lane identifier. E.g.: 1
-      public: int id = 0;
+      public: int id = -1;
 
       /// \brief Collection of waypoints.
       public: std::vector<Waypoint> waypoints;
@@ -365,7 +365,7 @@ bool LaneHeader::AddCheckpoint(const rndf::Checkpoint &_newCheckpoint)
 //////////////////////////////////////////////////
 bool LaneHeader::RemoveCheckpoint(const int _cpId)
 {
-  rndf::Checkpoint cp(_cpId, 0);
+  rndf::Checkpoint cp(_cpId, 1);
   return (this->dataPtr->checkpoints.erase(std::remove(
     this->dataPtr->checkpoints.begin(), this->dataPtr->checkpoints.end(), cp),
       this->dataPtr->checkpoints.end()) != this->dataPtr->checkpoints.end());
@@ -481,21 +481,18 @@ bool LaneHeader::RemoveExit(const Exit &_exit)
 
 //////////////////////////////////////////////////
 Lane::Lane()
-  : Lane(0)
 {
+  this->dataPtr.reset(new LanePrivate(-1));
 }
 
 //////////////////////////////////////////////////
 Lane::Lane(const int _id)
+  : Lane()
 {
-  int id = _id;
   if (_id <= 0)
-  {
-    std::cerr << "[Lane()] Invalid lane Id[" << _id << "]" << std::endl;
-    id = 0;
-  }
+    return;
 
-  this->dataPtr.reset(new LanePrivate(id));
+  this->SetId(_id);
 }
 
 //////////////////////////////////////////////////
@@ -673,8 +670,14 @@ bool Lane::RemoveWaypoint(const int _wpId)
 bool Lane::Valid() const
 {
   bool valid = this->Id() > 0 && this->NumWaypoints() > 0;
-  for (auto &wp : this->Waypoints())
-    valid = valid && wp.Valid();
+  for (auto &w : this->Waypoints())
+    valid = valid && w.Valid();
+  for (auto &c : this->Checkpoints())
+    valid = valid && c.Valid();
+  for (auto &s : this->Stops())
+    valid = valid && s > 0;
+  for (auto &e : this->Exits())
+    valid = valid && e.Valid();
   return valid;
 }
 

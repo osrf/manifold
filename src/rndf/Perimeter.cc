@@ -341,7 +341,13 @@ bool Perimeter::RemoveExit(const Exit &_exit)
 //////////////////////////////////////////////////
 bool Perimeter::Valid() const
 {
-  return this->NumPoints() > 0;;
+  bool valid = this->NumPoints() > 0;
+  for (auto const &w : this->Points())
+    valid = valid && w.Valid();
+  for (auto const &e : this->Exits())
+    valid = valid && e.Valid();
+
+  return valid;
 }
 
 //////////////////////////////////////////////////

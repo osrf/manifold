@@ -55,13 +55,14 @@ TEST(Waypoint, id)
   EXPECT_EQ(waypoint.Id(), newId);
 
   // Check that trying to set an incorrect Id does not take effect.
-  int wrongId = -1;
+  int wrongId = -99;
   EXPECT_FALSE(waypoint.SetId(wrongId));
   EXPECT_EQ(waypoint.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in an Id = 0.
+  // Check that using the constructor with a wrong id results creates an
+  // invalid waypoint.
   Waypoint wrongWp(wrongId, sc);
-  EXPECT_EQ(wrongWp.Id(), 0);
+  EXPECT_FALSE(wrongWp.Valid());
 }
 
 //////////////////////////////////////////////////

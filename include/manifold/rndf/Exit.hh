@@ -32,7 +32,7 @@ namespace manifold
     class MANIFOLD_VISIBLE Exit
     {
       /// \brief Default constructor.
-      public: Exit();
+      public: Exit() = default;
 
       /// \brief Constructor.
       /// \param[in] _exit The unique ID of the exit waypoint.

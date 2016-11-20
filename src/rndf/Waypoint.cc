@@ -53,7 +53,7 @@ namespace manifold
       public: virtual ~WaypointPrivate() = default;
 
       /// \brief Unique waypoint identifier.
-      public: int id;
+      public: int id = -1;
 
       /// \brief Location of the waypoint in decimal-degrees, using ITRF00
       /// reference frame and the GRS80 ellipsoid.
@@ -65,29 +65,27 @@ namespace manifold
 //////////////////////////////////////////////////
 Waypoint::Waypoint()
 {
-  this->dataPtr.reset(new WaypointPrivate(0,
-    ignition::math::SphericalCoordinates()));
+  this->dataPtr.reset(new WaypointPrivate(
+    -1, ignition::math::SphericalCoordinates()));
 }
 
 //////////////////////////////////////////////////
 Waypoint::Waypoint(const int _id,
                    const ignition::math::SphericalCoordinates &_location)
+  : Waypoint()
 {
-  int id = _id;
   if (_id <= 0)
-  {
-    std::cerr << "[WayPoint()] Invalid waypoint Id[" << _id << "]" << std::endl;
-    id = 0;
-  }
+    return;
 
-  this->dataPtr.reset(new WaypointPrivate(id, _location));
+  this->SetId(_id);
+  this->Location() = _location;
 }
 
 //////////////////////////////////////////////////
 Waypoint::Waypoint(const Waypoint &_other)
+  : Waypoint()
 {
-  ignition::math::SphericalCoordinates location = _other.dataPtr->location;
-  this->dataPtr.reset(new WaypointPrivate(_other.Id(), location));
+  *this = _other;
 }
 
 //////////////////////////////////////////////////

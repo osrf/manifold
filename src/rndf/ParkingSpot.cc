@@ -70,7 +70,7 @@ namespace manifold
       public: virtual ~ParkingSpotPrivate() = default;
 
       /// \brief Parking spot identifier. E.g.: 1
-      public: int id;
+      public: int id = -1;
 
       /// \brief The two waypoints that define the spot.
       public: std::vector<Waypoint> waypoints;
@@ -85,7 +85,7 @@ namespace manifold
 ParkingSpotHeader::ParkingSpotHeader()
 {
   this->dataPtr.reset(new ParkingSpotHeaderPrivate());
-  this->dataPtr->width = 0;
+  this->SetWidth(0);
 }
 
 //////////////////////////////////////////////////
@@ -201,27 +201,23 @@ const Checkpoint &ParkingSpotHeader::Checkpoint() const
 
 //////////////////////////////////////////////////
 ParkingSpot::ParkingSpot()
-  : ParkingSpot(0)
 {
+  this->dataPtr.reset(new ParkingSpotPrivate(-1));
 }
 
 //////////////////////////////////////////////////
 ParkingSpot::ParkingSpot(const int _spotId)
+  : ParkingSpot()
 {
-  int spotId = _spotId;
   if (_spotId <= 0)
-  {
-    std::cerr << "ParkingSpot() Invalid parking spot Id[" << _spotId
-              << "]" << std::endl;
-    spotId = 0;
-  }
+    return;
 
-  this->dataPtr.reset(new ParkingSpotPrivate(spotId));
+  this->SetId(_spotId);
 }
 
 //////////////////////////////////////////////////
 ParkingSpot::ParkingSpot(const ParkingSpot &_other)
-  : ParkingSpot(_other.Id())
+  : ParkingSpot()
 {
   *this = _other;
 }
@@ -359,12 +355,20 @@ bool ParkingSpot::AddWaypoint(const rndf::Waypoint &_newWaypoint)
     return false;
   }
 
+  // We allow a maximum of two waypoints.
+  if (this->dataPtr->waypoints.size() >= 2)
+  {
+    std::cerr << "ParkingSpot::AddWaypoint() We only allow two waypoints "
+              << "per spot and two waypoints were already found" << std::endl;
+    return false;
+  }
+
   // Check whether the waypoint already exists.
   if (std::find(this->dataPtr->waypoints.begin(),
         this->dataPtr->waypoints.end(), _newWaypoint) !=
           this->dataPtr->waypoints.end())
   {
-    std::cerr << "ParkingSpot::AddStop() error: Existing waypoint"
+    std::cerr << "ParkingSpot::AddWaypoint() error: Existing waypoint"
               << std::endl;
     return false;
   }
@@ -386,7 +390,11 @@ bool ParkingSpot::RemoveWaypoint(const int _wpId)
 //////////////////////////////////////////////////
 bool ParkingSpot::Valid() const
 {
-  return this->Id() > 0;
+  bool valid = this->Id() > 0 && this->NumWaypoints() == 2;
+  for (auto const &w : this->Waypoints())
+    valid = valid && w.Valid();
+
+  return valid;
 }
 
 //////////////////////////////////////////////////

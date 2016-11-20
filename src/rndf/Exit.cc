@@ -28,31 +28,13 @@ using namespace manifold;
 using namespace rndf;
 
 //////////////////////////////////////////////////
-Exit::Exit()
-  : exit(0, 0, 0),
-    entry(0, 0, 0)
-{
-}
-
-//////////////////////////////////////////////////
 Exit::Exit(const UniqueId &_exit, const UniqueId &_entry)
 {
-  UniqueId ex = _exit;
-  UniqueId en = _entry;
+  if (!_exit.Valid() || !_entry.Valid())
+    return;
 
-  if (!_exit.Valid())
-  {
-    std::cerr << "[Exit()] Invalid exit Id[" << _exit << "]" << std::endl;
-    ex = UniqueId();
-  }
-  if (!_entry.Valid())
-  {
-    std::cerr << "[Exit()] Invalid entry Id[" << _entry << "]" << std::endl;
-    en = UniqueId();
-  }
-
-  this->exit = ex;
-  this->entry = en;
+  this->exit = _exit;
+  this->entry = _entry;
 }
 
 

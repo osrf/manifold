@@ -56,9 +56,9 @@ TEST(Lane, id)
   EXPECT_FALSE(lane.SetId(wrongId));
   EXPECT_EQ(lane.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in a Id = 0.
+  // Check that using the constructor with a wrong id results in an invalid lane
   Lane wrongLane(wrongId);
-  EXPECT_EQ(wrongLane.Id(), 0);
+  EXPECT_FALSE(wrongLane.Valid());
 }
 
 //////////////////////////////////////////////////

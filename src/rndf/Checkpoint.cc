@@ -42,46 +42,37 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~CheckpointPrivate() = default;
 
-      /// \brief Unique checkpoint identifier. E.g.: 1
-      public: int checkpointId;
+      /// \brief Checkpoint identifier. E.g.: 1
+      public: int checkpointId = -1;
 
-      /// \brief Unique waypoint identifier. E.g.: 1
-      public: int waypointId;
+      /// \brief Waypoint identifier. E.g.: 1
+      public: int waypointId = -1;
     };
   }
 }
 
 //////////////////////////////////////////////////
 Checkpoint::Checkpoint()
-  : Checkpoint(0, 0)
 {
+  this->dataPtr.reset(new CheckpointPrivate(-1, -1));
 }
 
 //////////////////////////////////////////////////
 Checkpoint::Checkpoint(const int _checkpointId, const int _waypointId)
+  : Checkpoint()
 {
-  int checkpointId = _checkpointId;
-  int waypointId = _waypointId;
-  if (_checkpointId <= 0)
-  {
-    std::cerr << "[Checkpoint()] Invalid checkpoint Id[" << _checkpointId
-              << "]" << std::endl;
-    checkpointId = 0;
-  }
-  if (_waypointId <= 0)
-  {
-    std::cerr << "[Checkpoint()] Invalid waypoint Id[" << _waypointId
-              << "]" << std::endl;
-    waypointId = 0;
-  }
+  if (_checkpointId <= 0 || _waypointId <= 0)
+    return;
 
-  this->dataPtr.reset(new CheckpointPrivate(checkpointId, waypointId));
+  this->SetCheckpointId(_checkpointId);
+  this->SetWaypointId(_waypointId);
 }
 
 //////////////////////////////////////////////////
 Checkpoint::Checkpoint(const Checkpoint &_other)
   : Checkpoint(_other.CheckpointId(), _other.WaypointId())
 {
+  *this = _other;
 }
 
 //////////////////////////////////////////////////

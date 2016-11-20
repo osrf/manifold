@@ -55,9 +55,9 @@ TEST(Zone, id)
   EXPECT_FALSE(zone.SetId(wrongId));
   EXPECT_EQ(zone.Id(), newId);
 
-  // Check that using the constructor with a wrong id results in a Id = 0.
+  // Check that using the constructor with a wrong id results in an invalid zone
   Zone wrongZone(wrongId);
-  EXPECT_EQ(wrongZone.Id(), 0);
+  EXPECT_FALSE(wrongZone.Valid());
 }
 
 //////////////////////////////////////////////////
@@ -82,13 +82,16 @@ TEST(Zone, spots)
   ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
   double elev = 354.1;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
-  int waypointId = 1;
-  Waypoint wp;
-  wp.SetId(waypointId);
-  wp.Location() = sc;
-  ps.SetId(id);
-  ps.AddWaypoint(wp);
-  EXPECT_EQ(ps.NumWaypoints(), 1u);
+  Waypoint wp1;
+  wp1.SetId(1);
+  wp1.Location() = sc;
+  Waypoint wp2;
+  wp2.SetId(2);
+  wp2.Location() = sc;
+  ps.SetId(1);
+  ps.AddWaypoint(wp1);
+  ps.AddWaypoint(wp2);
+  EXPECT_EQ(ps.NumWaypoints(), 2u);
 
   // Add a valid parking spot.
   EXPECT_TRUE(zone.AddSpot(ps));
@@ -102,7 +105,7 @@ TEST(Zone, spots)
   ParkingSpot ps2;
   EXPECT_TRUE(zone.Spot(ps.Id(), ps2));
   EXPECT_EQ(ps, ps2);
-  EXPECT_EQ(ps2.NumWaypoints(), 1u);
+  EXPECT_EQ(ps2.NumWaypoints(), 2u);
 
   // Update a parking spot.
   double newElevation = 2000;

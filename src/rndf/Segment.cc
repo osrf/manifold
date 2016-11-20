@@ -45,7 +45,7 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~SegmentHeaderPrivate() = default;
 
-      /// \brief Zone name.
+      /// \brief Segment name.
       public: std::string name = "";
     };
 
@@ -63,8 +63,8 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~SegmentPrivate() = default;
 
-      /// \brief Zone identifier. E.g.: 1
-      public: int id = 0;
+      /// \brief Segment identifier. E.g.: 1
+      public: int id = -1;
 
       /// \brief Collection of lanes.
       public: std::vector<rndf::Lane> lanes;
@@ -140,26 +140,23 @@ void SegmentHeader::SetName(const std::string &_name) const
 
 //////////////////////////////////////////////////
 Segment::Segment()
-  : Segment(0)
 {
+  this->dataPtr.reset(new SegmentPrivate(-1));
 }
 
 //////////////////////////////////////////////////
 Segment::Segment(const int _id)
+  : Segment()
 {
-  int id = _id;
   if (_id <= 0)
-  {
-    std::cerr << "[Segment()] Invalid segment Id [" << _id << "]" << std::endl;
-    id = 0;
-  }
+    return;
 
-  this->dataPtr.reset(new SegmentPrivate(id));
+  this->SetId(_id);
 }
 
 //////////////////////////////////////////////////
 Segment::Segment(const Segment &_other)
-  : Segment(_other.Id())
+  : Segment()
 {
   *this = _other;
 }
