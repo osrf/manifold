@@ -94,7 +94,7 @@ namespace manifold
     /// \reference http://www.grandchallenge.org/grandchallenge/docs/RNDF_MDF_Formats_031407.pdf
     class MANIFOLD_VISIBLE RNDF
     {
-      /// \brief Constructor.
+      /// \brief Default constructor.
       public: RNDF();
 
       /// \brief Constructor.
@@ -147,7 +147,8 @@ namespace manifold
       /// \param[in] _segmentId The segment Id.
       /// \param[out] _segment The segment requested.
       /// \return True if the segment was found or false otherwise.
-      public: bool Segment(const int _segmentId, rndf::Segment &_segment) const;
+      public: bool Segment(const int _segmentId,
+                           rndf::Segment &_segment) const;
 
       /// \brief Update an existing segment.
       /// \param[in] _segment The updated segment.
@@ -188,7 +189,8 @@ namespace manifold
       /// \param[in] _zoneId The zone Id.
       /// \param[out] _zone The zone requested.
       /// \return True if the zone was found or false otherwise.
-      public: bool Zone(const int _zoneId, rndf::Zone &_zone) const;
+      public: bool Zone(const int _zoneId,
+                        rndf::Zone &_zone) const;
 
       /// \brief Update an existing zone.
       /// \param[in] _zone The updated zone.

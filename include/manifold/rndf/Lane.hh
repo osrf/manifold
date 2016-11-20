@@ -285,7 +285,8 @@ namespace manifold
       /// \param[in] _wpId The waypoint Id.
       /// \param[out] _wp The waypoint requested.
       /// \return True if the waypoint was found or false otherwise.
-      public: bool Waypoint(const int _wpId, rndf::Waypoint &_wp) const;
+      public: bool Waypoint(const int _wpId,
+                            rndf::Waypoint &_wp) const;
 
       /// \brief Update an existing waypoint.
       /// \param[in] _wp The updated waypoint.

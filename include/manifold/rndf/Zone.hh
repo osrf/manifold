@@ -149,7 +149,8 @@ namespace manifold
       /// \param[in] _psId The parking spot Id.
       /// \param[out] _ps The parking spot requested.
       /// \return True if the parking spot was found or false otherwise.
-      public: bool Spot(const int _psId, ParkingSpot &_ps) const;
+      public: bool Spot(const int _psId,
+                        ParkingSpot &_ps) const;
 
       /// \brief Update an existing parking spot.
       /// \param[in] _ps The updated parking spot.

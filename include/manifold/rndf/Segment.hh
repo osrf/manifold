@@ -147,7 +147,8 @@ namespace manifold
       /// \param[in] _laneId The lane Id.
       /// \param[out] _lane The lane requested.
       /// \return True if the lane was found or false otherwise.
-      public: bool Lane(const int _laneId, rndf::Lane &_lane) const;
+      public: bool Lane(const int _laneId,
+                        rndf::Lane &_lane) const;
 
       /// \brief Update an existing lane.
       /// \param[in] _lane The updated lane.
