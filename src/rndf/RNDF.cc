@@ -460,29 +460,19 @@ void RNDF::SetDate(const std::string &_newDate) const
 //////////////////////////////////////////////////
 bool RNDF::Valid() const
 {
-  std::cout << "Name: " << this->Name() << std::endl;
   if (this->Name().empty() || this->NumSegments() <= 0)
-  {
-    std::cout << "Invalid name or num segments" << std::endl;
     return false;
-  }
 
   for (auto const &s : this->Segments())
   {
     if (!s.Valid())
-    {
-      std::cout << "Invalid segments" << std::endl;
       return false;
-    }
   }
 
   for (auto const &z : this->Zones())
   {
     if (!z.Valid())
-    {
-      std::cout << "Invalid zones" << std::endl;
       return false;
-    }
   }
 
   return true;
