@@ -103,7 +103,7 @@ Install from sources (Ubuntu Linux)
 =======
 
 For compiling the latest version of Manifold you will need an Ubuntu
-distribution equal to 14.04.2 (Trusty) or newer.
+distribution equal to 14.04 (Trusty) or newer.
 
 Make sure you have removed the Ubuntu pre-compiled binaries before installing
 from source:
@@ -112,11 +112,24 @@ from source:
 
         sudo apt-get remove libmanifold0-dev
 
+Setup your computer to accept software from *packages.osrfoundation.org*:
+
+.. code-block:: bash
+
+    sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable
+    `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
+
+Setup keys:
+
+.. code-block:: bash
+
+    wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+
 Install prerequisites. A clean Ubuntu system will need:
 
 .. code-block:: bash
 
-        sudo apt-get install cmake pkg-config python ruby-ronn
+        sudo apt-get install cmake pkg-config python ruby-ronn libignition-math2-dev
 
 Clone the repository into a directory and go into it:
 
