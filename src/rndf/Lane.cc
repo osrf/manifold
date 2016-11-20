@@ -204,7 +204,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
         return false;
       }
 
-      stops.push_back(stop.WaypointId());
+      stops.push_back(stop.Z());
     }
     else if (result[1] == "exit")
     {

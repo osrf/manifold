@@ -226,9 +226,9 @@ namespace manifold
 
       assert(result.size() >= 2);
       std::string::size_type sz;
-      _stop.SetSegmentId(_segmentId);
-      _stop.SetLaneId(_laneId);
-      _stop.SetWaypointId(std::stoi(result[1], &sz));
+      _stop.SetX(_segmentId);
+      _stop.SetY(_laneId);
+      _stop.SetZ(std::stoi(result[1], &sz));
       return true;
     }
 

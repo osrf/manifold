@@ -23,45 +23,27 @@ using namespace rndf;
 
 //////////////////////////////////////////////////
 UniqueId::UniqueId()
-  : UniqueId(0, 0, 0)
+  : x(-1),
+    y(-1),
+    z(-1)
 {
 }
 
 //////////////////////////////////////////////////
-UniqueId::UniqueId(const int _segmentId, const int _laneId,
-    const int _waypointId)
+UniqueId::UniqueId(const int _x, const int _y, const int _z)
+  : UniqueId()
 {
-  int sId = _segmentId;
-  int lId = _laneId;
-  int wId = _waypointId;
+  if ((_x <= 0) || (_y < 0) || (_z <= 0))
+    return;
 
-  if (_segmentId <= 0)
-  {
-    std::cerr << "[UniqueId()] Invalid segment Id[" << _segmentId
-              << "]" << std::endl;
-    sId = -1;
-  }
-  if (_laneId < 0)
-  {
-    std::cerr << "[UniqueId()] Invalid lane Id[" << _laneId
-              << "]" << std::endl;
-    lId = -1;
-  }
-  if (_waypointId <= 0)
-  {
-    std::cerr << "[UniqueId()] Invalid waypoint Id[" << _waypointId
-              << "]" << std::endl;
-    wId = -1;
-  }
-
-  this->segmentId = sId;
-  this->laneId = lId;
-  this->waypointId = wId;
+  this->SetX(_x);
+  this->SetY(_y);
+  this->SetZ(_z);
 }
 
 //////////////////////////////////////////////////
 UniqueId::UniqueId(const UniqueId &_other)
-  : UniqueId(_other.SegmentId(), _other.LaneId(), _other.WaypointId())
+  : UniqueId(_other.X(), _other.Y(), _other.Z())
 {
 }
 
@@ -71,63 +53,63 @@ UniqueId::~UniqueId()
 }
 
 //////////////////////////////////////////////////
-int UniqueId::SegmentId() const
+int UniqueId::X() const
 {
-  return this->segmentId;
+  return this->x;
 }
 
 //////////////////////////////////////////////////
-bool UniqueId::SetSegmentId(const int _id)
+bool UniqueId::SetX(const int _x)
 {
-  bool valid = _id > 0;
+  bool valid = _x > 0;
   if (valid)
-    this->segmentId = _id;
+    this->x = _x;
   return valid;
 }
 
 //////////////////////////////////////////////////
-int UniqueId::LaneId() const
+int UniqueId::Y() const
 {
-  return this->laneId;
+  return this->y;
 }
 
 //////////////////////////////////////////////////
-bool UniqueId::SetLaneId(const int _id)
+bool UniqueId::SetY(const int _y)
 {
   // We allow 0 here because a perimeter Id is always 0.
-  bool valid = _id >= 0;
+  bool valid = _y >= 0;
   if (valid)
-    this->laneId = _id;
+    this->y = _y;
   return valid;
 }
 
 //////////////////////////////////////////////////
-int UniqueId::WaypointId() const
+int UniqueId::Z() const
 {
-  return this->waypointId;
+  return this->z;
 }
 
 //////////////////////////////////////////////////
-bool UniqueId::SetWaypointId(const int _id)
+bool UniqueId::SetZ(const int _z)
 {
-  bool valid = _id > 0;
+  bool valid = _z > 0;
   if (valid)
-    this->waypointId = _id;
+    this->z = _z;
   return valid;
 }
 
 //////////////////////////////////////////////////
 bool UniqueId::Valid() const
 {
-  return this->SegmentId() > 0 && this->LaneId() >= 0 && this->WaypointId() > 0;
+  return this->X() > 0 && this->Y() >= 0 && this->Z() > 0;
 }
 
 //////////////////////////////////////////////////
 bool UniqueId::operator==(const UniqueId &_other) const
 {
-  return this->SegmentId()  == _other.SegmentId()  &&
-         this->LaneId()     == _other.LaneId()     &&
-         this->WaypointId() == _other.WaypointId();
+  return this->X() == _other.X() &&
+         this->Y() == _other.Y() &&
+         this->Z() == _other.Z();
 }
 
 //////////////////////////////////////////////////
@@ -139,8 +121,8 @@ bool UniqueId::operator!=(const UniqueId &_other) const
 //////////////////////////////////////////////////
 UniqueId &UniqueId::operator=(const UniqueId &_other)
 {
-  this->SetSegmentId(_other.SegmentId());
-  this->SetLaneId(_other.LaneId());
-  this->SetWaypointId(_other.WaypointId());
+  this->SetX(_other.X());
+  this->SetY(_other.Y());
+  this->SetZ(_other.Z());
   return *this;
 }

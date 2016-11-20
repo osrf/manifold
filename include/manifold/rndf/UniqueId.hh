@@ -34,13 +34,13 @@ namespace manifold
       public: UniqueId();
 
       /// \brief Constructor.
-      /// \param[in] _segmentId Segment Id (a positive number).
-      /// \param[in] _laneId Lane Id (a non-negative number).
-      /// \param[in] _waypointId Waypoint Id (a positive number).
+      /// \param[in] _x A positive number.
+      /// \param[in] _y A non-negative number.
+      /// \param[in] _z A positive number.
       /// \sa Valid.
-      public: explicit UniqueId(const int _segmentId,
-                                const int _laneId,
-                                const int _waypointId);
+      public: explicit UniqueId(const int _x,
+                                const int _y,
+                                const int _z);
 
       /// \brief Copy constructor.
       /// \param[in] _other Other UniqueId.
@@ -49,38 +49,38 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~UniqueId();
 
-      /// \brief Get the segment Id.
-      /// \return The segment Id.
-      public: int SegmentId() const;
+      /// \brief Get 'x' value.
+      /// \return The 'x' value.
+      public: int X() const;
 
-      /// \brief Set the segment Id.
-      /// \param[in] _id New segment Id.
+      /// \brief Set the 'x' value.
+      /// \param[in] _id New 'x' value.
       /// \return True if the operation succeed or false otherwise
-      /// (e.g.: if the id is not valid).
+      /// (e.g.: if the 'x' is not valid).
       /// \sa Valid.
-      public: bool SetSegmentId(const int _id);
+      public: bool SetX(const int _x);
 
-      /// \brief Get the lane Id.
-      /// \return The lane Id.
-      public: int LaneId() const;
+      /// \brief Get the 'y' value.
+      /// \return The 'y' value.
+      public: int Y() const;
 
-      /// \brief Set the lane Id.
-      /// \param[in] _id New lane Id.
+      /// \brief Set the 'y' value.
+      /// \param[in] _y New 'y' value.
       /// \return True if the operation succeed or false otherwise
-      /// (e.g.: if the id is not valid).
+      /// (e.g.: if the 'y' is not valid).
       /// \sa Valid.
-      public: bool SetLaneId(const int _id);
+      public: bool SetY(const int _y);
 
-      /// \brief Get the waypoint Id.
-      /// \return The waypoint Id.
-      public: int WaypointId() const;
+      /// \brief Get the 'z' value.
+      /// \return The 'y' value.
+      public: int Z() const;
 
-      /// \brief Set the identifier of the waypoint.
-      /// \param[in] _id New unique Id.
+      /// \brief Set the 'z' value.
+      /// \param[in] _z New 'z' value.
       /// \return True if the operation succeed or false otherwise
-      /// (e.g.: if the id is not valid).
+      /// (e.g.: if the 'z' is not valid).
       /// \sa Valid.
-      public: bool SetWaypointId(const int _id);
+      public: bool SetZ(const int _z);
 
       /// \brief Whether the object is valid or not.
       /// \return True if the unique Id is valid.
@@ -107,19 +107,18 @@ namespace manifold
       public: friend std::ostream &operator<<(std::ostream &_out,
                                               const UniqueId &_id)
       {
-        _out << _id.SegmentId() << "." << _id.LaneId() << "."
-             << _id.WaypointId();
+        _out << _id.X() << "." << _id.Y() << "." << _id.Z();
         return _out;
       }
 
-      /// \brief The segment Id.
-      private: int segmentId;
+      /// \brief The 'x' value.
+      private: int x;
 
-      /// \brief The lane Id.
-      private: int laneId;
+      /// \brief The 'y' value.
+      private: int y;
 
-      /// \brief The waypoint Id.
-      private: int waypointId;
+      /// \brief The 'z' value.
+      private: int z;
     };
   }
 }

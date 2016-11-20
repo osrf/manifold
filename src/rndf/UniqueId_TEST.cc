@@ -49,41 +49,41 @@ TEST(UniqueIdTest, accessors)
     int waypointId = 3;
     UniqueId id(segmentId, laneId, waypointId);
     EXPECT_TRUE(id.Valid());
-    EXPECT_EQ(id.SegmentId(), segmentId);
-    EXPECT_EQ(id.LaneId(), laneId);
-    EXPECT_EQ(id.WaypointId(), waypointId);
+    EXPECT_EQ(id.X(), segmentId);
+    EXPECT_EQ(id.Y(), laneId);
+    EXPECT_EQ(id.Z(), waypointId);
 
-    // Try to modify the segment with an invalid Id.
-    EXPECT_FALSE(id.SetSegmentId(-1));
-    EXPECT_EQ(id.SegmentId(), segmentId);
+    // Try to modify the x with an invalid value.
+    EXPECT_FALSE(id.SetX(-1));
+    EXPECT_EQ(id.X(), segmentId);
     EXPECT_TRUE(id.Valid());
 
-    // Modify segment Id.
+    // Modify x.
     int newSegmentId = 10;
-    EXPECT_TRUE(id.SetSegmentId(newSegmentId));
-    EXPECT_EQ(id.SegmentId(), newSegmentId);
+    EXPECT_TRUE(id.SetX(newSegmentId));
+    EXPECT_EQ(id.X(), newSegmentId);
     EXPECT_TRUE(id.Valid());
 
-    // Try to modify the lane with an invalid Id.
-    EXPECT_FALSE(id.SetLaneId(-1));
-    EXPECT_EQ(id.LaneId(), laneId);
+    // Try to modify the y with an invalid value.
+    EXPECT_FALSE(id.SetY(-1));
+    EXPECT_EQ(id.Y(), laneId);
     EXPECT_TRUE(id.Valid());
 
-    // Modify lane Id.
+    // Modify y.
     int newLaneId = 10;
-    EXPECT_TRUE(id.SetLaneId(newLaneId));
-    EXPECT_EQ(id.LaneId(), newLaneId);
+    EXPECT_TRUE(id.SetY(newLaneId));
+    EXPECT_EQ(id.Y(), newLaneId);
     EXPECT_TRUE(id.Valid());
 
-    // Try to modify the waypoint with an invalid Id.
-    EXPECT_FALSE(id.SetWaypointId(-1));
-    EXPECT_EQ(id.WaypointId(), waypointId);
+    // Try to modify the z with an invalid value.
+    EXPECT_FALSE(id.SetZ(-1));
+    EXPECT_EQ(id.Z(), waypointId);
     EXPECT_TRUE(id.Valid());
 
-    // Modify waypoint Id.
+    // Modify z.
     int newWaypointId = 10;
-    EXPECT_TRUE(id.SetWaypointId(newWaypointId));
-    EXPECT_EQ(id.WaypointId(), newWaypointId);
+    EXPECT_TRUE(id.SetZ(newWaypointId));
+    EXPECT_EQ(id.Z(), newWaypointId);
     EXPECT_TRUE(id.Valid());
   }
 }
