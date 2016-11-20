@@ -38,7 +38,7 @@ and rebuilding dependencies due to the use of c++11. For purposes of this
 documentation, I will assume OS X 10.9 or greater is in use. Here are the
 instructions:
 
-Install homebrew, which should also prompt you to install the XCode command-line tools:
+Install Homebrew, which should also prompt you to install the XCode command-line tools:
 
 .. code-block:: bash
 
@@ -72,12 +72,13 @@ Make a directory to work in, e.g.:
     mkdir manifold-ws
     cd manifold-ws
 
-Clone Manifold:
+Clone and prepare the Ignition Math dependency:
 
 .. code-block:: bash
 
-        hg clone https://bitbucket.org/osrf/manifold
-        cd manifold
+        hg clone https://bitbucket.org/ignitionrobotics/ign-math -b ign-math2
+        cd ign-math
+        mkdir build
 
 In a Windows Command Prompt, load your compiler setup, e.g.:
 
@@ -85,8 +86,23 @@ In a Windows Command Prompt, load your compiler setup, e.g.:
 
         "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64
 
-Configure and build:
+In the Windows Command Prompt, configure and build:
 
+.. code-block:: bash
+
+        cd ign-math\build
+        ..\configure
+        nmake install
+
+Clone Manifold:
+
+.. code-block:: bash
+
+        cd ..\..\
+        hg clone https://bitbucket.org/osrf/manifold
+        cd manifold
+
+Configure and build:
 
 .. code-block:: bash
 
@@ -96,7 +112,23 @@ Configure and build:
         nmake
         nmake install
 
-You should now have an installation of ign-Manifold in ``manifold-ws/manifold/build/install``.
+You should now have an installation of ign-manifold in ``manifold-ws/manifold/build/install``.
+
+Now build the examples:
+
+.. code-block:: bash
+
+        cd ..\example
+        mkdir build
+        cd build
+        ..\configure
+        nmake
+
+Now try an example. In one Windows terminal run:
+
+.. code-block:: bash
+
+        rndf_info <_your_rndf_file>
 
 
 Install from sources (Ubuntu Linux)
@@ -129,6 +161,7 @@ Install prerequisites. A clean Ubuntu system will need:
 
 .. code-block:: bash
 
+        sudo apt-get update
         sudo apt-get install cmake pkg-config python ruby-ronn libignition-math2-dev
 
 Clone the repository into a directory and go into it:
@@ -196,6 +229,22 @@ If you decide to install Manifold in a local directory you'll need to modify you
 .. code-block:: bash
 
         echo "export LD_LIBRARY_PATH=<install_path>/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
+
+Now build the examples:
+
+.. code-block:: bash
+
+        cd ../
+        mkdir build
+        cd build
+        cmake ..
+        make
+
+Now try an example. In a terminal run:
+
+.. code-block:: bash
+
+        rndf_info <_your_rndf_file>
 
 Uninstalling Source-based Install
 ---------------------------------
