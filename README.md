@@ -11,9 +11,9 @@ different formats (e.g.: RNDF, OpenDrive).
 
 Please refer to the [Bitbucket Pipelines](https://bitbucket.org/osrf/manifold/addon/pipelines/home#!/).
 
-[![Documentation Status](https://readthedocs.org/projects/manifold/badge/?version=default)](https://readthedocs.org/projects/manifold/?badge=default)
-
 
 ## Documentation
 
 Check [here](http://manifold.readthedocs.io/en/default/).
+
+[![Documentation Status](https://readthedocs.org/projects/manifold/badge/?version=default)](https://readthedocs.org/projects/manifold/?badge=default)
