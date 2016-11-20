@@ -39,19 +39,19 @@ namespace manifold
   {
     /// \internal
     /// \brief Private data for RNDFHeader class.
-    class RNDFPrivate
+    class RNDFHeaderPrivate
     {
       /// \brief Default constructor.
-      public: RNDFPrivate() = default;
+      public: RNDFHeaderPrivate() = default;
 
       /// \brief Destructor.
-      public: virtual ~RNDFPrivate() = default;
+      public: virtual ~RNDFHeaderPrivate() = default;
 
       /// \brief Format version.
-      public: std::string version;
+      public: std::string version = "";
 
       /// \brief Creation date.
-      public: std::string date;
+      public: std::string date = "";
     };
 
     /// \internal
@@ -65,7 +65,7 @@ namespace manifold
       public: virtual ~RNDFPrivate() = default;
 
       /// \brief RNDF name.
-      public: std::string name;
+      public: std::string name = "";
 
       /// \brief The collection of segments.
       public: std::vector<rndf::Segment> segments;
@@ -74,17 +74,100 @@ namespace manifold
       public: std::vector<rndf::Zone> zones;
 
       /// Below are the optional segment header members.
-
-      /// \brief Format version.
-      public: std::string version;
-
-      /// \brief Creation date.
-      public: std::string date;
-
-      /// brief Whether the file was succesfully loaded.
-      public: bool successfullyLoaded = true;
+      public: RNDFHeader header;
     };
   }
+}
+
+//////////////////////////////////////////////////
+RNDFHeader::RNDFHeader()
+{
+  this->dataPtr.reset(new RNDFHeaderPrivate());
+}
+
+//////////////////////////////////////////////////
+bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
+{
+  bool versionFound = false;
+  bool dateFound = false;
+
+  std::regex rgxHeader("^(format_version|creation_date)\\s+(" + kRgxString +
+    ")\\s*(" + kRgxComment + ")?$");
+  std::regex rgxSegmentId("^segment\\s+" + kRgxPositive +
+    "\\s*(" + kRgxComment + ")?\\s*$");
+  std::smatch result;
+
+  for (auto i = 0; i < 2; ++i)
+  {
+    auto oldPos = _rndfFile.tellg();
+    int oldLineNumber = _lineNumber;
+
+    std::string lineread;
+    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
+      return false;
+
+    // Check if we found the "segment" element.
+    // If this is the case we should leave.
+    if (std::regex_match(lineread, rgxSegmentId))
+    {
+      // Restore the file position and line number.
+      // ParseHeader() shouldn't have any effect.
+      _rndfFile.seekg(oldPos);
+      _lineNumber = oldLineNumber;
+      return true;
+    }
+
+    std::regex_search(lineread, result, rgxHeader);
+    if ((result.size() <= 3) ||
+        (result[1] == "format_version" && versionFound) ||
+        (result[1] == "creation_date" && dateFound))
+    {
+      // Invalid or repeated header element.
+      std::cerr << "[Line " << _lineNumber << "]: Unable to parse file header "
+                << "element." << std::endl;
+      std::cerr << " \"" << lineread << "\"" << std::endl;
+      return false;
+    }
+
+    assert(result.size() > 3);
+
+    if (result[1] == "format_version")
+    {
+      this->SetVersion(result[2]);
+      versionFound = true;
+    }
+    else
+    {
+      this->SetDate(result[2]);
+      dateFound = true;
+    }
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+std::string RNDFHeader::Version() const
+{
+  return this->dataPtr->version;
+}
+
+//////////////////////////////////////////////////
+void RNDFHeader::SetVersion(const std::string &_version) const
+{
+  this->dataPtr->version = _version;
+}
+
+//////////////////////////////////////////////////
+std::string RNDFHeader::Date() const
+{
+  return this->dataPtr->date;
+}
+
+//////////////////////////////////////////////////
+void RNDFHeader::SetDate(const std::string &_newDate) const
+{
+  this->dataPtr->date = _newDate;
 }
 
 //////////////////////////////////////////////////
@@ -97,17 +180,7 @@ RNDF::RNDF()
 RNDF::RNDF(const std::string &_filepath)
   : RNDF()
 {
-  std::ifstream rndfFile;
-  rndfFile.open(_filepath);
-  if (!rndfFile)
-  {
-    std::cerr << "Error opening RNDF [" << _filepath << "]" << std::endl;
-    this->dataPtr->successfullyLoaded = false;
-    return;
-  }
-
-  this->Parse(rndfFile);
-  return;
+  this->Load(_filepath);
 }
 
 //////////////////////////////////////////////////
@@ -116,31 +189,36 @@ RNDF::~RNDF()
 }
 
 //////////////////////////////////////////////////
-bool RNDF::Parse(std::ifstream &_rndfFile)
+bool RNDF::Load(const std::string &_filePath)
 {
-  assert(_rndfFile.is_open());
+  std::ifstream rndfFile;
+  rndfFile.open(_filePath);
+  if (!rndfFile.good())
+  {
+    std::cerr << "Error opening RNDF [" << _filePath << "]" << std::endl;
+    return false;
+  }
 
   int lineNumber = -1;
 
   // Parse "RNDF_name"
   std::string fileName;
-  if (!parseString(_rndfFile, "RNDF_name", fileName, lineNumber))
+  if (!parseString(rndfFile, "RNDF_name", fileName, lineNumber))
     return false;
 
   // Parse "num_segments".
   int numSegments;
-  if (!parsePositive(_rndfFile, "num_segments", numSegments, lineNumber))
+  if (!parsePositive(rndfFile, "num_segments", numSegments, lineNumber))
     return false;
 
   // Parse "num_zones".
   int numZones;
-  if (!parseNonNegative(_rndfFile, "num_zones", numZones, lineNumber))
+  if (!parseNonNegative(rndfFile, "num_zones", numZones, lineNumber))
     return false;
 
   // Parse optional file header (format_version and/or creation_date).
-  std::string formatVersion;
-  std::string creationDate;
-  if (!this->ParseHeader(_rndfFile, formatVersion, creationDate, lineNumber))
+  RNDFHeader header;
+  if (!header.Load(rndfFile, lineNumber))
     return false;
 
   // Parse all segments.
@@ -148,7 +226,7 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
   for (auto i = 0; i < numSegments; ++i)
   {
     rndf::Segment segment;
-    if (!segment.Load(_rndfFile, lineNumber))
+    if (!segment.Load(rndfFile, lineNumber))
       return false;
 
     segments.push_back(segment);
@@ -159,21 +237,24 @@ bool RNDF::Parse(std::ifstream &_rndfFile)
   for (auto i = 0; i < numZones; ++i)
   {
     rndf::Zone zone;
-    if (!zone.Load(_rndfFile, lineNumber))
+    if (!zone.Load(rndfFile, lineNumber))
       return false;
 
     zones.push_back(zone);
   }
 
   // Parse "end_file".
-  if (!parseDelimiter(_rndfFile, "end_file", lineNumber))
+  if (!parseDelimiter(rndfFile, "end_file", lineNumber))
     return false;
+
+  rndfFile.close();
 
   // Populate the RNDF.
   this->SetName(fileName);
   this->Segments() = segments;
-  this->SetVersion(formatVersion);
-  this->SetDate(creationDate);
+  this->Zones() = zones;
+  this->SetVersion(header.Version());
+  this->SetDate(header.Date());
 
   return true;
 }
@@ -355,90 +436,37 @@ bool RNDF::RemoveZone(const int _zoneId)
 //////////////////////////////////////////////////
 std::string RNDF::Version() const
 {
-  return this->dataPtr->version;
+  return this->dataPtr->header.Version();
 }
 
 //////////////////////////////////////////////////
 void RNDF::SetVersion(const std::string &_version) const
 {
-  this->dataPtr->version = _version;
+  this->dataPtr->header.SetVersion(_version);
 }
 
 //////////////////////////////////////////////////
 std::string RNDF::Date() const
 {
-  return this->dataPtr->date;
+  return this->dataPtr->header.Date();
 }
 
 //////////////////////////////////////////////////
 void RNDF::SetDate(const std::string &_newDate) const
 {
-  this->dataPtr->date = _newDate;
+  this->dataPtr->header.SetDate(_newDate);
 }
 
 //////////////////////////////////////////////////
 bool RNDF::Valid() const
 {
-  bool valid = this->dataPtr->successfullyLoaded &&
-               this->Segments().size() > 0u;
-  for (auto const &segment : this->Segments())
-    valid = valid && segment.Valid();
+  bool res =  !this->Name().empty() && this->NumSegments() > 0;
 
-  for (auto const &zone : this->Zones())
-    valid = valid && zone.Valid();
+  for (auto const &s : this->Segments())
+    res = res && s.Valid();
 
-  return valid;
-}
+  for (auto const &z : this->Zones())
+    res = res && z.Valid();
 
-//////////////////////////////////////////////////
-bool RNDF::ParseHeader(std::ifstream &_rndfFile, std::string &_formatVersion,
-  std::string &_creationDate, int &_lineNumber)
-{
-  _formatVersion = "";
-  _creationDate = "";
-
-  std::regex rgxHeader("^(format_version|creation_date)\\s+(" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
-  std::regex rgxSegmentId("^segment\\s+" + kRgxPositive +
-    "\\s*(" + kRgxComment + ")?\\s*$");
-  std::smatch result;
-  for (auto i = 0; i < 2; ++i)
-  {
-    auto oldPos = _rndfFile.tellg();
-    int oldLineNumber = _lineNumber;
-
-    std::string lineread;
-    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-      return false;
-
-    // Check if we found the "segment" element.
-    // If this is the case we should leave.
-    if (std::regex_match(lineread, rgxSegmentId))
-    {
-      // Restore the file position and line number.
-      // ParseHeader() shouldn't have any effect.
-      _rndfFile.seekg(oldPos);
-      _lineNumber = oldLineNumber;
-      return true;
-    }
-
-    std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() <= 3) ||
-        (result[1] == "format_version" && !_formatVersion.empty()) ||
-        (result[1] == "creation_date" && !_creationDate.empty()))
-    {
-      // Invalid or repeated header element.
-      std::cerr << "[Line " << _lineNumber << "]: Unable to parse file header "
-                << "element." << std::endl;
-      std::cerr << " \"" << lineread << "\"" << std::endl;
-      return false;
-    }
-
-    if (result[1] == "format_version")
-      _formatVersion = result[1];
-    else
-      _creationDate = result[1];
-  }
-
-  return true;
+  return res;
 }

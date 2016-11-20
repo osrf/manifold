@@ -18,24 +18,30 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <tuple>
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
 
 #include "gtest/gtest.h"
+#include "manifold/test_config.h"
 #include "manifold/rndf/Lane.hh"
 #include "manifold/rndf/Perimeter.hh"
 #include "manifold/rndf/RNDF.hh"
 #include "manifold/rndf/Segment.hh"
 #include "manifold/rndf/Waypoint.hh"
 #include "manifold/rndf/Zone.hh"
-#include "manifold/test_config.h"
 
 using namespace manifold;
 using namespace rndf;
 
+// The fixture for testing the RNDF class.
+class RNDFTest : public testing::FileParserUtils
+{
+};
+
 //////////////////////////////////////////////////
 /// \brief Check RNDF name.
-TEST(RNDFTest, Name)
+TEST(RNDF, Name)
 {
   RNDF rndf;
   EXPECT_TRUE(rndf.Name().empty());
@@ -47,7 +53,7 @@ TEST(RNDFTest, Name)
 
 //////////////////////////////////////////////////
 /// \brief Check segments-related functions.
-TEST(RNDFTest, segments)
+TEST(RNDF, segments)
 {
   RNDF rndf;
   EXPECT_EQ(rndf.NumSegments(), 0u);
@@ -121,7 +127,7 @@ TEST(RNDFTest, segments)
 
 //////////////////////////////////////////////////
 /// \brief Check zones-related functions.
-TEST(RNDFTest, zones)
+TEST(RNDF, zones)
 {
   RNDF rndf;
   EXPECT_EQ(rndf.NumZones(), 0u);
@@ -188,7 +194,7 @@ TEST(RNDFTest, zones)
 
 //////////////////////////////////////////////////
 /// \brief Check RNDF date.
-TEST(RNDFTest, Date)
+TEST(RNDF, Date)
 {
   RNDF rndf;
   EXPECT_TRUE(rndf.Date().empty());
@@ -200,7 +206,7 @@ TEST(RNDFTest, Date)
 
 //////////////////////////////////////////////////
 /// \brief Check RNDF version.
-TEST(RNDFTest, Version)
+TEST(RNDF, Version)
 {
   RNDF rndf;
   EXPECT_TRUE(rndf.Version().empty());
@@ -212,7 +218,7 @@ TEST(RNDFTest, Version)
 
 //////////////////////////////////////////////////
 /// \brief Check RNDF validation.
-TEST(RNDFTest, Validation)
+TEST(RNDF, Validation)
 {
   RNDF rndf;
   EXPECT_FALSE(rndf.Valid());
@@ -244,27 +250,608 @@ TEST(RNDFTest, Validation)
   EXPECT_TRUE(rndf.AddSegment(segment));
 
   // The segment is not valid (missing Id).
-  EXPECT_TRUE(rndf.Valid());
+  EXPECT_FALSE(rndf.Valid());
 }
 
 //////////////////////////////////////////////////
-/// \brief Load a RNDF from a file.
-TEST(RNDFTest, Load)
+/// \brief Check loading an RNDF from an inexistent file.
+TEST(RNDF, loadInexistentFiles)
 {
-  // {
-  //   // Load an inexistent file.
-  //   std::string rndfPath(std::string(PROJECT_SOURCE_PATH) +
-  //     "/test/rndf/__inexistent__.rndf");
-  //   RNDF rndf(rndfPath);
-  //   EXPECT_FALSE(rndf.Valid());
-  // }
+  {
+    RNDF rndf("__inexistentFile___.rndf");
+    EXPECT_FALSE(rndf.Valid());
+  }
 
   {
-    // Load an existent file.
-    std::string rndfPath(std::string(PROJECT_SOURCE_PATH) +
-      "/test/rndf/roadA.rndf");
-    RNDF rndf(rndfPath);
-    // EXPECT_TRUE(rndf.Valid());
+    RNDF rndf;
+    rndf.Load("__inexistentFile___.rndf");
+    EXPECT_FALSE(rndf.Valid());
+  }
+}
+
+//////////////////////////////////////////////////
+/// \brief Check loading an entire RNDF from a file.
+TEST_F(RNDFTest, load)
+{
+  // The first element is the content to be parsed.
+  // The second element is the expected return value.
+  // The third element is the test Id.
+  std::vector<std::tuple<std::string, bool, int>> testCases =
+  {
+    std::make_tuple(""                              , false, 0),
+    std::make_tuple("\n\n"                          , false, 0),
+    // Missing RNDF_name.
+    std::make_tuple(
+      "roadA /*A comment */\n"
+      "\n"
+                                                    , false, 0),
+    // Invalid RNDF_name.
+    std::make_tuple(
+      "xxx roadA /*A comment */\n"
+      "\n"
+                                                    , false, 0),
+    // Missing RNDF_name value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name /* A comment */\n"
+      "num_segments 2\n"
+                                                    , false, 0),
+    // Missing num_segments.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+                                                    , false, 0),
+    // Missing num_segments.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "1\n"
+      "num_zones 1\n"
+                                                    , false, 0),
+    // Missing num_segments value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments \n"
+      "num_zones 1\n"
+                                                    , false, 0),
+    // Invalid num_segments value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments xxx\n"
+      "num_zones 1\n"
+                                                    , false, 0),
+    // Invalid num_segments value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments -1\n"
+      "num_zones 1\n"
+                                                    , false, 0),
+    // Invalid num_segments value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 0\n"
+      "num_zones 1\n"
+                                                    , false, 0),
+    // Missing num_zones.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "format_version 1.2.2\n"
+                                                    , false, 0),
+    // Missing num_zones.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "1\n"
+      "format_version 1.2.2\n"
+                                                    , false, 0),
+    // Missing num_zones value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones \n"
+      "format_version 1.2.2\n"
+                                                    , false, 0),
+    // Invalid num_zones value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones xxx\n"
+      "format_version 1.2.2\n"
+                                                    , false, 0),
+    // Invalid num_zones value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones -1\n"
+      "format_version 1.2.2\n"
+                                                    , false, 0),
+    // Missing format_version.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "1.2.2\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Missing format_version value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "format_version /* comment */\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Repeated format_version value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "format_version 1.2.2/* comment */\n"
+      "format_version 1.2.2/* comment */\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Missing creation_date.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "3-Nov-07\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Missing format_version value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "creation_date /* comment */\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Repeated format_version value.
+    std::make_tuple(
+      "\n\n"
+      "RNDF_name roadA /* A comment */\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "creation_date 3-Nov-07\n"
+      "creation_date 3-Nov-07\n"
+      "segment 1\n"
+                                                    , false, 0),
+    // Missing one segment.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "num_segments 2\n"
+      "num_zones 0\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "end_file\n"
+                                                    , false, 0),
+    // Extra segment found.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "num_segments 1\n"
+      "num_zones 0\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "end_file\n"
+                                                    , false, 0),
+    // Missing one zone.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "\n"
+      " /* Ignore */\n"
+      "\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "end_file\n"
+                                                    , false, 0),
+    // Extra zone found.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "\n"
+      " /* Ignore */\n"
+      "\n"
+      "num_segments 2\n"
+      "num_zones 0\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "zone  3  /*zones & segments have unique identifiers.*/\n"
+      "num_spots 1\n"
+      "zone_name Central_Parking_Lot\n"
+      "perimeter 3.0\n"
+      "num_perimeterpoints 3\n"
+      "exit  3.0.1  2.1.1  /*out of zone 3*/\n"
+      "14.0.1  38.872271 -77.203339\n"
+      "14.0.2  38.872258 -77.202804\n"
+      "14.0.3  38.872264 -77.202315\n"
+      "end_perimeter\n"
+      "spot  3.1\n"
+      "spot_width  16\n"
+      "checkpoint  3.1.2  1\n"
+      "3.1.1  38.872151 -77.202972\n"
+      "3.1.2  38.872103 -77.202971\n"
+      "end_spot\n"
+      "end_zone\n"
+      "end_file\n"
+                                                    , false, 0),
+    // Missing terminator.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "num_segments 2\n"
+      "num_zones 0\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "\n"
+                                                    , false, 0),
+    // No options.
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "\n"
+      " /* Ignore */\n"
+      "\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "zone  3  /*zones & segments have unique identifiers.*/\n"
+      "num_spots 1\n"
+      "zone_name Central_Parking_Lot\n"
+      "perimeter 3.0\n"
+      "num_perimeterpoints 3\n"
+      "exit  3.0.1  2.1.1  /*out of zone 3*/\n"
+      "3.0.1  38.872271 -77.203339\n"
+      "3.0.2  38.872258 -77.202804\n"
+      "3.0.3  38.872264 -77.202315\n"
+      "end_perimeter\n"
+      "spot  3.1\n"
+      "spot_width  16\n"
+      "checkpoint  3.1.2  1\n"
+      "3.1.1  38.872151 -77.202972\n"
+      "3.1.2  38.872103 -77.202971\n"
+      "end_spot\n"
+      "end_zone\n"
+      "end_file\n"
+                                                    , true, 1),
+    // One option (format_version).
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "\n"
+      " /* Ignore */\n"
+      "\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "zone  3  /*zones & segments have unique identifiers.*/\n"
+      "num_spots 1\n"
+      "zone_name Central_Parking_Lot\n"
+      "perimeter 3.0\n"
+      "num_perimeterpoints 3\n"
+      "exit  3.0.1  2.1.1  /*out of zone 3*/\n"
+      "3.0.1  38.872271 -77.203339\n"
+      "3.0.2  38.872258 -77.202804\n"
+      "3.0.3  38.872264 -77.202315\n"
+      "end_perimeter\n"
+      "spot  3.1\n"
+      "spot_width  16\n"
+      "checkpoint  3.1.2  1\n"
+      "3.1.1  38.872151 -77.202972\n"
+      "3.1.2  38.872103 -77.202971\n"
+      "end_spot\n"
+      "end_zone\n"
+      "end_file\n"
+                                                    , true, 2),
+    // Two options (format_version and creation_date).
+    std::make_tuple(
+      "RNDF_name roadA /*A comment */\n"
+      "\n"
+      " /* Ignore */\n"
+      "\n"
+      "num_segments 2\n"
+      "num_zones 1\n"
+      "creation_date 29-Mar-07\n"
+      "format_version 1.2.2\n"
+      "segment 1\n"
+      "num_lanes 1\n"
+      "lane 1.1\n"
+      "num_waypoints 9\n"
+      "1.1.1 30.3870130 -97.7276181\n"
+      "1.1.2 30.3876366 -97.7273710\n"
+      "1.1.3 30.3881655 -97.7271432\n"
+      "1.1.4 30.3885908 -97.7269603\n"
+      "1.1.5 30.3888965 -97.7268688\n"
+      "1.1.6 30.3891127 -97.7268779\n"
+      "1.1.7 30.3893659 -97.7268964\n"
+      "1.1.8 30.3896061 -97.7268374\n"
+      "1.1.9 30.3900594 -97.7266452\n"
+      "end_lane\n"
+      "end_segment\n"
+      "segment 2\n"
+      "num_lanes 1\n"
+      "lane 2.1\n"
+      "num_waypoints 8\n"
+      "2.1.1 30.3902771 -97.7266013\n"
+      "2.1.2 30.3897954 -97.7268091\n"
+      "2.1.3 30.3894485 -97.7269254\n"
+      "2.1.4 30.3891929 -97.7269262\n"
+      "2.1.5 30.3889129 -97.7269210\n"
+      "2.1.6 30.3886607 -97.7269929\n"
+      "2.1.7 30.3883870 -97.7271055\n"
+      "2.1.8 30.3880462 -97.7272477\n"
+      "end_lane\n"
+      "end_segment\n"
+      "zone  3  /*zones & segments have unique identifiers.*/\n"
+      "num_spots 1\n"
+      "zone_name Central_Parking_Lot\n"
+      "perimeter 3.0\n"
+      "num_perimeterpoints 3\n"
+      "exit  3.0.1  2.1.1  /*out of zone 3*/\n"
+      "3.0.1  38.872271 -77.203339\n"
+      "3.0.2  38.872258 -77.202804\n"
+      "3.0.3  38.872264 -77.202315\n"
+      "end_perimeter\n"
+      "spot  3.1\n"
+      "spot_width  16\n"
+      "checkpoint  3.1.2  1\n"
+      "3.1.1  38.872151 -77.202972\n"
+      "3.1.2  38.872103 -77.202971\n"
+      "end_spot\n"
+      "end_zone\n"
+      "end_file\n"
+                                                    , true, 3),
+  };
+
+  for (auto const &testCase : testCases)
+  {
+    std::string content = std::get<0>(testCase);
+    int testId = std::get<2>(testCase);
+
+    // Expectations.
+    bool expectedResult = std::get<1>(testCase);
+
+    // Write the content of this test case into the test file.
+    this->PopulateFile(content);
+
+    // Leave this comment for knowing wich test case failed if needed.
+    std::cout << "Testing [" << content << "]" << std::endl;
+
+    // Check expectations.
+    RNDF rndf;
+    bool res;
+    EXPECT_EQ(res = rndf.Load(this->fileName), expectedResult);
+    EXPECT_EQ(rndf.Valid(), res);
+    if (res)
+    {
+      switch (testId)
+      {
+        case 1:
+        {
+          EXPECT_EQ(rndf.Name(), "roadA");
+          EXPECT_EQ(rndf.NumSegments(), 2u);
+          EXPECT_EQ(rndf.NumZones(), 1u);
+          EXPECT_TRUE(rndf.Version().empty());
+          EXPECT_TRUE(rndf.Date().empty());
+          break;
+        }
+        case 2:
+        {
+          EXPECT_EQ(rndf.Name(), "roadA");
+          EXPECT_EQ(rndf.NumSegments(), 2u);
+          EXPECT_EQ(rndf.NumZones(), 1u);
+          EXPECT_EQ(rndf.Version(), "1.2.2");
+          EXPECT_TRUE(rndf.Date().empty());
+          break;
+        }
+        case 3:
+        {
+          EXPECT_EQ(rndf.Name(), "roadA");
+          EXPECT_EQ(rndf.NumSegments(), 2u);
+          EXPECT_EQ(rndf.NumZones(), 1u);
+          EXPECT_EQ(rndf.Version(), "1.2.2");
+          EXPECT_EQ(rndf.Date(), "29-Mar-07");
+          break;
+        }
+        default:
+          break;
+      };
+    }
   }
 }
 

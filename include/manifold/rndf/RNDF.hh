@@ -31,6 +31,7 @@ namespace manifold
   namespace rndf
   {
     // Forward declarations.
+    class RNDFHeaderPrivate;
     class RNDFPrivate;
     class Segment;
     class UniqueId;
@@ -103,10 +104,10 @@ namespace manifold
 
       /// \brief Load a RNDF from an input stream coming from a text file.
       /// The expected format is the one specified on the RNDF spec.
-      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in, out] _filePath Path to RNDF file.
       /// \return True if the entire RNDF was correctly parsed or false
       /// otherwise (e.g.: EoF or incorrect format found).
-      public: bool Load(std::ifstream &_rndfFile);
+      public: bool Load(const std::string &_filePath);
 
       ////////
       /// Name

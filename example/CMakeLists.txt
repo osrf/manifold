@@ -9,6 +9,9 @@ link_directories(${MANIFOLD_LIBRARY_DIRS})
 # Generate examples
 add_executable(roadInfo roadInfo.cc)
 target_link_libraries(roadInfo ${MANIFOLD_LIBRARIES})
+add_executable(rndfInfo rndfInfo.cc)
+target_link_libraries(rndfInfo ${MANIFOLD_LIBRARIES})
+
 
 if (MSVC)
 
