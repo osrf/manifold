@@ -270,7 +270,22 @@ TEST(RNDF, loadInexistentFiles)
 }
 
 //////////////////////////////////////////////////
-/// \brief Check loading an entire RNDF from a file.
+/// \brief Check loading real RNDF files.
+TEST(RNDF, loadSamples)
+{
+  std::string dirPath(std::string(PROJECT_SOURCE_PATH));
+  {
+    RNDF rndf(dirPath + "/test/rndf/sample1.rndf");
+    EXPECT_TRUE(rndf.Valid());
+  }
+  {
+    RNDF rndf(dirPath + "/test/rndf/sample2.rndf");
+    EXPECT_TRUE(rndf.Valid());
+  }
+}
+
+//////////////////////////////////////////////////
+/// \brief Check loading specific RNDF blocks from files.
 TEST_F(RNDFTest, load)
 {
   // The first element is the content to be parsed.
