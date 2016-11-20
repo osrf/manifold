@@ -35,6 +35,9 @@ namespace manifold
     bool nextRealLine(std::ifstream &_rndfFile, std::string &_line,
       int &_lineNumber)
     {
+      if (_rndfFile.eof())
+        return false;
+
       while (std::getline(_rndfFile, _line))
       {
         ++_lineNumber;
@@ -45,7 +48,7 @@ namespace manifold
           break;
       }
 
-      return !_rndfFile.eof();
+      return true;
     }
 
     //////////////////////////////////////////////////
