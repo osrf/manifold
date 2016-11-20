@@ -37,7 +37,6 @@ Exit::Exit(const UniqueId &_exit, const UniqueId &_entry)
   this->entry = _entry;
 }
 
-
 //////////////////////////////////////////////////
 Exit::Exit(const Exit &_other)
   : Exit(_other.ExitId(), _other.EntryId())

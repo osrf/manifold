@@ -45,6 +45,10 @@ namespace manifold
       /// \brief Destructor.
       public: ~ZoneHeader() = default;
 
+      ///////////
+      /// Parsing
+      ///////////
+
       /// \brief Load a zone header from an input stream coming from a
       /// text file. The expected format is the one specified on the RNDF spec.
       /// \param[in, out] _rndfFile Input file stream.
@@ -96,6 +100,10 @@ namespace manifold
 
       /// \brief Destructor.
       public: virtual ~Zone();
+
+      ///////////
+      /// Parsing
+      ///////////
 
       /// \brief Load a zone from an input stream coming from a text file.
       /// The expected format is the one specified on the RNDF spec.

@@ -812,32 +812,6 @@ bool Lane::RemoveExit(const Exit &_exit)
 }
 
 //////////////////////////////////////////////////
-bool Lane::operator==(const Lane &_other) const
-{
-  return this->Id() == _other.Id();
-}
-
-//////////////////////////////////////////////////
-bool Lane::operator!=(const Lane &_other) const
-{
-  return !(*this == _other);
-}
-
-//////////////////////////////////////////////////
-Lane &Lane::operator=(const Lane &_other)
-{
-  this->SetId(_other.Id());
-  this->Waypoints() = _other.Waypoints();
-  this->SetWidth(_other.Width());
-  this->SetLeftBoundary(_other.LeftBoundary());
-  this->SetRightBoundary(_other.RightBoundary());
-  this->Checkpoints() = _other.Checkpoints();
-  this->Stops() = _other.Stops();
-  this->Exits() = _other.Exits();
-  return *this;
-}
-
-//////////////////////////////////////////////////
 bool Lane::Valid() const
 {
   if (this->Id() <= 0 || this->NumWaypoints() <= 0)
@@ -871,4 +845,30 @@ bool Lane::Valid() const
   }
 
   return true;
+}
+
+//////////////////////////////////////////////////
+bool Lane::operator==(const Lane &_other) const
+{
+  return this->Id() == _other.Id();
+}
+
+//////////////////////////////////////////////////
+bool Lane::operator!=(const Lane &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+Lane &Lane::operator=(const Lane &_other)
+{
+  this->SetId(_other.Id());
+  this->Waypoints() = _other.Waypoints();
+  this->SetWidth(_other.Width());
+  this->SetLeftBoundary(_other.LeftBoundary());
+  this->SetRightBoundary(_other.RightBoundary());
+  this->Checkpoints() = _other.Checkpoints();
+  this->Stops() = _other.Stops();
+  this->Exits() = _other.Exits();
+  return *this;
 }

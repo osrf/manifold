@@ -60,6 +60,10 @@ namespace manifold
       /// \brief Destructor.
       public: ~LaneHeader() = default;
 
+      ///////////
+      /// Parsing
+      ///////////
+
       /// \brief Load a lane header from an input stream coming from a
       /// text file. The expected format is the one specified on the RNDF spec.
       /// \param[in, out] _rndfFile Input file stream.

@@ -47,6 +47,10 @@ namespace manifold
       /// \brief Destructor.
       public: ~RNDFHeader() = default;
 
+      ///////////
+      /// Parsing
+      ///////////
+
       /// \brief Load a RNDF header from an input stream coming from a
       /// text file. The expected format is the one specified on the RNDF spec.
       /// \param[in, out] _rndfFile Input file stream.
@@ -85,7 +89,9 @@ namespace manifold
       private: std::unique_ptr<RNDFHeaderPrivate> dataPtr;
     };
 
-    /// \brief ToDo.
+    /// \brief An abstraction to represent a Route Network Definition File
+    /// (RNDF). Please, refer to the specification for more details.
+    /// \reference http://www.grandchallenge.org/grandchallenge/docs/RNDF_MDF_Formats_031407.pdf
     class MANIFOLD_VISIBLE RNDF
     {
       /// \brief Constructor.

@@ -44,6 +44,10 @@ namespace manifold
       /// \brief Destructor.
       public: ~ParkingSpotHeader() = default;
 
+      ///////////
+      /// Parsing
+      ///////////
+
       /// \brief Load a parking spot header from an input stream coming from a
       /// text file. The expected format is the one specified on the RNDF spec.
       /// \param[in, out] _rndfFile Input file stream.
@@ -102,6 +106,10 @@ namespace manifold
 
       /// \brief Destructor.
       public: virtual ~ParkingSpot();
+
+      ///////////
+      /// Parsing
+      ///////////
 
       /// \brief Load a parking spot from an input stream coming from a text
       /// file. The expected format is the one specified on the RNDF spec.

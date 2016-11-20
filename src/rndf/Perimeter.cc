@@ -346,6 +346,30 @@ bool Perimeter::RemoveExit(const Exit &_exit)
 }
 
 //////////////////////////////////////////////////
+bool Perimeter::Valid() const
+{
+  if (this->NumPoints() <= 0)
+    return false;
+
+  // All points must be valid and consecutive.
+  for (auto i = 0u; i < this->NumPoints(); ++i)
+  {
+    int expectedPerimeterPointId = i + 1;
+    const rndf::Waypoint &w = this->Points().at(i);
+    if (!w.Valid() || w.Id() != expectedPerimeterPointId)
+      return false;
+  }
+
+  for (auto const &e : this->Exits())
+  {
+    if (!e.Valid())
+      return false;
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////
 bool Perimeter::operator==(const Perimeter &_other) const
 {
   if ((this->Points().size() != _other.Points().size()) ||
@@ -387,28 +411,4 @@ Perimeter &Perimeter::operator=(const Perimeter &_other)
   this->Points() = _other.Points();
   this->Exits() = _other.Exits();
   return *this;
-}
-
-//////////////////////////////////////////////////
-bool Perimeter::Valid() const
-{
-  if (this->NumPoints() <= 0)
-    return false;
-
-  // All points must be valid and consecutive.
-  for (auto i = 0u; i < this->NumPoints(); ++i)
-  {
-    int expectedPerimeterPointId = i + 1;
-    const rndf::Waypoint &w = this->Points().at(i);
-    if (!w.Valid() || w.Id() != expectedPerimeterPointId)
-      return false;
-  }
-
-  for (auto const &e : this->Exits())
-  {
-    if (!e.Valid())
-      return false;
-  }
-
-  return true;
 }

@@ -44,6 +44,10 @@ namespace manifold
       /// \brief Destructor.
       public: ~PerimeterHeader() = default;
 
+      ///////////
+      /// Parsing
+      ///////////
+
       /// \brief Load a perimeter header from an input stream coming from a
       /// text file. The expected format is the one specified on the RNDF spec.
       /// \param[in, out] _rndfFile Input file stream.
@@ -112,7 +116,14 @@ namespace manifold
       /// Parsing
       ///////////
 
-      /// \brief ToDo.
+      /// \brief Load a perimeter from an input stream coming from a text file.
+      /// The expected format is the one specified on the RNDF spec.
+      /// \param[in, out] _rndfFile Input file stream.
+      /// \param[in] _zoneId The zone Id in which the perimeter is located.
+      /// \param[in, out] _lineNumber Line number pointed by the stream position
+      /// indicator.
+      /// \return True if a perimeter block was found and parsed or false
+      /// otherwise (e.g.: EoF or incorrect format found).
       public: bool Load(std::ifstream &_rndfFile,
                         const int _zoneId,
                         int &_lineNumber);

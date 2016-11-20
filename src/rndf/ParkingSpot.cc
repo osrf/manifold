@@ -302,7 +302,6 @@ bool ParkingSpot::SetId(const int _id)
   return valid;
 }
 
-
 //////////////////////////////////////////////////
 unsigned int ParkingSpot::NumWaypoints() const
 {
@@ -395,28 +394,6 @@ bool ParkingSpot::RemoveWaypoint(const int _wpId)
 }
 
 //////////////////////////////////////////////////
-bool ParkingSpot::operator==(const ParkingSpot &_other) const
-{
-  return this->Id() == _other.Id();
-}
-
-//////////////////////////////////////////////////
-bool ParkingSpot::operator!=(const ParkingSpot &_other) const
-{
-  return !(*this == _other);
-}
-
-//////////////////////////////////////////////////
-ParkingSpot &ParkingSpot::operator=(const ParkingSpot &_other)
-{
-  this->SetId(_other.Id());
-  this->Waypoints() = _other.Waypoints();
-  this->SetWidth(_other.Width());
-  this->Checkpoint() = _other.Checkpoint();
-  return *this;
-}
-
-//////////////////////////////////////////////////
 double ParkingSpot::Width() const
 {
   return this->dataPtr->header.Width();
@@ -456,4 +433,26 @@ bool ParkingSpot::Valid() const
   }
 
   return true;
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpot::operator==(const ParkingSpot &_other) const
+{
+  return this->Id() == _other.Id();
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpot::operator!=(const ParkingSpot &_other) const
+{
+  return !(*this == _other);
+}
+
+//////////////////////////////////////////////////
+ParkingSpot &ParkingSpot::operator=(const ParkingSpot &_other)
+{
+  this->SetId(_other.Id());
+  this->Waypoints() = _other.Waypoints();
+  this->SetWidth(_other.Width());
+  this->Checkpoint() = _other.Checkpoint();
+  return *this;
 }
