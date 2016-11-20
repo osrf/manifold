@@ -162,7 +162,24 @@ Install prerequisites. A clean Ubuntu system will need:
 .. code-block:: bash
 
         sudo apt-get update
-        sudo apt-get install cmake pkg-config python ruby-ronn libignition-math2-dev
+        sudo apt-get install cmake pkg-config python ruby-ronn
+
+Clone and prepare the Ignition Math dependency:
+
+.. code-block:: bash
+
+        hg clone https://bitbucket.org/ignitionrobotics/ign-math -b ign-math2 /tmp/ign-math
+        cd /tmp/ign-math
+        mkdir build
+        cd build
+
+Configure and build:
+
+.. code-block:: bash
+
+        cmake ..
+        make -j4
+        sudo make install
 
 Clone the repository into a directory and go into it:
 
