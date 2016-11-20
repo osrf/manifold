@@ -229,6 +229,14 @@ bool RNDF::Load(const std::string &_filePath)
     if (!segment.Load(rndfFile, lineNumber))
       return false;
 
+    // Check that all segments are consecutive.
+    if (segment.Id() != i + 1)
+    {
+      std::cerr << "[Line " << lineNumber << "]: Found non-consecutive segment "
+                << "Id [" << segment.Id() << "]" << std::endl;
+      return false;
+    }
+
     segments.push_back(segment);
   }
 
@@ -239,6 +247,15 @@ bool RNDF::Load(const std::string &_filePath)
     rndf::Zone zone;
     if (!zone.Load(rndfFile, lineNumber))
       return false;
+
+    // Check that all zones are consecutive.
+    int expectedZoneId = segments.size() + i + 1;
+    if (zone.Id() != expectedZoneId)
+    {
+      std::cerr << "[Line " << lineNumber << "]: Found non-consecutive zone "
+                << "Id [" << zone.Id() << "]" << std::endl;
+      return false;
+    }
 
     zones.push_back(zone);
   }
@@ -325,7 +342,7 @@ bool RNDF::AddSegment(const rndf::Segment &_newSegment)
   // Validate the segment.
   if (!_newSegment.Valid())
   {
-    std::cerr << "[RNDF::AddSegment() Invalid segment Id ["
+    std::cerr << "RNDF::AddSegment() Invalid segment with Id ["
               << _newSegment.Id() << "]" << std::endl;
     return false;
   }
@@ -334,7 +351,7 @@ bool RNDF::AddSegment(const rndf::Segment &_newSegment)
   if (std::find(this->dataPtr->segments.begin(), this->dataPtr->segments.end(),
     _newSegment) != this->dataPtr->segments.end())
   {
-    std::cerr << "[RNDF::AddSegment() error: Existing segment" << std::endl;
+    std::cerr << "RNDF::AddSegment() error: Existing segment" << std::endl;
     return false;
   }
 
@@ -463,15 +480,19 @@ bool RNDF::Valid() const
   if (this->Name().empty() || this->NumSegments() <= 0)
     return false;
 
-  for (auto const &s : this->Segments())
+  for (auto i = 0u; i < this->NumSegments(); ++i)
   {
-    if (!s.Valid())
+    int expectedSegmentId = i + 1;
+    const rndf::Segment &s = this->Segments().at(i);
+    if (!s.Valid() || s.Id() != expectedSegmentId)
       return false;
   }
 
-  for (auto const &z : this->Zones())
+  for (auto i = 0u; i < this->NumZones(); ++i)
   {
-    if (!z.Valid())
+    int expectedZoneId = this->NumSegments() + i + 1;
+    const rndf::Zone &z = this->Zones().at(i);
+    if (!z.Valid() || z.Id() != expectedZoneId)
       return false;
   }
 

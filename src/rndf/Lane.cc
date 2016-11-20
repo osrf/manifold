@@ -549,6 +549,13 @@ bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
     if (!waypoint.Load(_rndfFile, _segmentId, laneId, _lineNumber))
       return false;
 
+    if (waypoint.Id() != i + 1)
+    {
+      std::cerr << "[Line " << _lineNumber << "]: Found non-consecutive "
+                << "waypoint Id [" << waypoint.Id() << "]" << std::endl;
+      return false;
+    }
+
     waypoints.push_back(waypoint);
   }
 
@@ -664,21 +671,6 @@ bool Lane::RemoveWaypoint(const int _wpId)
   return (this->dataPtr->waypoints.erase(std::remove(
     this->dataPtr->waypoints.begin(), this->dataPtr->waypoints.end(), wp),
       this->dataPtr->waypoints.end()) != this->dataPtr->waypoints.end());
-}
-
-//////////////////////////////////////////////////
-bool Lane::Valid() const
-{
-  bool valid = this->Id() > 0 && this->NumWaypoints() > 0;
-  for (auto &w : this->Waypoints())
-    valid = valid && w.Valid();
-  for (auto &c : this->Checkpoints())
-    valid = valid && c.Valid();
-  for (auto &s : this->Stops())
-    valid = valid && s > 0;
-  for (auto &e : this->Exits())
-    valid = valid && e.Valid();
-  return valid;
 }
 
 //////////////////////////////////////////////////
@@ -843,4 +835,40 @@ Lane &Lane::operator=(const Lane &_other)
   this->Stops() = _other.Stops();
   this->Exits() = _other.Exits();
   return *this;
+}
+
+//////////////////////////////////////////////////
+bool Lane::Valid() const
+{
+  if (this->Id() <= 0 || this->NumWaypoints() <= 0)
+    return false;
+
+  // All waypoints must be valid and consecutive.
+  for (auto i = 0u; i < this->NumWaypoints(); ++i)
+  {
+    int expectedWaypointId = i + 1;
+    const rndf::Waypoint &w = this->Waypoints().at(i);
+    if (!w.Valid() || w.Id() != expectedWaypointId)
+      return false;
+  }
+
+  for (auto &c : this->Checkpoints())
+  {
+    if (!c.Valid())
+      return false;
+  }
+
+  for (auto &s : this->Stops())
+  {
+    if (s <= 0)
+      return false;
+  }
+
+  for (auto &e : this->Exits())
+  {
+    if (!e.Valid())
+      return false;
+  }
+
+  return true;
 }

@@ -264,6 +264,13 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
     if (!waypoint.Load(_rndfFile, _zoneId, spotId, _lineNumber))
       return false;
 
+    if (waypoint.Id() != i + 1)
+    {
+      std::cerr << "[Line " << _lineNumber << "]: Found non-consecutive "
+                << "waypoint Id [" << waypoint.Id() << "]" << std::endl;
+      return false;
+    }
+
     waypoints.push_back(waypoint);
   }
 
@@ -388,16 +395,6 @@ bool ParkingSpot::RemoveWaypoint(const int _wpId)
 }
 
 //////////////////////////////////////////////////
-bool ParkingSpot::Valid() const
-{
-  bool valid = this->Id() > 0 && this->NumWaypoints() == 2;
-  for (auto const &w : this->Waypoints())
-    valid = valid && w.Valid();
-
-  return valid;
-}
-
-//////////////////////////////////////////////////
 bool ParkingSpot::operator==(const ParkingSpot &_other) const
 {
   return this->Id() == _other.Id();
@@ -441,4 +438,22 @@ Checkpoint &ParkingSpot::Checkpoint()
 const Checkpoint &ParkingSpot::Checkpoint() const
 {
   return this->dataPtr->header.Checkpoint();
+}
+
+//////////////////////////////////////////////////
+bool ParkingSpot::Valid() const
+{
+  if (this->Id() <= 0 || this->NumWaypoints() != 2)
+    return false;
+
+  // All waypoints must be valid and consecutive.
+  for (auto i = 0u; i < this->NumWaypoints(); ++i)
+  {
+    int expectedWaypointId = i + 1;
+    const rndf::Waypoint &w = this->Waypoints().at(i);
+    if (!w.Valid() || w.Id() != expectedWaypointId)
+      return false;
+  }
+
+  return true;
 }

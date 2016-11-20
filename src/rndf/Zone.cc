@@ -198,6 +198,14 @@ bool Zone::Load(std::ifstream &_rndfFile, int &_lineNumber)
     if (!spot.Load(_rndfFile, zoneId, _lineNumber))
       return false;
 
+    // Check that all spots are consecutive.
+    if (spot.Id() != i + 1)
+    {
+      std::cerr << "[Line " << _lineNumber << "]: Found non-consecutive spot "
+                << "Id [" << spot.Id() << "]" << std::endl;
+      return false;
+    }
+
     spots.push_back(spot);
   }
 
@@ -337,9 +345,19 @@ void Zone::SetName(const std::string &_name) const
 //////////////////////////////////////////////////
 bool Zone::Valid() const
 {
-  return this->Id() > 0            &&
-         this->Perimeter().Valid() &&
-         this->Perimeter().Valid();
+  if (this->Id() <= 0 || !this->Perimeter().Valid())
+    return false;
+
+  // Check that the parking spots are valid and consecutive.
+  for (auto i = 0u; i < this->NumSpots(); ++i)
+  {
+    int expectedSpotId = i + 1;
+    const rndf::ParkingSpot &s = this->Spots().at(i);
+    if (!s.Valid() || s.Id() != expectedSpotId)
+      return false;
+  }
+
+  return true;
 }
 
 //////////////////////////////////////////////////

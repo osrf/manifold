@@ -48,11 +48,11 @@ int main(int argc, char **argv)
   }
 
   // Show stats.
-  std::cout << "Name: [" << rndf.Name() << "]" << std::endl;
+  std::cout << "Name:               [" << rndf.Name() << "]" << std::endl;
   if (!rndf.Version().empty())
-    std::cout << "Version: [" << rndf.Version() << "]" << std::endl;
+    std::cout << "Version:            [" << rndf.Version() << "]" << std::endl;
   if (!rndf.Date().empty())
-    std::cout << "Creation date: [" << rndf.Date() << "]" << std::endl;
+    std::cout << "Creation date:      [" << rndf.Date() << "]" << std::endl;
   std::cout << "Number of segments: " << rndf.NumSegments() << std::endl;
-  std::cout << "Number of zones: " << rndf.NumZones() << std::endl;
+  std::cout << "Number of zones:    " << rndf.NumZones() << std::endl;
 }

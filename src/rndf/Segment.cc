@@ -190,6 +190,14 @@ bool Segment::Load(std::ifstream &_rndfFile, int &_lineNumber)
     if (!lane.Load(_rndfFile, segmentId, _lineNumber))
       return false;
 
+    // Check that all lanes are consecutive.
+    if (lane.Id() != i + 1)
+    {
+      std::cerr << "[Line " << _lineNumber << "]: Found non-consecutive lane "
+                << "Id [" << lane.Id() << "]" << std::endl;
+      return false;
+    }
+
     lanes.push_back(lane);
   }
 
@@ -316,11 +324,18 @@ void Segment::SetName(const std::string &_name) const
 //////////////////////////////////////////////////
 bool Segment::Valid() const
 {
-  bool valid = this->Id() > 0 && this->Lanes().size() > 0;
-  for (auto const &lane : this->Lanes())
-    valid = valid && lane.Valid();
+  if (this->Id() <= 0 || this->Lanes().size() <= 0)
+    return false;
 
-  return valid;
+  for (auto i = 0u; i < this->NumLanes(); ++i)
+  {
+    int expectedLaneId = i + 1;
+    const rndf::Lane &l = this->Lanes().at(i);
+    if (!l.Valid() || l.Id() != expectedLaneId)
+      return false;
+  }
+
+  return true;
 }
 
 //////////////////////////////////////////////////
