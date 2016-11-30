@@ -110,7 +110,7 @@ bool ZoneHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
   }
 
   std::regex rgxHeader("^zone_name\\s+(" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
+    ")\\s*(" + kRgxComment + ")?\\s*$");
   std::smatch result;
 
   std::regex_search(lineread, result, rgxHeader);

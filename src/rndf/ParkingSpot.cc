@@ -98,7 +98,7 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
   bool checkpointFound = false;
   bool widthFound = false;
 
-  std::regex rgxHeader("^(spot_width|checkpoint|" + kRgxUniqueId + ") ");
+  std::regex rgxHeader("^(spot_width|checkpoint|" + kRgxUniqueId + ")\\s+");
 
   for (auto i = 0; i < 2; ++i)
   {
