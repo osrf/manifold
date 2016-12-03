@@ -260,7 +260,8 @@ TEST_F(WaypointTest, load)
         {
           ignition::math::SphericalCoordinates::SurfaceType st =
             ignition::math::SphericalCoordinates::EARTH_WGS84;
-          ignition::math::Angle lat(34.579979), lon(-117.365607);
+          ignition::math::Angle lat(IGN_DTOR(34.579979));
+          ignition::math::Angle lon(IGN_DTOR(-117.365607));
           ignition::math::Angle heading(0.0);
           double elev = 0.0;
           ignition::math::SphericalCoordinates loc(st, lat, lon, elev, heading);
