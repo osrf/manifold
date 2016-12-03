@@ -107,7 +107,7 @@ bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
   }
 
   std::regex rgxHeader("^segment_name\\s+(" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
+    ")\\s*(" + kRgxComment + ")?\\s*$");
   std::smatch result;
 
   std::regex_search(lineread, result, rgxHeader);

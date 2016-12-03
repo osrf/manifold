@@ -92,7 +92,7 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
   bool dateFound = false;
 
   std::regex rgxHeader("^(format_version|creation_date)\\s+(" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?$");
+    ")\\s*(" + kRgxComment + ")?\\s*$");
   std::regex rgxSegmentId("^segment\\s+" + kRgxPositive +
     "\\s*(" + kRgxComment + ")?\\s*$");
   std::smatch result;
