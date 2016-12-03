@@ -127,8 +127,8 @@ bool Waypoint::Load(std::ifstream &_rndfFile, const int _segmentId,
 
   ignition::math::SphericalCoordinates::SurfaceType st =
     ignition::math::SphericalCoordinates::EARTH_WGS84;
-  ignition::math::Angle lat(latitude);
-  ignition::math::Angle lon(longitude);
+  ignition::math::Angle lat(IGN_DTOR(latitude));
+  ignition::math::Angle lon(IGN_DTOR(longitude));
   ignition::math::Angle heading(ignition::math::Angle::Zero);
   double elev = 0.0;
   ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
