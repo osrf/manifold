@@ -20,6 +20,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 #include "manifold/Helpers.hh"
 #include "manifold/rndf/Lane.hh"
@@ -28,7 +29,6 @@ namespace manifold
 {
   namespace rndf
   {
-
     // Forward declarations.
     class Checkpoint;
     class Exit;
@@ -39,24 +39,17 @@ namespace manifold
     /// backslashes or stars.
     static const std::string kRgxString = "[^[:space:]\\*\\\\]{1,128}";
 
-    /// \brief Regular expression that captures a positive number with a maximum
-    /// value of 32768.
-    static const std::string kPositiveData =
-     "[1-9]|"
-     "[1-9][[:d:]]|"
-     "[1-9][[:d:]][[:d:]]|"
-     "[1-9][[:d:]][[:d:]][[:d:]]|"
-     "[1-2][[:d:]][[:d:]][[:d:]][[:d:]]|"
-     "3[0-1][[:d:]][[:d:]][[:d:]]|"
-     "32[0-6][[:d:]][[:d:]]|327[0-5][[:d:]]|3276[0-8]";
+    /// \brief Regular expression that captures a positive number
+    /// with a maximum of 5 digits.
+    static const std::string kPositiveData = "[1-9][[:d:]]{0,4}";
 
     /// \brief Regular expression that captures a positive integer with a
-    /// maximum value of 32768 (including parenthesis for regex grouping).
+    /// maximum value of 99999 (including parenthesis for regex grouping).
     static const std::string kRgxPositive = "(" + kPositiveData + ")";
 
     /// \brief Regular expression that captures a non-negative number with a
     /// maximum value of 32768.
-    static const std::string kRgxNonNegative = "(0|" + kPositiveData + ")";
+    static const std::string kRgxNonNegative = "([[:d:]]{1,5})";
 
     /// \brief Regular expression that captures a floating point value.
     static const std::string kRgxDouble = "(-?[0-9]*\\.?[0-9]+)";
@@ -66,9 +59,19 @@ namespace manifold
     static const std::string kRgxUniqueId = kRgxPositive + "\\." +
       kRgxNonNegative + "\\." + kRgxPositive;
 
-    /// \brief Regular expression that captures a comment. A comment is
-    /// delimited by "/*" and "*/" (C-style).
-    static const std::string kRgxComment = "\\/\\*[^\\*\\/]*\\*\\/";
+    /// \brief Remove comments, consecutive whitespaces (leaving onle one) and
+    ///  leading and trailing whitespaces.
+    /// \param[in] _str Input string.
+    MANIFOLD_VISIBLE
+    void trimWhitespaces(std::string &_str);
+
+    /// \brief Splits a string into tokens.
+    /// \param[in] _str Input string.
+    /// \param[in] _delim Token delimiter.
+    /// \return Vector of tokens.
+    MANIFOLD_VISIBLE
+    std::vector<std::string> split(const std::string &_str,
+                                   const std::string &_delim);
 
     /// \brief Consumes lines from an input stream coming from a text file.
     /// The function reads line by line until it finds a line containing

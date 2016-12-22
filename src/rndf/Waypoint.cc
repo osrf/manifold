@@ -104,8 +104,8 @@ bool Waypoint::Load(std::ifstream &_rndfFile, const int _segmentId,
   // Parse the "waypoint" .
   std::smatch result;
   std::regex rgxWaypointId("^" + std::to_string(_segmentId) + "\\." +
-    std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxDouble +
-    "\\s+" + kRgxDouble + "\\s*(" + kRgxComment + ")?\\s*$");
+    std::to_string(_laneId) + "\\." + kRgxPositive + "\\s" + kRgxDouble +
+    "\\s" + kRgxDouble + "$");
   std::regex_search(lineread, result, rgxWaypointId);
   if (result.size() < 3)
   {

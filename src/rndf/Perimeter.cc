@@ -184,8 +184,8 @@ bool Perimeter::Load(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Parse the "perimeter Id" .
-  std::regex rgxPerimeterId("^perimeter\\s+" + std::to_string(_zoneId) +
-    "\\.0\\s*(" + kRgxComment + ")?\\s*$");
+  std::regex rgxPerimeterId("^perimeter\\s" + std::to_string(_zoneId) +
+    "\\.0$");
   if (!std::regex_match(lineread, rgxPerimeterId))
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse perimeter "

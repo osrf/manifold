@@ -15,10 +15,10 @@
  *
 */
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 
 #include "manifold/rndf/Checkpoint.hh"
@@ -27,10 +27,67 @@
 #include "manifold/rndf/UniqueId.hh"
 #include "manifold/rndf/Waypoint.hh"
 
+#ifdef _WIN32
+  const auto& manifold_strtok = strtok_s;
+#else
+  const auto& manifold_strtok = strtok_r;
+#endif
+
 namespace manifold
 {
   namespace rndf
   {
+    //////////////////////////////////////////////////
+    void trimWhitespaces(std::string &_str)
+    {
+      // Remove comments.
+      auto commentStart = _str.find("/*");
+      if (commentStart != std::string::npos)
+      {
+        auto commentEnd = _str.rfind("*/");
+        if (commentEnd != std::string::npos)
+          _str.erase(commentStart, commentEnd - commentStart + 2);
+      }
+
+      // Remove consecutive whitespaces leaving only one.
+      auto new_end = std::unique(_str.begin(), _str.end(),
+        [](char lhs, char rhs)
+        {
+          return isspace(lhs) && isspace(rhs);
+        });
+      _str.erase(new_end, _str.end());
+
+      // Remove leading and trailing whitespaces.
+      if (isspace(_str.front()))
+        _str.erase(0, 1);
+
+      if (isspace(_str.back()))
+        _str.pop_back();
+
+      // Replace all spaces with ' '.
+      std::replace_if(_str.begin(), _str.end(), ::isspace, ' ');
+    }
+
+    /////////////////////////////////////////////////
+    std::vector<std::string> split(const std::string &_str,
+        const std::string &_delim)
+    {
+      std::vector<std::string> tokens;
+      char *saveptr;
+      char *str = strdup(_str.c_str());
+
+      auto token = manifold_strtok(str, _delim.c_str(), &saveptr);
+
+      while (token)
+      {
+        tokens.push_back(token);
+        token = manifold_strtok(nullptr, _delim.c_str(), &saveptr);
+      }
+
+      free(str);
+      return tokens;
+    }
+
     //////////////////////////////////////////////////
     bool nextRealLine(std::ifstream &_rndfFile, std::string &_line,
       int &_lineNumber)
@@ -42,9 +99,10 @@ namespace manifold
       {
         ++_lineNumber;
 
-        // Ignore blank lines or lines that only contains comments.
-        std::regex rgxIgnore("^\\s*(" + kRgxComment + ")?\\s*$");
-        if (!std::regex_match(_line, rgxIgnore))
+        trimWhitespaces(_line);
+
+        // Ignore blank lines.
+        if (!_line.empty())
           break;
       }
 
@@ -59,11 +117,11 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxName("^" + _delimiter + "\\s+(" + kRgxString + ")\\s*(" +
-        kRgxComment +  ")?\\s*$");
-      std::smatch result;
-      std::regex_search(lineread, result, rgxName);
-      if (result.size() < 2)
+      auto tokens = split(lineread, " ");
+      if (tokens.size() != 2                                     ||
+          tokens.at(0) != _delimiter                             ||
+          tokens.at(1).find_first_of("*\\") != std::string::npos ||
+          tokens.at(1).size() > 128)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
                   << _delimiter << " element" << std::endl;
@@ -71,8 +129,7 @@ namespace manifold
         return false;
       }
 
-      assert(result.size() >= 2);
-      _value = result[1];
+      _value = tokens.at(1);
       return true;
     }
 
@@ -87,8 +144,7 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxDelim("^" + _delimiter + "\\s*(" + kRgxComment + ")?\\s*$");
-      if (!std::regex_match(lineread, rgxDelim))
+      if (lineread != _delimiter)
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse delimiter ["
                   << _delimiter << "]" << std::endl;
@@ -107,21 +163,38 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxNumSegments("^" + _delimiter + "\\s+" + kRgxPositive +
-        "\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(lineread, result, rgxNumSegments);
-      if (result.size() < 2)
+      auto start = lineread.find(_delimiter + " ");
+      if (start != 0)
       {
-        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << _delimiter << " element" << std::endl;
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse delimiter ["
+                  << _delimiter << "]" << std::endl;
         std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
       }
 
-      assert(result.size() >= 2);
+      lineread.erase(0, _delimiter.size() + 1);
+
       std::string::size_type sz;
-      _value = std::stoi(result[1], &sz);
+      try
+      {
+        _value = std::stoi(lineread, &sz);
+      }
+      catch(...)
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
+                  << _value << "as a positive number" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
+      if (_value <= 0 || _value > 32768 || sz != lineread.size())
+      {
+        std::cerr << "[Line " << _lineNumber << "]: Out of range value ["
+                  << _value << "]" << std::endl;
+        std::cerr << " \"" << lineread << "\"" << std::endl;
+        return false;
+      }
+
       return true;
     }
 
@@ -133,21 +206,14 @@ namespace manifold
       if (!nextRealLine(_rndfFile, lineread, _lineNumber))
         return false;
 
-      std::regex rgxNumSegments("^" + _delimiter + "\\s+" +
-        kRgxNonNegative + "\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(lineread, result, rgxNumSegments);
-      if (result.size() < 2)
+      if (!parseNonNegative(lineread, _delimiter, _value))
       {
         std::cerr << "[Line " << _lineNumber << "]: Unable to parse "
-                  << _delimiter << " element" << std::endl;
+                  << "non-negative value" << std::endl;
         std::cerr << " \"" << lineread << "\"" << std::endl;
         return false;
       }
 
-      assert(result.size() >= 2);
-      std::string::size_type sz;
-      _value = std::stoi(result[1], &sz);
       return true;
     }
 
@@ -155,16 +221,28 @@ namespace manifold
     bool parseNonNegative(const std::string &_input,
       const std::string &_delimiter, int &_value)
     {
-      std::regex rgxLaneWidth("^" + _delimiter + "\\s+" + kRgxNonNegative +
-        "\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(_input, result, rgxLaneWidth);
-      if (result.size() < 2)
+      std::string input = _input;
+      trimWhitespaces(input);
+
+      auto start = input.find(_delimiter + " ");
+      if (start != 0)
         return false;
 
-      assert(result.size() >= 2);
+      input.erase(0, _delimiter.size() + 1);
+
       std::string::size_type sz;
-      _value = std::stoi(result[1], &sz);
+      try
+      {
+        _value = std::stoi(input, &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (_value < 0 || _value > 32768 || sz != input.size())
+        return false;
+
       return true;
     }
 
@@ -172,24 +250,29 @@ namespace manifold
     bool parseBoundary(const std::string &_input, Marking &_boundary)
     {
       _boundary = Marking::UNDEFINED;
+      std::string input = _input;
+      trimWhitespaces(input);
 
-      std::regex rgx("^(left|right)_boundary\\s+(double_yellow|solid_yellow|"
-        "solid_white|broken_white)\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(_input, result, rgx);
-      if (result.size() < 3)
-        return false;
-
-      assert(result.size() >= 3);
-      std::string boundary = result[2];
-      if (boundary == "double_yellow")
+      if (input == "left_boundary double_yellow" ||
+          input == "right_boundary double_yellow")
+      {
         _boundary = Marking::DOUBLE_YELLOW;
-      else if (boundary == "solid_yellow")
+      }
+      else if (input == "left_boundary solid_yellow" ||
+               input == "right_boundary solid_yellow")
+      {
         _boundary = Marking::SOLID_YELLOW;
-      else if (boundary == "solid_white")
+      }
+      else if (input == "left_boundary solid_white" ||
+               input == "right_boundary solid_white")
+      {
         _boundary = Marking::SOLID_WHITE;
-      else if (boundary == "broken_white")
+      }
+      else if (input == "left_boundary broken_white" ||
+               input == "right_boundary broken_white")
+      {
         _boundary = Marking::BROKEN_WHITE;
+      }
       else
         return false;
 
@@ -200,18 +283,61 @@ namespace manifold
     bool parseCheckpoint(const std::string &_input, const int _segmentId,
       const int _laneId, Checkpoint &_checkpoint)
     {
-      std::regex rgx("^checkpoint\\s+" + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxPositive +
-        "\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(_input, result, rgx);
-      if (result.size() < 3)
+      std::string input = _input;
+      trimWhitespaces(input);
+
+      auto tokens = split(input, " ");
+      if (tokens.size() != 3)
         return false;
 
-      assert(result.size() >= 3);
+      if (tokens.at(0) != "checkpoint")
+        return false;
+
+      auto checkpointTokens = split(tokens.at(1), ".");
+      if (checkpointTokens.size() != 3)
+        return false;
+
+      if (checkpointTokens.at(0) != std::to_string(_segmentId))
+        return false;
+
+      if (checkpointTokens.at(1) != std::to_string(_laneId))
+        return false;
+
       std::string::size_type sz;
-      _checkpoint.SetCheckpointId(std::stoi(result[2], &sz));
-      _checkpoint.SetWaypointId(std::stoi(result[1], &sz));
+      int waypointId;
+      try
+      {
+        waypointId = std::stoi(checkpointTokens.at(2), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (waypointId <= 0 || waypointId > 32768 ||
+          sz != checkpointTokens.at(2).size())
+      {
+        return false;
+      }
+
+      int checkpointId;
+      try
+      {
+        checkpointId = std::stoi(tokens.at(2), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (checkpointId <= 0 || checkpointId > 32768 ||
+          sz != tokens.at(2).size())
+      {
+        return false;
+      }
+
+      _checkpoint.SetCheckpointId(checkpointId);
+      _checkpoint.SetWaypointId(waypointId);
       return true;
     }
 
@@ -219,19 +345,43 @@ namespace manifold
     bool parseStop(const std::string &_input, const int _segmentId,
       const int _laneId, UniqueId &_stop)
     {
-      std::regex rgx("^stop\\s+" + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s*(" + kRgxComment +
-        ")?\\s*$");
-      std::smatch result;
-      std::regex_search(_input, result, rgx);
-      if (result.size() < 2)
+      std::string input = _input;
+      trimWhitespaces(input);
+
+      auto tokens = split(input, " ");
+      if (tokens.size() != 2)
         return false;
 
-      assert(result.size() >= 2);
+      if (tokens.at(0) != "stop")
+        return false;
+
+      auto waypointTokens = split(tokens.at(1), ".");
+      if (waypointTokens.size() != 3)
+        return false;
+
+      if (waypointTokens.at(0) != std::to_string(_segmentId))
+        return false;
+
+      if (waypointTokens.at(1) != std::to_string(_laneId))
+        return false;
+
       std::string::size_type sz;
+      int z;
+      try
+      {
+        z = std::stoi(waypointTokens.at(2), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (z <= 0 || z > 32768 || sz != waypointTokens.at(2).size())
+        return false;
+
       _stop.SetX(_segmentId);
       _stop.SetY(_laneId);
-      _stop.SetZ(std::stoi(result[1], &sz));
+      _stop.SetZ(z);
       return true;
     }
 
@@ -239,19 +389,94 @@ namespace manifold
     bool parseExit(const std::string &_input, const int _segmentId,
       const int _laneId, Exit &_exit)
     {
-      std::regex rgx("^exit\\s+" + std::to_string(_segmentId) + "\\." +
-        std::to_string(_laneId) + "\\." + kRgxPositive + "\\s+" + kRgxUniqueId +
-        "\\s*(" + kRgxComment + ")?\\s*$");
-      std::smatch result;
-      std::regex_search(_input, result, rgx);
-      if (result.size() < 5)
+      std::string input = _input;
+      trimWhitespaces(input);
+
+      auto tokens = split(input, " ");
+      if (tokens.size() != 3)
         return false;
 
-      assert(result.size() >= 5);
+      if (tokens.at(0) != "exit")
+        return false;
+
+      auto exitTokens = split(tokens.at(1), ".");
+      if (exitTokens.size() != 3)
+        return false;
+
+      if (exitTokens.at(0) != std::to_string(_segmentId))
+        return false;
+
+      if (exitTokens.at(1) != std::to_string(_laneId))
+        return false;
+
       std::string::size_type sz;
-      UniqueId exitId(_segmentId, _laneId, std::stoi(result[1], &sz));
-      UniqueId entryId(std::stoi(result[2], &sz), std::stoi(result[3], &sz),
-        std::stoi(result[4], &sz));
+      int exitWaypointId;
+      try
+      {
+        exitWaypointId = std::stoi(exitTokens.at(2), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (exitWaypointId <= 0 || exitWaypointId > 32768 ||
+          sz != exitTokens.at(2).size())
+      {
+        return false;
+      }
+
+      auto entryTokens = split(tokens.at(2), ".");
+      if (entryTokens.size() != 3)
+        return false;
+
+      int x;
+      try
+      {
+        x = std::stoi(entryTokens.at(0), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (x <= 0 || x > 32768 || sz != entryTokens.at(0).size())
+      {
+        return false;
+      }
+
+      int y;
+      try
+      {
+        y = std::stoi(entryTokens.at(1), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (y < 0 || y > 32768 || sz != entryTokens.at(1).size())
+      {
+        return false;
+      }
+
+      int z;
+      try
+      {
+        z = std::stoi(entryTokens.at(2), &sz);
+      }
+      catch(...)
+      {
+        return false;
+      }
+
+      if (z <= 0 || z > 32768 || sz != entryTokens.at(2).size())
+      {
+        return false;
+      }
+
+      UniqueId exitId(_segmentId, _laneId, exitWaypointId);
+      UniqueId entryId(x, y, z);
       _exit.ExitId() = exitId;
       _exit.EntryId() = entryId;
       return true;

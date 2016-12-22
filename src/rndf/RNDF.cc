@@ -91,10 +91,9 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
   bool versionFound = false;
   bool dateFound = false;
 
-  std::regex rgxHeader("^(format_version|creation_date)\\s+(" + kRgxString +
-    ")\\s*(" + kRgxComment + ")?\\s*$");
-  std::regex rgxSegmentId("^segment\\s+" + kRgxPositive +
-    "\\s*(" + kRgxComment + ")?\\s*$");
+  std::regex rgxHeader("^(format_version|creation_date)\\s(" + kRgxString +
+    ")$");
+  std::regex rgxSegmentId("^segment\\s" + kRgxPositive + "$");
   std::smatch result;
 
   for (auto i = 0; i < 2; ++i)
@@ -118,7 +117,7 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
     }
 
     std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() <= 3) ||
+    if ((result.size() <= 2) ||
         (result[1] == "format_version" && versionFound) ||
         (result[1] == "creation_date" && dateFound))
     {
@@ -129,7 +128,7 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
       return false;
     }
 
-    assert(result.size() > 3);
+    assert(result.size() > 2);
 
     if (result[1] == "format_version")
     {

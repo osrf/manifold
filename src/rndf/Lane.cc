@@ -114,7 +114,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
   bool rightBoundaryFound = false;
 
   std::regex rgxHeader("^(lane_width|left_boundary|right_boundary|checkpoint|"
-    "stop|exit|" + kRgxUniqueId + ")\\s+");
+    "stop|exit|" + kRgxUniqueId + ")\\s");
 
   bool done = false;
 
@@ -518,8 +518,8 @@ bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
     return false;
 
   // Parse the "lane ID" .
-  std::regex rgxLaneId("^lane\\s+" + std::to_string(_segmentId) + "\\." +
-    kRgxPositive + "\\s*(" + kRgxComment + ")?\\s*$");
+  std::regex rgxLaneId("^lane\\s" + std::to_string(_segmentId) + "\\." +
+    kRgxPositive + "$");
   std::regex_search(lineread, result, rgxLaneId);
   if (result.size() < 2)
   {

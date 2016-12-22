@@ -52,12 +52,12 @@ TEST_F(ParserUtilsTest, string)
     std::make_tuple(""                                   , false, 1, ""),
     std::make_tuple("\n\n"                               , false, 3, ""),
     std::make_tuple("\n\naValue"                         , false, 3, ""),
-    std::make_tuple("\n\n delim aValue"                  , false, 3, ""),
     std::make_tuple("\n\ndelim aValue\\"                 , false, 3, ""),
     std::make_tuple("\n\ndelim aValue*"                  , false, 3, ""),
     std::make_tuple("\n\ndelim aVa lue"                  , false, 3, ""),
     std::make_tuple("\n\ndelim " + kIinvalidStr          , false, 3, ""),
     std::make_tuple("\n\ndelim aValue /*bad"             , false, 3, ""),
+    std::make_tuple("\n\n delim aValue"                  , true , 3, "aValue"),
     std::make_tuple("\n\ndelim aValue"                   , true , 3, "aValue"),
     std::make_tuple("\n\ndelim  aValue"                  , true , 3, "aValue"),
     std::make_tuple("\n\ndelim aValue  "                 , true , 3, "aValue"),
@@ -107,10 +107,10 @@ TEST_F(ParserUtilsTest, delimiter)
     std::make_tuple(""                              , false, 1),
     std::make_tuple("\n\n"                          , false, 3),
     std::make_tuple("\n\nxxx"                       , false, 3),
-    std::make_tuple("\n\n delim"                    , false, 3),
     std::make_tuple("\n\n delim /* bad"             , false, 3),
-    std::make_tuple("\n\ndelim "                    , true, 3),
-    std::make_tuple("\n\ndelim  "                   , true, 3),
+    std::make_tuple("\n\n delim"                    , true , 3),
+    std::make_tuple("\n\ndelim "                    , true , 3),
+    std::make_tuple("\n\ndelim  "                   , true , 3),
     std::make_tuple("\n\ndelim"                     , true , 3),
     std::make_tuple("\n\ndelim/*comment*/"          , true , 3),
     std::make_tuple("\n\ndelim  /*  comment  */  "  , true , 3),
@@ -151,16 +151,16 @@ TEST_F(ParserUtilsTest, positive)
     std::make_tuple(""                            , false, 1, 0),
     std::make_tuple("\n\n"                        , false, 3, 0),
     std::make_tuple("\n\n2"                       , false, 3, 0),
-    std::make_tuple("\n\n delim 2"                , false, 3, 0),
     std::make_tuple("\n\ndelim -1"                , false, 3, 0),
     std::make_tuple("\n\ndelim 32769"             , false, 3, 0),
     std::make_tuple("\n\ndelim 0"                 , false, 3, 0),
     std::make_tuple("\n\ndelim 2 /* bad"          , false, 3, 0),
-    std::make_tuple("\n\ndelim  2"                , true, 3, 2),
-    std::make_tuple("\n\ndelim 2 "                , true, 3, 2),
+    std::make_tuple("\n\n delim 2"                , true , 3, 2),
+    std::make_tuple("\n\ndelim  2"                , true , 3, 2),
+    std::make_tuple("\n\ndelim 2 "                , true , 3, 2),
     std::make_tuple("\n\ndelim 32768"             , true , 3, 32768),
-    std::make_tuple("\n\ndelim 2 /* comment */"   , true, 3, 2),
-    std::make_tuple("\n\ndelim 2/*  comment  */  ", true, 3, 2),
+    std::make_tuple("\n\ndelim 2 /* comment */"   , true , 3, 2),
+    std::make_tuple("\n\ndelim 2/*  comment  */  ", true , 3, 2),
   };
 
   for (auto const &testCase : testCases)
@@ -203,16 +203,16 @@ TEST_F(ParserUtilsTest, nonNegative)
     std::make_tuple(""                            , false, 1, 0),
     std::make_tuple("\n\n"                        , false, 3, 0),
     std::make_tuple("\n\n2"                       , false, 3, 0),
-    std::make_tuple("\n\n delim 2"                , false, 3, 0),
     std::make_tuple("\n\ndelim -1"                , false, 3, 0),
     std::make_tuple("\n\ndelim 32769"             , false, 3, 0),
     std::make_tuple("\n\ndelim 2 /*bad"           , false, 3, 0),
-    std::make_tuple("\n\ndelim 0"                 , true , 3, 0),
-    std::make_tuple("\n\ndelim  2"                , true, 3, 2),
-    std::make_tuple("\n\ndelim 2 "                , true, 3, 2),
-    std::make_tuple("\n\ndelim 32768"             , true, 3, 32768),
-    std::make_tuple("\n\ndelim 2  /* comment */"  , true, 3, 2),
-    std::make_tuple("\n\ndelim 2/*  comment  */  ", true, 3, 2),
+    std::make_tuple("\n\n delim 2"                , true,  3, 2),
+    std::make_tuple("\n\ndelim 0"                 , true,  3, 0),
+    std::make_tuple("\n\ndelim  2"                , true,  3, 2),
+    std::make_tuple("\n\ndelim 2 "                , true,  3, 2),
+    std::make_tuple("\n\ndelim 32768"             , true,  3, 32768),
+    std::make_tuple("\n\ndelim 2  /* comment */"  , true,  3, 2),
+    std::make_tuple("\n\ndelim 2/*  comment  */  ", true,  3, 2),
   };
 
   for (auto const &testCase : testCases)
@@ -252,11 +252,12 @@ TEST(ParserUtils, nonNegative)
   EXPECT_FALSE(parseNonNegative("xxx 1"                         , kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width"                    , kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width -1"                 , kDel, width));
-  EXPECT_FALSE(parseNonNegative(" lane_width 1"                 , kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width 1 2"                , kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width 32769"              , kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width 1 /* a comment */ 2", kDel, width));
   EXPECT_FALSE(parseNonNegative("lane_width 1 /* bad comment"   , kDel, width));
+  EXPECT_TRUE(parseNonNegative(" lane_width 1"                  , kDel, width));
+  EXPECT_EQ(width, 1);
   EXPECT_TRUE(parseNonNegative("lane_width 0"                   , kDel, width));
   EXPECT_EQ(width, 0);
   EXPECT_TRUE(parseNonNegative("lane_width 32768"               , kDel, width));
@@ -283,9 +284,10 @@ TEST(ParserUtils, laneBoundary)
     EXPECT_FALSE(parseBoundary("xxx double_yellow"                        , b));
     EXPECT_FALSE(parseBoundary(delim                                      , b));
     EXPECT_FALSE(parseBoundary(delim       + " xxx"                       , b));
-    EXPECT_FALSE(parseBoundary(" " + delim + " double_yellow"             , b));
     EXPECT_FALSE(parseBoundary(delim       + " double_yellow solid_yellow", b));
     EXPECT_FALSE(parseBoundary(delim       + " double_yellow /* bad"      , b));
+    EXPECT_TRUE(parseBoundary(" " + delim  + " double_yellow"             , b));
+    EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow "            , b));
     EXPECT_EQ(b, Marking::DOUBLE_YELLOW);
     EXPECT_TRUE(parseBoundary(delim        + " double_yellow"             , b));
@@ -323,10 +325,11 @@ TEST(ParserUtils, checkPoint)
   EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.0 1"                , 1, 2, cp));
   EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.32769 1"            , 1, 2, cp));
   EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.-1 1"               , 1, 2, cp));
-  EXPECT_FALSE(parseCheckpoint(" checkpoint 1.2.3 1"               , 1, 2, cp));
   EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 x"                , 1, 2, cp));
   EXPECT_FALSE(parseCheckpoint("checkpoint xxx 1"                  , 1, 2, cp));
   EXPECT_FALSE(parseCheckpoint("checkpoint 1.2.3 1 /*bad"          , 1, 2, cp));
+  EXPECT_TRUE(parseCheckpoint(" checkpoint 1.2.3 1"                , 1, 2, cp));
+  EXPECT_EQ(cp, Checkpoint(1, 3));
   EXPECT_TRUE(parseCheckpoint("checkpoint 1.2.3 1"                 , 1, 2, cp));
   EXPECT_EQ(cp, Checkpoint(1, 3));
   EXPECT_TRUE(parseCheckpoint("checkpoint  1.2.3 1"                , 1, 2, cp));
@@ -358,8 +361,9 @@ TEST(ParserUtils, stop)
   EXPECT_FALSE(parseStop("stop 1.2.0"                   , 1, 2, stop));
   EXPECT_FALSE(parseStop("stop 1.2.-1"                  , 1, 2, stop));
   EXPECT_FALSE(parseStop("stop 1.2.32769"               , 1, 2, stop));
-  EXPECT_FALSE(parseStop(" stop 1.2.3"                  , 1, 2, stop));
   EXPECT_FALSE(parseStop("stop 1.2.3 /*bad"             , 1, 2, stop));
+  EXPECT_TRUE(parseStop(" stop 1.2.3"                   , 1, 2, stop));
+  EXPECT_EQ(stop, UniqueId(1, 2, 3));
   EXPECT_TRUE(parseStop("stop 1.2.3"                    , 1, 2, stop));
   EXPECT_EQ(stop, UniqueId(1, 2, 3));
   EXPECT_TRUE(parseStop("stop  1.2.3"                   , 1, 2, stop));
@@ -397,8 +401,9 @@ TEST(ParserUtils, exit)
   EXPECT_FALSE(parseExit("exit 1.2.-1 2.3.4"                     , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.0 2.3.4"                      , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.32769 2.3.4"                  , 1, 2, exit));
-  EXPECT_FALSE(parseExit(" exit 1.2.3 2.3.4"                     , 1, 2, exit));
   EXPECT_FALSE(parseExit("exit 1.2.3 2.3.4 /*bad"                , 1, 2, exit));
+  EXPECT_TRUE(parseExit(" exit 1.2.3 2.3.4"                     , 1, 2, exit));
+  EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
   EXPECT_TRUE(parseExit("exit 1.2.3 2.3.4"                       , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
   EXPECT_TRUE(parseExit("exit  1.2.3 2.3.4"                      , 1, 2, exit));
@@ -417,6 +422,53 @@ TEST(ParserUtils, exit)
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 3, 4)));
   EXPECT_TRUE(parseExit("exit 1.2.3 2.0.4"                      , 1, 2, exit));
   EXPECT_EQ(exit, Exit(UniqueId(1, 2, 3), UniqueId(2, 0, 4)));
+}
+
+//////////////////////////////////////////////////
+/// \brief Check the function that trims whitespaces.
+TEST(ParserUtils, trim)
+{
+  std::string str = "Space...the final frontier";
+  trimWhitespaces(str);
+  EXPECT_EQ(str, "Space...the final frontier");
+
+  str = "\t Space ...   the \tfinal\t\tfrontier ";
+  trimWhitespaces(str);
+  EXPECT_EQ(str, "Space ... the final frontier");
+}
+
+/////////////////////////////////////////////////
+/// \brief Test the string tokenizer split() function.
+TEST(ParserUtils, split)
+{
+  auto tokens = split("abc/def", "/");
+  ASSERT_EQ(tokens.size(), 2u);
+  EXPECT_EQ(tokens.at(0), "abc");
+  EXPECT_EQ(tokens.at(1), "def");
+
+  tokens = split("abc/def/", "/");
+  ASSERT_EQ(tokens.size(), 2u);
+  EXPECT_EQ(tokens.at(0), "abc");
+  EXPECT_EQ(tokens.at(1), "def");
+
+  tokens = split("//abc/def///", "/");
+  ASSERT_EQ(tokens.size(), 2u);
+  EXPECT_EQ(tokens.at(0), "abc");
+  EXPECT_EQ(tokens.at(1), "def");
+
+  tokens = split("abc", "/");
+  ASSERT_EQ(tokens.size(), 1u);
+  EXPECT_EQ(tokens.at(0), "abc");
+
+  tokens = split("//abc/def::123::567///", "/");
+  ASSERT_EQ(tokens.size(), 2u);
+  EXPECT_EQ(tokens.at(0), "abc");
+  EXPECT_EQ(tokens.at(1), "def::123::567");
+  tokens = split("//abc/def::123::567///", "::");
+  ASSERT_EQ(tokens.size(), 3u);
+  EXPECT_EQ(tokens.at(0), "//abc/def");
+  EXPECT_EQ(tokens.at(1), "123");
+  EXPECT_EQ(tokens.at(2), "567///");
 }
 
 //////////////////////////////////////////////////
