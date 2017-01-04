@@ -2,8 +2,8 @@
 
 ** Classes and functions for parsing road networks **
 
-Manifold is a portable C++ library for parsing road network files and streams in
-different formats (e.g.: RNDF, OpenDrive).
+Manifold is a portable C++ library for parsing RNDF road network files. In the
+future we're planning to support other formats such as OpenDrive.
 
   [http://bitbucket.org/osrf/manifold](http://bitbucket.org/osrf/manifold)
 
