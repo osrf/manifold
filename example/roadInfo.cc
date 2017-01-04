@@ -15,11 +15,52 @@
  *
 */
 
+#include <iostream>
+#include <string>
+#include <ignition/math/Graph.hh>
 #include <manifold/manifold.hh>
+
+//////////////////////////////////////////////////
+void usage()
+{
+  std::cerr << "Show some details of a road network.\n\n"
+            << " road_info <RNDF_file>\n\n"
+            << std::endl;
+}
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  // Create a road network instance.
-  manifold::RoadNetwork rn;
+  // Sanity check.
+  if (argc != 2)
+  {
+    usage();
+    return -1;
+  }
+
+  // Parse the RNDF file.
+  std::string fileName = argv[1];
+  manifold::rndf::RNDF rndf(fileName);
+  if (!rndf.Valid())
+  {
+    std::cerr << "File [" << fileName << "] is invalid" << std::endl;
+    return -1;
+  }
+
+  // Create the roadNetwork object.
+  manifold::RoadNetwork roadNetwork(rndf);
+
+  // Show stats.
+  auto &graph = roadNetwork.Graph();
+
+  auto vertexes = graph.Vertexes();
+  for (auto const &vPtr : vertexes)
+  {
+    auto adjacents = graph.Adjacents(vPtr);
+    std::cout << "Segment/Zone [" << vPtr->Id() << "] is connected with "
+              << "segments/zones [ ";
+    for (auto const &adjPtr : adjacents)
+      std::cout << adjPtr->Id() << " ";
+    std::cout << "]" << std::endl;
+  }
 }
