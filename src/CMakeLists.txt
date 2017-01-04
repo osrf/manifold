@@ -4,13 +4,11 @@ add_subdirectory(rndf)
 
 set (sources
   ${rndf_sources}
-  Graph.cc
   Helpers.cc
   RoadNetwork.cc
 )
 
 set (gtest_sources
-  Graph_TEST.cc
   Helpers_TEST.cc
   RoadNetwork_TEST.cc
 )

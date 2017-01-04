@@ -24,6 +24,11 @@
 
 namespace manifold
 {
+  namespace rndf
+  {
+    class RNDF;
+  }
+
   // Forward declarations.
   class RoadNetworkPrivate;
 
@@ -31,7 +36,7 @@ namespace manifold
   class MANIFOLD_VISIBLE RoadNetwork
   {
     /// \brief Constructor.
-    public: RoadNetwork();
+    public: RoadNetwork(const rndf::RNDF &_rndf);
 
     /// \brief Destructor.
     public: virtual ~RoadNetwork();

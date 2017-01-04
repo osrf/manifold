@@ -15,6 +15,13 @@
  *
 */
 
+#include <ignition/math/Graph.hh>
+
+#include "manifold/rndf/Exit.hh"
+#include "manifold/rndf/Perimeter.hh"
+#include "manifold/rndf/RNDF.hh"
+#include "manifold/rndf/Segment.hh"
+#include "manifold/rndf/Zone.hh"
 #include "manifold/RoadNetwork.hh"
 
 using namespace manifold;
@@ -30,13 +37,36 @@ namespace manifold
 
     /// \brief Destructor.
     public: virtual ~RoadNetworkPrivate() = default;
+
+    /// \brief Graph of segments.
+    public: ignition::math::Graph<int, int> network;
   };
 }
 
 //////////////////////////////////////////////////
-RoadNetwork::RoadNetwork()
+RoadNetwork::RoadNetwork(const rndf::RNDF &_rndf)
   : dataPtr(new RoadNetworkPrivate())
 {
+  // Populate the graph.
+
+  // Add all segments IDs as vertexes.
+  for (auto const &segment : _rndf.Segments())
+    this->dataPtr->network.AddVertex(segment.Id(), segment.Id());
+
+  // Add all zone IDs as vertexes.
+  for (auto const &zone : _rndf.Zones())
+    this->dataPtr->network.AddVertex(zone.Id(), zone.Id());
+
+  // Edges from segments.
+  for (auto const &segment : _rndf.Segments())
+    for (auto const &lane : segment.Lanes())
+      for (auto const &exit : lane.Exits())
+        this->dataPtr->network.AddEdge(segment.Id(), exit.EntryId().X(), 0);
+
+  // Edges from zones.
+  for (auto const &zone : _rndf.Zones())
+    for (auto const &exit : zone.Perimeter().Exits())
+      this->dataPtr->network.AddEdge(zone.Id(), exit.EntryId().X(), 0);
 }
 
 //////////////////////////////////////////////////

@@ -74,8 +74,8 @@ namespace manifold
       /// \return A mutable reference to the vector of exits.
       public: std::vector<Exit> &Exits();
 
-      /// \brief Get the vector of stops. The elements are waypoint Ids.
-      /// \return The vector of stops.
+      /// \brief Get the vector of exits.
+      /// \return The vector of exits.
       public: const std::vector<Exit> &Exits() const;
 
       /// \brief Add a new exit.

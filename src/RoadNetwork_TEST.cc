@@ -15,7 +15,26 @@
  *
 */
 
+#include <string>
+
+#include "manifold/rndf/RNDF.hh"
+#include "manifold/RoadNetwork.hh"
+#include "manifold/test_config.h"
 #include "gtest/gtest.h"
+
+using namespace manifold;
+
+//////////////////////////////////////////////////
+/// \brief Check the RoadNetwork constructor.
+TEST(RoadNetwork, Constructor)
+{
+  std::string dirPath(std::string(PROJECT_SOURCE_PATH));
+
+  rndf::RNDF rndf(dirPath + "/test/rndf/sample1.rndf");
+  EXPECT_TRUE(rndf.Valid());
+
+  RoadNetwork roadNetwork(rndf);
+}
 
 //////////////////////////////////////////////////
 int main(int argc, char **argv)
