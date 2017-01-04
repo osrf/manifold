@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <regex>
 #include <vector>
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/SphericalCoordinates.hh>
@@ -98,8 +97,6 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
   bool checkpointFound = false;
   bool widthFound = false;
 
-  std::regex rgxHeader("^(spot_width|checkpoint|" + kRgxUniqueId + ")\\s");
-
   for (auto i = 0; i < 2; ++i)
   {
     auto oldPos = _rndfFile.tellg();
@@ -109,11 +106,10 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
     if (!nextRealLine(_rndfFile, lineread, _lineNumber))
       return false;
 
-    std::smatch result;
-    std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() < 2)                              ||
-        (result[1] == "spot_width"  && widthFound)       ||
-        (result[1] == "checkpoint"  && checkpointFound))
+    auto tokens = split(lineread, " ");
+    if ((tokens.size() < 2)                             ||
+        (tokens[0] == "spot_width"  && widthFound)      ||
+        (tokens[0] == "checkpoint"  && checkpointFound))
     {
       // Invalid or repeated header element.
       std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot header "
@@ -122,9 +118,7 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
       return false;
     }
 
-    assert(result.size() >= 2);
-
-    if (result[1] == "spot_width")
+    if (tokens[0] == "spot_width")
     {
       int widthFeet;
       if (!parseNonNegative(lineread, "spot_width", widthFeet))
@@ -139,7 +133,7 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
       width = widthFeet * 0.3048;
       widthFound = true;
     }
-    else if (result[1] == "checkpoint")
+    else if (tokens[0] == "checkpoint")
     {
       if (!parseCheckpoint(lineread, _zoneId, _spotId, cp))
       {
@@ -231,25 +225,51 @@ ParkingSpot::~ParkingSpot()
 bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
   int &_lineNumber)
 {
-  std::smatch result;
   std::string lineread;
-
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
   // Parse the "spot Id" .
-  std::regex rgxSpotId("^spot\\s" + std::to_string(_zoneId) + "\\." +
-    kRgxPositive + "$");
-  std::regex_search(lineread, result, rgxSpotId);
-  if (result.size() < 2)
+  auto tokens =  split(lineread, " ");
+  if (tokens.size() != 2 || tokens.at(0) != "spot")
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot element"
               << std::endl;
     std::cerr << " \"" << lineread << "\"" << std::endl;
     return false;
   }
+
+  auto spotIdTokens = split(tokens.at(1), ".");
+  if (spotIdTokens.size() != 2 ||
+      spotIdTokens.at(0) != std::to_string(_zoneId))
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
   std::string::size_type sz;
-  int spotId = std::stoi(result[1], &sz);
+  int spotId;
+  try
+  {
+    spotId = std::stoi(spotIdTokens[1], &sz);
+  }
+  catch(...)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse spot element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  if (spotId <= 0 || spotId > 32768 || sz != spotIdTokens.at(1).size())
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Out of range value ["
+              << spotId << "]" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
 
   // Parse optional parking spot header.
   ParkingSpotHeader header;

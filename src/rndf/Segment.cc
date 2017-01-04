@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-#include <regex>
 #include <fstream>
 
 #include "manifold/rndf/Lane.hh"
@@ -92,12 +91,8 @@ bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
-  std::regex rgxLaneId("^lane\\s" + std::to_string(_segmentId) + "\\." +
-    kRgxPositive + "$");
-
-  // Check if we found the "lane" element.
-  // If this is the case we should leave.
-  if (std::regex_match(lineread, rgxLaneId))
+  auto tokens = split(lineread, " ");
+  if (tokens.size() == 2 && tokens.at(0) == "lane")
   {
     // Restore the file position and line number.
     // ParseHeader() shouldn't have any effect.
@@ -106,11 +101,7 @@ bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
     return true;
   }
 
-  std::regex rgxHeader("^segment_name\\s(" + kRgxString + ")$");
-  std::smatch result;
-
-  std::regex_search(lineread, result, rgxHeader);
-  if (result.size() <= 1)
+  if (tokens.size() != 2 || tokens.at(0) != "segment_name")
   {
     // Invalid or header element.
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse segment header "
@@ -119,9 +110,9 @@ bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
     return false;
   }
 
-  assert(result.size() > 1);
+  assert(tokens.size() == 2);
 
-  this->SetName(result[1]);
+  this->SetName(tokens.at(1));
   return true;
 }
 

@@ -18,7 +18,6 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -101,13 +100,9 @@ bool Waypoint::Load(std::ifstream &_rndfFile, const int _segmentId,
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
-  // Parse the "waypoint" .
-  std::smatch result;
-  std::regex rgxWaypointId("^" + std::to_string(_segmentId) + "\\." +
-    std::to_string(_laneId) + "\\." + kRgxPositive + "\\s" + kRgxDouble +
-    "\\s" + kRgxDouble + "$");
-  std::regex_search(lineread, result, rgxWaypointId);
-  if (result.size() < 3)
+  // Parse the "waypoint".
+  auto tokens = split(lineread, " ");
+  if (tokens.size() < 3)
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse waypoint "
               << " element" << std::endl;
@@ -115,12 +110,45 @@ bool Waypoint::Load(std::ifstream &_rndfFile, const int _segmentId,
     return false;
   }
 
-  assert(result.size() >= 3);
+  assert(tokens.size() == 3);
+
+  auto waypointIdTokens = split(tokens.at(0), ".");
+  if (waypointIdTokens.size() != 3                         ||
+      waypointIdTokens.at(0) != std::to_string(_segmentId) ||
+      waypointIdTokens.at(1) != std::to_string(_laneId))
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse waypoint "
+              << " element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
 
   std::string::size_type sz;
-  int waypointId = std::stoi(result[1], &sz);
-  double latitude  = std::stod(result[2], &sz);
-  double longitude = std::stod(result[3], &sz);
+  int waypointId;
+  double latitude;
+  double longitude;
+  try
+  {
+    latitude  = std::stod(tokens[1], &sz);
+    longitude = std::stod(tokens[2], &sz);
+    waypointId = std::stoi(waypointIdTokens[2], &sz);
+  } catch (...)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse waypoint "
+              << " element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  if (waypointId <= 0    ||
+      waypointId > 32768 ||
+      sz != waypointIdTokens.at(2).size())
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Out of range value ["
+              << waypointId << "]" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
 
   // Populate the waypoint.
   this->SetId(waypointId);

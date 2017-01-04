@@ -34,31 +34,6 @@ namespace manifold
     class Exit;
     class UniqueId;
 
-    /// \brief Regular expression that captures a non-empty string with a
-    /// maximum length of 128 characters without containing any spaces,
-    /// backslashes or stars.
-    static const std::string kRgxString = "[^[:space:]\\*\\\\]{1,128}";
-
-    /// \brief Regular expression that captures a positive number
-    /// with a maximum of 5 digits.
-    static const std::string kPositiveData = "[1-9][[:d:]]{0,4}";
-
-    /// \brief Regular expression that captures a positive integer with a
-    /// maximum value of 99999 (including parenthesis for regex grouping).
-    static const std::string kRgxPositive = "(" + kPositiveData + ")";
-
-    /// \brief Regular expression that captures a non-negative number with a
-    /// maximum value of 32768.
-    static const std::string kRgxNonNegative = "([[:d:]]{1,5})";
-
-    /// \brief Regular expression that captures a floating point value.
-    static const std::string kRgxDouble = "(-?[0-9]*\\.?[0-9]+)";
-
-    /// \brief Regular expression that captures a unique Id "x.y.z", where
-    /// 'x', and 'z' are positive numbers and 'y' is non-negative.
-    static const std::string kRgxUniqueId = kRgxPositive + "\\." +
-      kRgxNonNegative + "\\." + kRgxPositive;
-
     /// \brief Remove comments, consecutive whitespaces (leaving onle one) and
     ///  leading and trailing whitespaces.
     /// \param[in] _str Input string.

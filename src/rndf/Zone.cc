@@ -19,7 +19,6 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -95,11 +94,11 @@ bool ZoneHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
-  std::regex rgxPerimId("^perimeter\\s" + std::to_string(_zoneId) + "\\.0$");
+  auto tokens = split(lineread, " ");
 
   // Check if we found the "perimeter" element.
   // If this is the case we should leave.
-  if (std::regex_match(lineread, rgxPerimId))
+  if (tokens.size() == 2 && tokens.at(0) == "perimeter")
   {
     // Restore the file position and line number.
     // ParseHeader() shouldn't have any effect.
@@ -108,11 +107,7 @@ bool ZoneHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
     return true;
   }
 
-  std::regex rgxHeader("^zone_name\\s(" + kRgxString + ")$");
-  std::smatch result;
-
-  std::regex_search(lineread, result, rgxHeader);
-  if (result.size() <= 1)
+  if (tokens.size() != 2 || tokens.at(0) != "zone_name")
   {
     // Invalid or header element.
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse zone header "
@@ -121,9 +116,9 @@ bool ZoneHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
     return false;
   }
 
-  assert(result.size() > 1);
+  assert(tokens.size() == 2);
 
-  this->SetName(result[1]);
+  this->SetName(tokens[1]);
   return true;
 }
 

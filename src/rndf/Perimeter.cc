@@ -19,7 +19,6 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
@@ -184,9 +183,19 @@ bool Perimeter::Load(std::ifstream &_rndfFile, const int _zoneId,
     return false;
 
   // Parse the "perimeter Id" .
-  std::regex rgxPerimeterId("^perimeter\\s" + std::to_string(_zoneId) +
-    "\\.0$");
-  if (!std::regex_match(lineread, rgxPerimeterId))
+  auto tokens = split(lineread, " ");
+  if (tokens.size() != 2 || tokens.at(0) != "perimeter")
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse perimeter "
+              << "element" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  auto perimeterIdTokens = split(tokens.at(1), ".");
+  if (perimeterIdTokens.size() != 2                      ||
+      perimeterIdTokens.at(0) != std::to_string(_zoneId) ||
+      perimeterIdTokens.at(1) != "0")
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse perimeter "
               << "element" << std::endl;

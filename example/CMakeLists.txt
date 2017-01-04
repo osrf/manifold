@@ -7,8 +7,8 @@ include_directories(${MANIFOLD_INCLUDE_DIRS})
 link_directories(${MANIFOLD_LIBRARY_DIRS})
 
 # Generate examples
-add_executable(roadInfo roadInfo.cc)
-target_link_libraries(roadInfo ${MANIFOLD_LIBRARIES})
+add_executable(road_info roadInfo.cc)
+target_link_libraries(road_info ${MANIFOLD_LIBRARIES})
 add_executable(rndf_info rndfInfo.cc)
 target_link_libraries(rndf_info ${MANIFOLD_LIBRARIES})
 

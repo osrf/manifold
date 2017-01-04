@@ -20,7 +20,6 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -91,11 +90,6 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
   bool versionFound = false;
   bool dateFound = false;
 
-  std::regex rgxHeader("^(format_version|creation_date)\\s(" + kRgxString +
-    ")$");
-  std::regex rgxSegmentId("^segment\\s" + kRgxPositive + "$");
-  std::smatch result;
-
   for (auto i = 0; i < 2; ++i)
   {
     auto oldPos = _rndfFile.tellg();
@@ -105,9 +99,11 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
     if (!nextRealLine(_rndfFile, lineread, _lineNumber))
       return false;
 
+    auto tokens = split(lineread, " ");
+
     // Check if we found the "segment" element.
     // If this is the case we should leave.
-    if (std::regex_match(lineread, rgxSegmentId))
+    if (tokens.size() == 2 && tokens.at(0) == "segment")
     {
       // Restore the file position and line number.
       // ParseHeader() shouldn't have any effect.
@@ -116,10 +112,9 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
       return true;
     }
 
-    std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() <= 2) ||
-        (result[1] == "format_version" && versionFound) ||
-        (result[1] == "creation_date" && dateFound))
+    if ((tokens.size() != 2)                            ||
+        (tokens[0] == "format_version" && versionFound) ||
+        (tokens[0] == "creation_date" && dateFound))
     {
       // Invalid or repeated header element.
       std::cerr << "[Line " << _lineNumber << "]: Unable to parse file header "
@@ -128,17 +123,25 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
       return false;
     }
 
-    assert(result.size() > 2);
+    assert(tokens.size() == 2);
 
-    if (result[1] == "format_version")
+    if (tokens[0] == "format_version")
     {
-      this->SetVersion(result[2]);
+      this->SetVersion(tokens[1]);
       versionFound = true;
+    }
+    else if (tokens[0] == "creation_date")
+    {
+      this->SetDate(tokens[1]);
+      dateFound = true;
     }
     else
     {
-      this->SetDate(result[2]);
-      dateFound = true;
+      // Invalid or repeated header element.
+      std::cerr << "[Line " << _lineNumber << "]: Unable to parse file header "
+                << "element." << std::endl;
+      std::cerr << " \"" << lineread << "\"" << std::endl;
+      return false;
     }
   }
 

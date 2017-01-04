@@ -532,7 +532,27 @@ bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
   }
 
   std::string::size_type sz;
-  int laneId = std::stoi(laneIdTokens.at(1), &sz);
+  int laneId;
+
+  try
+  {
+    laneId = std::stoi(laneIdTokens.at(1), &sz);
+  }
+  catch(...)
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
+  if (laneId <= 0 || laneId > 32768 || sz != laneIdTokens.at(1).size())
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Out of range value ["
+              << laneId << "]" << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
 
   // Parse "num_waypoints".
   int numWaypoints;
