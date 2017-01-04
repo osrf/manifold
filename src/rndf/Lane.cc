@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <regex>
 #include <vector>
 #include <ignition/math/SphericalCoordinates.hh>
 
@@ -112,10 +111,6 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
   bool widthFound = false;
   bool leftBoundaryFound = false;
   bool rightBoundaryFound = false;
-
-  std::regex rgxHeader("^(lane_width|left_boundary|right_boundary|checkpoint|"
-    "stop|exit|" + kRgxUniqueId + ")\\s");
-
   bool done = false;
 
   do
@@ -127,12 +122,12 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
     if (!nextRealLine(_rndfFile, lineread, _lineNumber))
       return false;
 
-    std::smatch result;
-    std::regex_search(lineread, result, rgxHeader);
-    if ((result.size() < 2)                                   ||
-        (result[1] == "lane_width"     && widthFound)         ||
-        (result[1] == "left_boundary"  && leftBoundaryFound)  ||
-        (result[1] == "right_boundary" && rightBoundaryFound))
+    auto tokens = split(lineread, " ");
+
+    if ((tokens.size() < 2)                                  ||
+       (tokens[0] == "lane_width"     && widthFound)         ||
+       (tokens[0] == "left_boundary"  && leftBoundaryFound)  ||
+       (tokens[0] == "right_boundary" && rightBoundaryFound))
     {
       // Invalid or repeated header element.
       std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane header "
@@ -141,7 +136,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
       return false;
     }
 
-    if (result[1] == "lane_width")
+    if (tokens[0] == "lane_width")
     {
       int widthFeet;
       if (!parseNonNegative(lineread, "lane_width", widthFeet))
@@ -156,7 +151,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
       width = widthFeet * 0.3048;
       widthFound = true;
     }
-    else if (result[1] == "left_boundary")
+    else if (tokens[0] == "left_boundary")
     {
       if (!parseBoundary(lineread, leftBoundary))
       {
@@ -168,7 +163,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
 
       leftBoundaryFound = true;
     }
-    else if (result[1] == "right_boundary")
+    else if (tokens[0] == "right_boundary")
     {
       if (!parseBoundary(lineread, rightBoundary))
       {
@@ -180,7 +175,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
 
       rightBoundaryFound = true;
     }
-    else if (result[1] == "checkpoint")
+    else if (tokens[0] == "checkpoint")
     {
       rndf::Checkpoint checkpoint;
       if (!parseCheckpoint(lineread, _segmentId, _laneId, checkpoint))
@@ -193,7 +188,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
 
       checkpoints.push_back(checkpoint);
     }
-    else if (result[1] == "stop")
+    else if (tokens[0] == "stop")
     {
       rndf::UniqueId stop;
       if (!parseStop(lineread, _segmentId, _laneId, stop))
@@ -206,7 +201,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
 
       stops.push_back(stop.Z());
     }
-    else if (result[1] == "exit")
+    else if (tokens[0] == "exit")
     {
       rndf::Exit exit;
       if (!parseExit(lineread, _segmentId, _laneId, exit))
@@ -511,25 +506,33 @@ Lane::~Lane()
 bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
   int &_lineNumber)
 {
-  std::smatch result;
   std::string lineread;
 
   if (!nextRealLine(_rndfFile, lineread, _lineNumber))
     return false;
 
   // Parse the "lane ID" .
-  std::regex rgxLaneId("^lane\\s" + std::to_string(_segmentId) + "\\." +
-    kRgxPositive + "$");
-  std::regex_search(lineread, result, rgxLaneId);
-  if (result.size() < 2)
+  auto tokens = split(lineread, " ");
+  if (tokens.size() != 2 || tokens.at(0) != "lane")
   {
     std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane element"
               << std::endl;
     std::cerr << " \"" << lineread << "\"" << std::endl;
     return false;
   }
+
+  auto laneIdTokens = split(tokens.at(1), ".");
+  if (laneIdTokens.size() != 2 ||
+      laneIdTokens.at(0) != std::to_string(_segmentId))
+  {
+    std::cerr << "[Line " << _lineNumber << "]: Unable to parse lane element"
+              << std::endl;
+    std::cerr << " \"" << lineread << "\"" << std::endl;
+    return false;
+  }
+
   std::string::size_type sz;
-  int laneId = std::stoi(result[1], &sz);
+  int laneId = std::stoi(laneIdTokens.at(1), &sz);
 
   // Parse "num_waypoints".
   int numWaypoints;

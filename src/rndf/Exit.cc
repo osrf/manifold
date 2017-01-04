@@ -15,10 +15,7 @@
  *
 */
 
-#include <cassert>
 #include <fstream>
-#include <iostream>
-#include <regex>
 #include <string>
 #include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/ParserUtils.hh"
