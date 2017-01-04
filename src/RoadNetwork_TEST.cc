@@ -34,6 +34,25 @@ TEST(RoadNetwork, Constructor)
   EXPECT_TRUE(rndf.Valid());
 
   RoadNetwork roadNetwork(rndf);
+
+  auto &graph = roadNetwork.Graph();
+
+  // We should have 14 vertexes with IDs ranging from 1 to 14.
+  EXPECT_EQ(graph.Vertexes().size(), 14u);
+  for (auto i = 1; i < 14; ++i)
+    EXPECT_NE(graph.VertexById(i), nullptr);
+
+  // We should have 30 edges.
+  EXPECT_EQ(graph.Edges().size(), 30u);
+
+  // From the segment #1 is possible to reach other two segments.
+  auto adjacents = graph.Adjacents(1);
+  EXPECT_EQ(adjacents.size(), 2u);
+
+  // From the segment #14 is possible to reach segment #11.
+  adjacents = graph.Adjacents(14);
+  ASSERT_EQ(adjacents.size(), 1u);
+  EXPECT_EQ(adjacents.at(0)->Id(), 11);
 }
 
 //////////////////////////////////////////////////

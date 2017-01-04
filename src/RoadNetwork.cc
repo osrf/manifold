@@ -39,6 +39,8 @@ namespace manifold
     public: virtual ~RoadNetworkPrivate() = default;
 
     /// \brief Graph of segments.
+    /// The vertex contains an integer (segment Id) and the edge another
+    /// integer (unused).
     public: ignition::math::Graph<int, int> network;
   };
 }
@@ -57,13 +59,13 @@ RoadNetwork::RoadNetwork(const rndf::RNDF &_rndf)
   for (auto const &zone : _rndf.Zones())
     this->dataPtr->network.AddVertex(zone.Id(), zone.Id());
 
-  // Edges from segments.
+  // Edges from a segment to another segment/zone.
   for (auto const &segment : _rndf.Segments())
     for (auto const &lane : segment.Lanes())
       for (auto const &exit : lane.Exits())
         this->dataPtr->network.AddEdge(segment.Id(), exit.EntryId().X(), 0);
 
-  // Edges from zones.
+  // Edges from a zone to another segment/zone.
   for (auto const &zone : _rndf.Zones())
     for (auto const &exit : zone.Perimeter().Exits())
       this->dataPtr->network.AddEdge(zone.Id(), exit.EntryId().X(), 0);
@@ -72,4 +74,16 @@ RoadNetwork::RoadNetwork(const rndf::RNDF &_rndf)
 //////////////////////////////////////////////////
 RoadNetwork::~RoadNetwork()
 {
+}
+
+//////////////////////////////////////////////////
+ignition::math::Graph<int, int> &RoadNetwork::Graph()
+{
+  return this->dataPtr->network;
+}
+
+//////////////////////////////////////////////////
+const ignition::math::Graph<int, int> &RoadNetwork::Graph() const
+{
+  return this->dataPtr->network;
 }
