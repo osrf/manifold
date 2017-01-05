@@ -103,8 +103,7 @@ bool ParkingSpotHeader::Load(std::ifstream &_rndfFile, const int _zoneId,
     int oldLineNumber = _lineNumber;
 
     std::string lineread;
-    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-      return false;
+    nextRealLine(_rndfFile, lineread, _lineNumber);
 
     auto tokens = split(lineread, " ");
     if ((tokens.size() < 2)                             ||
@@ -226,8 +225,7 @@ bool ParkingSpot::Load(std::ifstream &_rndfFile, const int _zoneId,
   int &_lineNumber)
 {
   std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
+  nextRealLine(_rndfFile, lineread, _lineNumber);
 
   // Parse the "spot Id" .
   auto tokens =  split(lineread, " ");

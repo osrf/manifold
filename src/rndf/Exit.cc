@@ -50,9 +50,7 @@ bool Exit::Load(std::ifstream &_rndfFile, const int _x, const int _y,
   int &_lineNumber)
 {
   std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
-
+  nextRealLine(_rndfFile, lineread, _lineNumber);
   return parseExit(lineread, _x, _y, *this);
 }
 

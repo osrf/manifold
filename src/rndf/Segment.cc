@@ -88,8 +88,7 @@ bool SegmentHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
   int oldLineNumber = _lineNumber;
 
   std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
+  nextRealLine(_rndfFile, lineread, _lineNumber);
 
   auto tokens = split(lineread, " ");
   if (tokens.size() == 2 && tokens.at(0) == "lane")

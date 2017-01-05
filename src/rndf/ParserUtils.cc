@@ -89,12 +89,9 @@ namespace manifold
     }
 
     //////////////////////////////////////////////////
-    bool nextRealLine(std::ifstream &_rndfFile, std::string &_line,
+    void nextRealLine(std::ifstream &_rndfFile, std::string &_line,
       int &_lineNumber)
     {
-      if (_rndfFile.eof())
-        return false;
-
       while (std::getline(_rndfFile, _line))
       {
         ++_lineNumber;
@@ -105,8 +102,6 @@ namespace manifold
         if (!_line.empty())
           break;
       }
-
-      return true;
     }
 
     //////////////////////////////////////////////////
@@ -114,8 +109,7 @@ namespace manifold
       std::string &_value, int &_lineNumber)
     {
       std::string lineread;
-      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-        return false;
+      nextRealLine(_rndfFile, lineread, _lineNumber);
 
       auto tokens = split(lineread, " ");
       if (tokens.size() != 2                                     ||
@@ -141,8 +135,7 @@ namespace manifold
         return false;
 
       std::string lineread;
-      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-        return false;
+      nextRealLine(_rndfFile, lineread, _lineNumber);
 
       if (lineread != _delimiter)
       {
@@ -160,8 +153,7 @@ namespace manifold
       int &_value, int &_lineNumber)
     {
       std::string lineread;
-      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-        return false;
+      nextRealLine(_rndfFile, lineread, _lineNumber);
 
       auto start = lineread.find(_delimiter + " ");
       if (start != 0)
@@ -203,8 +195,7 @@ namespace manifold
       const std::string &_delimiter, int &_value, int &_lineNumber)
     {
       std::string lineread;
-      if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-        return false;
+      nextRealLine(_rndfFile, lineread, _lineNumber);
 
       if (!parseNonNegative(lineread, _delimiter, _value))
       {

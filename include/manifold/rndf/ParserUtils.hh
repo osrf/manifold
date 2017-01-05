@@ -50,15 +50,13 @@ namespace manifold
 
     /// \brief Consumes lines from an input stream coming from a text file.
     /// The function reads line by line until it finds a line containing
-    /// parsable content. Blank lines or lines with just a comment are not
+    /// parsable content or EoF. Blank lines or lines with just a comment aren't
     /// considered parsable lines, so they will be consumed by this function.
     /// \param[in, out] _rndfFile Input file stream.
     /// \param[out] _line First line found with parsable content.
     /// \param[in, out] Line number pointed by the stream position indicator.
-    /// \return True if a parsable line was found or false otherwise
-    /// (e.g.: EoF was found).
     MANIFOLD_VISIBLE
-    bool nextRealLine(std::ifstream &_rndfFile,
+    void nextRealLine(std::ifstream &_rndfFile,
                       std::string &_line,
                       int &_lineNumber);
 

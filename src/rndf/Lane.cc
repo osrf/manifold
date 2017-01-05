@@ -119,8 +119,7 @@ bool LaneHeader::Load(std::ifstream &_rndfFile, const int _segmentId,
     int oldLineNumber = _lineNumber;
 
     std::string lineread;
-    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-      return false;
+    nextRealLine(_rndfFile, lineread, _lineNumber);
 
     auto tokens = split(lineread, " ");
 
@@ -508,8 +507,7 @@ bool Lane::Load(std::ifstream &_rndfFile, const int _segmentId,
 {
   std::string lineread;
 
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
+  nextRealLine(_rndfFile, lineread, _lineNumber);
 
   // Parse the "lane ID" .
   auto tokens = split(lineread, " ");
@@ -849,7 +847,7 @@ bool Lane::Valid() const
       return false;
   }
 
-  for (auto &c : this->Checkpoints())
+  for (auto const &c : this->Checkpoints())
   {
     if (!c.Valid())
       return false;
@@ -861,7 +859,7 @@ bool Lane::Valid() const
       return false;
   }
 
-  for (auto &e : this->Exits())
+  for (auto const &e : this->Exits())
   {
     if (!e.Valid())
       return false;

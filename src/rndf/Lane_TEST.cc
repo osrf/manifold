@@ -259,6 +259,19 @@ TEST(Lane, checkpoints)
   for (auto const &aCheckpoint : lane.Checkpoints())
     EXPECT_TRUE(aCheckpoint.Valid());
 
+  // Create a valid waypoint.
+  ignition::math::SphericalCoordinates::SurfaceType st =
+    ignition::math::SphericalCoordinates::EARTH_WGS84;
+  ignition::math::Angle lat(0.3), lon(-1.2), heading(0.5);
+  double elev = 354.1;
+  ignition::math::SphericalCoordinates sc(st, lat, lon, elev, heading);
+  Waypoint wp;
+  wp.SetId(1);
+  wp.Location() = sc;
+  EXPECT_TRUE(lane.AddWaypoint(wp));
+
+  EXPECT_TRUE(lane.Valid());
+
   // Remove a checkpoint.
   EXPECT_TRUE(lane.RemoveCheckpoint(cp2.CheckpointId()));
   EXPECT_EQ(lane.NumCheckpoints(), 0u);

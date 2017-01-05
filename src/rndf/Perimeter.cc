@@ -179,8 +179,7 @@ bool Perimeter::Load(std::ifstream &_rndfFile, const int _zoneId,
   int &_lineNumber)
 {
   std::string lineread;
-  if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-    return false;
+  nextRealLine(_rndfFile, lineread, _lineNumber);
 
   // Parse the "perimeter Id" .
   auto tokens = split(lineread, " ");

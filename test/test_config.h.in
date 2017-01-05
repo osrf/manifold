@@ -207,11 +207,13 @@ namespace testing
       std::remove(this->fileName.c_str());
     }
 
-    /// \brief
+    /// \brief Populate the temporary file.
+    /// \param[in] _content File content.
     protected: void PopulateFile(const std::string &_content)
     {
       if (this->testFile.is_open())
         this->testFile.close();
+
       this->testFile.open(this->fileName);
       this->testFile << _content << std::endl;
     }

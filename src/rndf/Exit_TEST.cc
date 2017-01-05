@@ -147,7 +147,6 @@ TEST_F(ExitTest, load)
       "\n\n"
       "exit  68.0 2.1.1\n"
                                                     , false, 0, 3),
-
     // Invalid x (x.y.z) in the entry Id.
     std::make_tuple(
       "\n\n"

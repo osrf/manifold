@@ -96,8 +96,7 @@ bool RNDFHeader::Load(std::ifstream &_rndfFile, int &_lineNumber)
     int oldLineNumber = _lineNumber;
 
     std::string lineread;
-    if (!nextRealLine(_rndfFile, lineread, _lineNumber))
-      return false;
+    nextRealLine(_rndfFile, lineread, _lineNumber);
 
     auto tokens = split(lineread, " ");
 
