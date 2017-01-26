@@ -19,6 +19,7 @@
 #define MANIFOLD_RNDF_UNIQUEID_HH_
 
 #include <iostream>
+#include <string>
 #include "manifold/Helpers.hh"
 
 namespace manifold
@@ -41,6 +42,10 @@ namespace manifold
       public: explicit UniqueId(const int _x,
                                 const int _y,
                                 const int _z);
+
+      /// \brief Constructor.
+      /// \param[in] _id With format x.y.z
+      public: explicit UniqueId(const std::string &_id);
 
       /// \brief Copy constructor.
       /// \param[in] _other Other UniqueId.
@@ -85,6 +90,10 @@ namespace manifold
       /// \brief Whether the object is valid or not.
       /// \return True if the unique Id is valid.
       public: bool Valid() const;
+
+      /// \brief Convert to string.
+      /// \return A string representation of the unique Id.
+      public: std::string String() const;
 
       /// \brief Equality operator, result = this == _other
       /// \param[in] _other UniqueId to check for equality.

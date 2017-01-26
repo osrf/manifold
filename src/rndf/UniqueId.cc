@@ -15,7 +15,12 @@
  *
 */
 
+#include <array>
 #include <iostream>
+#include <sstream>
+#include <string>
+
+#include "manifold/rndf/ParserUtils.hh"
 #include "manifold/rndf/UniqueId.hh"
 
 using namespace manifold;
@@ -39,6 +44,47 @@ UniqueId::UniqueId(const int _x, const int _y, const int _z)
   this->SetX(_x);
   this->SetY(_y);
   this->SetZ(_z);
+}
+
+//////////////////////////////////////////////////
+UniqueId::UniqueId(const std::string &_id)
+  : UniqueId()
+{
+  auto tokens = split(_id, ".");
+  if (tokens.size() != 3)
+  {
+    std::cerr << "Unable to parse uniqueId [" << _id << "]" << std::endl;
+    return;
+  }
+
+  std::array<std::string::size_type, 3> sz;
+  std::array<int, 3> data;
+  const std::array<int, 3> kMin = {1, 0, 1};
+  try
+  {
+    for (int i = 0; i < 3; ++i)
+      data[i] = std::stod(tokens[i], &(sz[i]));
+  } catch (...)
+  {
+    std::cerr << "Unable to parse uniqueId [" << _id << "]" << std::endl;
+    return;
+  }
+
+  // Sanity check.
+  for (int i = 0; i < 3; ++i)
+  {
+    if (data[i] < kMin[i]             ||
+        data[i] > 32768               ||
+        sz[i] != tokens.at(i).size())
+    {
+      std::cerr << "Unable to parse uniqueId [" << _id << "]" << std::endl;
+      return;
+    }
+  }
+
+  this->SetX(data.at(0));
+  this->SetY(data.at(1));
+  this->SetZ(data.at(2));
 }
 
 //////////////////////////////////////////////////
@@ -96,6 +142,14 @@ bool UniqueId::SetZ(const int _z)
   if (valid)
     this->z = _z;
   return valid;
+}
+
+//////////////////////////////////////////////////
+std::string UniqueId::String() const
+{
+  std::ostringstream stream;
+  stream << *this;
+  return stream.str();
 }
 
 //////////////////////////////////////////////////

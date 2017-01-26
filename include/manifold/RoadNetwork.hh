@@ -19,6 +19,7 @@
 #define MANIFOLD_ROADNETWORK_HH_
 
 #include <memory>
+#include <string>
 #include <ignition/math/Graph.hh>
 
 #include "manifold/Helpers.hh"
@@ -44,11 +45,11 @@ namespace manifold
 
     /// \brief Get a mutable reference to the graph of road segments.
     /// \return A mutable reference to the graph of road segments.
-    public: ignition::math::Graph<int, int> &Graph();
+    public: ignition::math::Graph<std::string, int> &Graph();
 
     /// \brief Get a reference to the graph of road segments.
     /// \return The reference to the graph of road segments.
-    public: const ignition::math::Graph<int, int> &Graph() const;
+    public: const ignition::math::Graph<std::string, int> &Graph() const;
 
     /// \internal
     /// \brief Smart pointer to private data.

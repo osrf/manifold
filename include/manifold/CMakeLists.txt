@@ -13,6 +13,7 @@ set (rndf_headers
   rndf/ParserUtils.hh
   rndf/Perimeter.hh
   rndf/RNDF.hh
+  rndf/RNDFNode.hh
   rndf/Segment.hh
   rndf/UniqueId.hh
   rndf/Waypoint.hh

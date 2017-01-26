@@ -27,7 +27,9 @@
 #include "manifold/rndf/Lane.hh"
 #include "manifold/rndf/Perimeter.hh"
 #include "manifold/rndf/RNDF.hh"
+#include "manifold/rndf/RNDFNode.hh"
 #include "manifold/rndf/Segment.hh"
+#include "manifold/rndf/UniqueId.hh"
 #include "manifold/rndf/Waypoint.hh"
 #include "manifold/rndf/Zone.hh"
 
@@ -277,10 +279,35 @@ TEST(RNDF, loadSamples)
   {
     RNDF rndf(dirPath + "/test/rndf/sample1.rndf");
     EXPECT_TRUE(rndf.Valid());
+
+    rndf::UniqueId id(1, 1, 1);
+    RNDFNode *nodeInfo = rndf.Info(id);
+    ASSERT_TRUE(nodeInfo != nullptr);
+    ASSERT_TRUE(nodeInfo->Segment() != nullptr);
+    ASSERT_EQ(nodeInfo->Segment()->Id(), 1);
+    ASSERT_TRUE(nodeInfo->Lane() != nullptr);
+    ASSERT_EQ(nodeInfo->Lane()->Id(), 1);
+    ASSERT_TRUE(nodeInfo->Zone() == nullptr);
   }
   {
     RNDF rndf(dirPath + "/test/rndf/sample2.rndf");
     EXPECT_TRUE(rndf.Valid());
+
+    rndf::UniqueId id(68, 0, 20);
+    RNDFNode *nodeInfo = rndf.Info(id);
+    ASSERT_TRUE(nodeInfo != nullptr);
+    ASSERT_TRUE(nodeInfo->Segment() == nullptr);
+    ASSERT_TRUE(nodeInfo->Lane() == nullptr);
+    ASSERT_TRUE(nodeInfo->Zone() != nullptr);
+    EXPECT_EQ(nodeInfo->Zone()->Id(), 68);
+
+    rndf::UniqueId spotId(61, 2, 2);
+    RNDFNode *spotInfo = rndf.Info(spotId);
+    ASSERT_TRUE(spotInfo != nullptr);
+    ASSERT_TRUE(spotInfo->Segment() == nullptr);
+    ASSERT_TRUE(spotInfo->Lane() == nullptr);
+    ASSERT_TRUE(spotInfo->Zone() != nullptr);
+    EXPECT_EQ(spotInfo->Zone()->Id(), 61);
   }
 }
 

@@ -8,6 +8,7 @@ set (rndf_sources
   rndf/ParserUtils.cc
   rndf/Perimeter.cc
   rndf/RNDF.cc
+  rndf/RNDFNode.cc
   rndf/Segment.cc
   rndf/UniqueId.cc
   rndf/Waypoint.cc

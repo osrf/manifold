@@ -20,13 +20,18 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "manifold/rndf/ParserUtils.hh"
+#include "manifold/rndf/Perimeter.hh"
 #include "manifold/rndf/RNDF.hh"
+#include "manifold/rndf/RNDFNode.hh"
+#include "manifold/rndf/ParkingSpot.hh"
 #include "manifold/rndf/Segment.hh"
 #include "manifold/rndf/UniqueId.hh"
+#include "manifold/rndf/Waypoint.hh"
 #include "manifold/rndf/Zone.hh"
 
 using namespace manifold;
@@ -72,8 +77,11 @@ namespace manifold
       /// \brief The collection of zones.
       public: std::vector<rndf::Zone> zones;
 
-      /// Below are the optional segment header members.
+      /// \brief Optional segment header members.
       public: RNDFHeader header;
+
+      /// \brief ToDo.
+      public: std::map<std::string, rndf::RNDFNode> cache;
     };
   }
 }
@@ -273,6 +281,8 @@ bool RNDF::Load(const std::string &_filePath)
   this->Zones() = zones;
   this->SetVersion(header.Version());
   this->SetDate(header.Date());
+
+  this->UpdateCache();
 
   return true;
 }
@@ -498,4 +508,49 @@ bool RNDF::Valid() const
   }
 
   return true;
+}
+
+//////////////////////////////////////////////////
+void RNDF::UpdateCache()
+{
+  for (auto &segment : this->Segments())
+    for (auto &lane : segment.Lanes())
+      for (auto &wp : lane.Waypoints())
+      {
+        rndf::UniqueId id(segment.Id(), lane.Id(), wp.Id());
+        rndf::RNDFNode node(id);
+        node.SetSegment(&segment);
+        node.SetLane(&lane);
+        this->dataPtr->cache[id.String()] = node;
+      }
+
+  for (auto &zone : this->Zones())
+  {
+    for (auto &wp : zone.Perimeter().Points())
+    {
+      rndf::UniqueId id(zone.Id(), 0, wp.Id());
+      rndf::RNDFNode node(id);
+      node.SetZone(&zone);
+      this->dataPtr->cache[id.String()] = node;
+    }
+    for (auto &spot : zone.Spots())
+    {
+      for (auto wpId = 1u; wpId <= spot.NumWaypoints(); ++wpId)
+      {
+        rndf::UniqueId id(zone.Id(), spot.Id(), wpId);
+        rndf::RNDFNode node(id);
+        node.SetZone(&zone);
+        this->dataPtr->cache[id.String()] = node;
+      }
+    }
+  }
+}
+
+//////////////////////////////////////////////////
+RNDFNode *RNDF::Info(const rndf::UniqueId &_id) const
+{
+  if (this->dataPtr->cache.find(_id.String()) == this->dataPtr->cache.end())
+    return nullptr;
+
+  return &(this->dataPtr->cache[_id.String()]);
 }

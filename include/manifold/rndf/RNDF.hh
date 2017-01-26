@@ -32,6 +32,7 @@ namespace manifold
   {
     // Forward declarations.
     class RNDFHeaderPrivate;
+    class RNDFNode;
     class RNDFPrivate;
     class Segment;
     class UniqueId;
@@ -239,8 +240,19 @@ namespace manifold
       /// Validation
       //////////////
 
+      /// \brief ToDo
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
+
+      /////////
+      /// Utils
+      /////////
+
+      /// \brief ToDo
+      public: RNDFNode *Info(const rndf::UniqueId &_id) const;
+
+      /// \brief ToDo
+      private: void UpdateCache();
 
       /// \internal
       /// \brief Smart pointer to private data.

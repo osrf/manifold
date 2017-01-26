@@ -89,6 +89,81 @@ TEST(UniqueIdTest, accessors)
 }
 
 //////////////////////////////////////////////////
+/// \brief Check constructor using a string.
+TEST(UniqueIdTest, stringConstructor)
+{
+  {
+    UniqueId id("x.x.x");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("0.1.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.-1.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.1.0");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("32769.1.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.32769.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.2.32769");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1x.0.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.0x.2");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.0.2x");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.0.2.3");
+    EXPECT_FALSE(id.Valid());
+  }
+
+  {
+    UniqueId id("1.0.2");
+    EXPECT_TRUE(id.Valid());
+  }
+}
+
+//////////////////////////////////////////////////
 /// \brief Check [in]equality operators.
 TEST(UniqueIdTest, equality)
 {

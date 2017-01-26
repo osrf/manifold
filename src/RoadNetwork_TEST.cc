@@ -37,22 +37,98 @@ TEST(RoadNetwork, Constructor)
 
   auto &graph = roadNetwork.Graph();
 
-  // We should have 14 vertexes with IDs ranging from 1 to 14.
-  EXPECT_EQ(graph.Vertexes().size(), 14u);
-  for (auto i = 1; i < 14; ++i)
+  // We should have 164 vertexes.
+  EXPECT_EQ(graph.Vertexes().size(), 164u);
+  for (auto i = 0; i < 164; ++i)
     EXPECT_NE(graph.VertexById(i), nullptr);
 
-  // We should have 30 edges.
-  EXPECT_EQ(graph.Edges().size(), 30u);
+  // We should have 312 edges.
+  EXPECT_EQ(graph.Edges().size(), 318u);
 
-  // From the segment #1 is possible to reach other two segments.
-  auto adjacents = graph.Adjacents(1);
-  EXPECT_EQ(adjacents.size(), 2u);
+  // All waypoints within the same lane are connected.
+  ASSERT_EQ(graph.Vertexes("1.1.1").size(), 1u);
+  auto v = graph.Vertexes("1.1.1").front();
+  auto neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 1u);
+  EXPECT_EQ(neighbors.front()->Name(), "1.1.2");
 
-  // From the segment #14 is possible to reach segment #11.
-  adjacents = graph.Adjacents(14);
-  ASSERT_EQ(adjacents.size(), 1u);
-  EXPECT_EQ(adjacents.at(0)->Id(), 11);
+  ASSERT_EQ(graph.Vertexes("1.1.2").size(), 1u);
+  v = graph.Vertexes("1.1.2").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 1u);
+  EXPECT_EQ(neighbors.front()->Name(), "1.1.3");
+
+  ASSERT_EQ(graph.Vertexes("1.1.3").size(), 1u);
+  v = graph.Vertexes("1.1.3").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 1u);
+  EXPECT_EQ(neighbors.front()->Name(), "1.1.4");
+
+  ASSERT_EQ(graph.Vertexes("1.1.4").size(), 1u);
+  v = graph.Vertexes("1.1.4").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_TRUE(neighbors.empty());
+
+  // Verify an exit from one segment to another segment.
+  ASSERT_EQ(graph.Vertexes("1.2.4").size(), 1u);
+  v = graph.Vertexes("1.2.4").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 2u);
+  EXPECT_EQ(neighbors.at(0)->Name(), "1.2.5");
+  EXPECT_EQ(neighbors.at(1)->Name(), "3.1.1");
+
+  // Verify an exit from one segment to a zone.
+  ASSERT_EQ(graph.Vertexes("12.1.2").size(), 1u);
+  v = graph.Vertexes("12.1.2").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 1u);
+  EXPECT_EQ(neighbors.at(0)->Name(), "14.0.2");
+
+  // Verify a perimeter point.
+  ASSERT_EQ(graph.Vertexes("14.0.5").size(), 1u);
+  v = graph.Vertexes("14.0.5").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 12u);
+  EXPECT_EQ(neighbors.at(0)->Name(), "14.0.2");
+  EXPECT_EQ(neighbors.at(1)->Name(), "14.6.1");
+  EXPECT_EQ(neighbors.at(2)->Name(), "14.0.4");
+  EXPECT_EQ(neighbors.at(3)->Name(), "14.2.1");
+  EXPECT_EQ(neighbors.at(4)->Name(), "14.0.6");
+  EXPECT_EQ(neighbors.at(5)->Name(), "14.0.1");
+  EXPECT_EQ(neighbors.at(6)->Name(), "14.0.3");
+  EXPECT_EQ(neighbors.at(7)->Name(), "14.1.1");
+  EXPECT_EQ(neighbors.at(8)->Name(), "14.3.1");
+  EXPECT_EQ(neighbors.at(9)->Name(), "14.4.1");
+  EXPECT_EQ(neighbors.at(10)->Name(), "14.5.1");
+  // This is the exit from a zone to a segment.
+  EXPECT_EQ(neighbors.at(11)->Name(), "11.1.1");
+
+  // Verify a parking spot.
+  ASSERT_EQ(graph.Vertexes("14.3.1").size(), 1u);
+  v = graph.Vertexes("14.3.1").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 12u);
+  // This is the second waypoint of the spot.
+  EXPECT_EQ(neighbors.at(0)->Name(), "14.3.2");
+  EXPECT_EQ(neighbors.at(1)->Name(), "14.0.4");
+  EXPECT_EQ(neighbors.at(2)->Name(), "14.0.6");
+  EXPECT_EQ(neighbors.at(3)->Name(), "14.0.3");
+  EXPECT_EQ(neighbors.at(4)->Name(), "14.4.1");
+  EXPECT_EQ(neighbors.at(5)->Name(), "14.0.1");
+  EXPECT_EQ(neighbors.at(6)->Name(), "14.6.1");
+  EXPECT_EQ(neighbors.at(7)->Name(), "14.0.2");
+  EXPECT_EQ(neighbors.at(8)->Name(), "14.0.5");
+  EXPECT_EQ(neighbors.at(9)->Name(), "14.2.1");
+  EXPECT_EQ(neighbors.at(10)->Name(), "14.1.1");
+  EXPECT_EQ(neighbors.at(11)->Name(), "14.5.1");
+
+  // Verify that the second waypoint of a parking spot is only linked with its
+  // first waypoint.
+  ASSERT_EQ(graph.Vertexes("14.3.2").size(), 1u);
+  v = graph.Vertexes("14.3.2").front();
+  neighbors = graph.Adjacents(v);
+  ASSERT_EQ(neighbors.size(), 1u);
+  EXPECT_EQ(neighbors.at(0)->Name(), "14.3.1");
 }
 
 //////////////////////////////////////////////////
