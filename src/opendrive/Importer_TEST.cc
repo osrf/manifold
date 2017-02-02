@@ -28,13 +28,13 @@ TEST(OpenDrive, loadInexistentFiles)
 {
   {
     Importer importer("__inexistentFile___.xodr");
-    //EXPECT_FALSE(importer.Valid());
+    // EXPECT_FALSE(importer.Valid());
   }
 
   {
     Importer importer;
     importer.Load("__inexistentFile___.xodr");
-    //EXPECT_FALSE(importer.Valid());
+    // EXPECT_FALSE(importer.Valid());
   }
 }
 

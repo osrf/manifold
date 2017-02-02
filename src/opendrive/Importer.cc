@@ -15,10 +15,10 @@
  *
 */
 
+#include <tinyxml2.h>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <tinyxml2.h>
 
 #include "manifold/opendrive/Importer.hh"
 
