@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <tinyxml2.h>
 
 #include "manifold/opendrive/Importer.hh"
 
@@ -37,6 +38,9 @@ namespace manifold
 
       /// \brief Destructor.
       public: virtual ~ImporterPrivate() = default;
+
+      /// \brief The XML .xodr file.
+      public: tinyxml2::XMLDocument xmlDoc;
     };
   }
 }
@@ -62,9 +66,9 @@ Importer::~Importer()
 //////////////////////////////////////////////////
 bool Importer::Load(const std::string &_filePath)
 {
-  std::ifstream xodrFile;
-  xodrFile.open(_filePath);
-  if (!xodrFile.good())
+  // Flag use to indicate if a parser failure has occurred
+  if (this->dataPtr->xmlDoc.LoadFile(_filePath.c_str()) !=
+      tinyxml2::XML_SUCCESS)
   {
     std::cerr << "Error opening OpenDrive [" << _filePath << "]" << std::endl;
     return false;

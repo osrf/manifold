@@ -28,7 +28,9 @@ elseif(WIN32)
 endif()
 
 target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}
-  ${IGNITION-MATH_LIBRARIES})
+  ${IGNITION-MATH_LIBRARIES}
+  ${tinyxml2_LIBRARIES}
+)
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}

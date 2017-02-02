@@ -39,7 +39,7 @@ namespace manifold
       public: Importer();
 
       /// \brief Constructor.
-      /// \param[in] _filepath Path to an existing xodr file.
+      /// \param[in] _filepath Path to an existing xodr (openDRIVE) file.
       public: explicit Importer(const std::string &_filepath);
 
       /// \brief Destructor.
