@@ -1,5 +1,6 @@
 include (${project_cmake_dir}/Utils.cmake)
 
+add_subdirectory(opendrive)
 add_subdirectory(rndf)
 
 set (sources
