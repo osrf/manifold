@@ -10,7 +10,7 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           - apt-get update
-          - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn mercurial
+          - apt-get -y install cmake pkg-config cppcheck doxygen ruby-ronn mercurial libtinyxml2-dev
           # Install Ignition math.
           - hg clone https://bitbucket.org/ignitionrobotics/ign-math -b graph
           - cd ign-math
