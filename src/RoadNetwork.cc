@@ -21,7 +21,6 @@
 #include "manifold/rndf/Exit.hh"
 #include "manifold/rndf/Perimeter.hh"
 #include "manifold/rndf/RNDF.hh"
-#include "manifold/rndf/RNDFNode.hh"
 #include "manifold/rndf/ParkingSpot.hh"
 #include "manifold/rndf/Segment.hh"
 #include "manifold/rndf/Waypoint.hh"

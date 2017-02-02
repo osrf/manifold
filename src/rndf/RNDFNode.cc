@@ -19,6 +19,7 @@
 #include "manifold/rndf/RNDFNode.hh"
 #include "manifold/rndf/Segment.hh"
 #include "manifold/rndf/UniqueId.hh"
+#include "manifold/rndf/Waypoint.hh"
 #include "manifold/rndf/Zone.hh"
 
 using namespace manifold;
@@ -49,6 +50,9 @@ namespace manifold
 
       /// \brief The zone containing the waypoint.
       public: Zone *zone = nullptr;
+
+      /// \brief The pointer to the waypoint that matches _id.
+      public: Waypoint *waypoint = nullptr;
 
       /// \brief The unique Id.
       public: UniqueId uniqueId;
@@ -105,6 +109,12 @@ Zone *RNDFNode::Zone() const
 }
 
 //////////////////////////////////////////////////
+Waypoint *RNDFNode::Waypoint() const
+{
+  return this->dataPtr->waypoint;
+}
+
+//////////////////////////////////////////////////
 void RNDFNode::SetUniqueId(const rndf::UniqueId &_id)
 {
   this->dataPtr->uniqueId = _id;
@@ -129,6 +139,12 @@ void RNDFNode::SetZone(rndf::Zone *_zone)
 }
 
 //////////////////////////////////////////////////
+void RNDFNode::SetWaypoint(rndf::Waypoint *_waypoint)
+{
+  this->dataPtr->waypoint = _waypoint;
+}
+
+//////////////////////////////////////////////////
 bool RNDFNode::operator==(const RNDFNode &_other) const
 {
   return this->UniqueId() == _other.UniqueId();
@@ -147,5 +163,6 @@ RNDFNode &RNDFNode::operator=(const RNDFNode &_other)
   this->SetSegment(_other.Segment());
   this->SetLane(_other.Lane());
   this->SetZone(_other.Zone());
+  this->SetWaypoint(_other.Waypoint());
   return *this;
 }

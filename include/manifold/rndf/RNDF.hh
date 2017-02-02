@@ -240,7 +240,7 @@ namespace manifold
       /// Validation
       //////////////
 
-      /// \brief ToDo
+      /// \brief Whether the current RNDF object is valid or not.
       /// \return True if the RNDF is valid.
       public: bool Valid() const;
 
@@ -248,10 +248,13 @@ namespace manifold
       /// Utils
       /////////
 
-      /// \brief ToDo
+      /// \brief Get a pointer to the associated RNDF node given a unique Id.
+      /// The RNDFNode object contains the metada associated to the id.
+      /// \param[in] _id The Unique Id to check.
       public: RNDFNode *Info(const rndf::UniqueId &_id) const;
 
-      /// \brief ToDo
+      /// \brief Populates the "cache" member variable linking all unique Ids
+      /// with their metadata (RNDFNode).
       private: void UpdateCache();
 
       /// \internal

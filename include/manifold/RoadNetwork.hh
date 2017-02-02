@@ -34,7 +34,9 @@ namespace manifold
   // Forward declarations.
   class RoadNetworkPrivate;
 
-  /// \brief ToDo.
+  /// \brief A class that stores an RNDF object preserving its topological
+  /// information. You can use the Graph() method to get access to a graph
+  /// where all nodes are the waypoints of the RNDF object.
   class MANIFOLD_VISIBLE RoadNetwork
   {
     /// \brief Constructor.

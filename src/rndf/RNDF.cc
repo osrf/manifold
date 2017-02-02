@@ -80,7 +80,10 @@ namespace manifold
       /// \brief Optional segment header members.
       public: RNDFHeader header;
 
-      /// \brief ToDo.
+      /// \brief A map used as a cache where the keys are the string
+      /// representation of unique Ids (e.g. 1.2.1) and the values are the
+      /// associated RNDFNode objects containing the metadata associated to
+      /// the unique Id..
       public: std::map<std::string, rndf::RNDFNode> cache;
     };
   }
@@ -521,6 +524,7 @@ void RNDF::UpdateCache()
         rndf::RNDFNode node(id);
         node.SetSegment(&segment);
         node.SetLane(&lane);
+        node.SetWaypoint(&wp);
         this->dataPtr->cache[id.String()] = node;
       }
 
@@ -531,15 +535,17 @@ void RNDF::UpdateCache()
       rndf::UniqueId id(zone.Id(), 0, wp.Id());
       rndf::RNDFNode node(id);
       node.SetZone(&zone);
+      node.SetWaypoint(&wp);
       this->dataPtr->cache[id.String()] = node;
     }
     for (auto &spot : zone.Spots())
     {
-      for (auto wpId = 1u; wpId <= spot.NumWaypoints(); ++wpId)
+      for (auto &wp : spot.Waypoints())
       {
-        rndf::UniqueId id(zone.Id(), spot.Id(), wpId);
+        rndf::UniqueId id(zone.Id(), spot.Id(), wp.Id());
         rndf::RNDFNode node(id);
         node.SetZone(&zone);
+        node.SetWaypoint(&wp);
         this->dataPtr->cache[id.String()] = node;
       }
     }

@@ -31,6 +31,7 @@ namespace manifold
     class RNDFNodePrivate;
     class Segment;
     class UniqueId;
+    class Waypoint;
     class Zone;
 
     // \internal
@@ -53,21 +54,58 @@ namespace manifold
       /// \brief Destructor.
       public: virtual ~RNDFNode();
 
+      /// \brief Get the Unique Id of the RNDF node.
+      /// \return The Unique Id.
       public: rndf::UniqueId &UniqueId() const;
 
+      /// \brief Get the pointer to the segment where the waypoint is contained.
+      /// \return Pointer to the segment or nullptr if not possible (e.g. if
+      /// the waypoint belongs to a zone).
       public: rndf::Segment *Segment() const;
 
+      /// \brief Get the pointer to the lane where the waypoint is contained.
+      /// \return Pointer to the lane or nullptr if not possible (e.g. if
+      /// the waypoint belongs to a zone).
       public: rndf::Lane *Lane() const;
 
+      /// \brief Get the pointer to the zone where the waypoint is contained.
+      /// \return Pointer to the zone or nullptr if not possible (e.g. if
+      /// the waypoint belongs to a segment).
       public: rndf::Zone *Zone() const;
 
+      /// \brief Get the pointer to the waypoint with the stored unique Id.
+      /// \return Pointer to the waypoint or nullptr if not possible (e.g. if
+      /// the Id passed in the constructor was incorrect).
+      public: rndf::Waypoint *Waypoint() const;
+
+      /// \brief Set the unique unique Id.
+      /// \param[in] _id Unique Id of the node.
       public: void SetUniqueId(const rndf::UniqueId &_id);
 
+      /// \brief Set the pointer to the segment that contains the waypoint.
+      /// \param[in] _segment Pointer to the segment that contains the waypoint
+      /// or nullpr if there's no segment (e.g. ig the waypoint belongs to a
+      /// zone).
       public: void SetSegment(rndf::Segment *_segment);
 
+      /// \brief Set the pointer to the lane that contains the waypoint.
+      /// \param[in] _lane Pointer to the lane that contains the waypoint
+      /// or nullpr if there's no lane (e.g. ig the waypoint belongs to a
+      /// zone).
       public: void SetLane(rndf::Lane *_lane);
 
+      /// \brief Set the pointer to the zone that contains the waypoint.
+      /// \param[in] _segment Pointer to the zone that contains the waypoint
+      /// or nullpr if there's no zone (e.g. ig the waypoint belongs to a
+      /// segment).
       public: void SetZone(rndf::Zone *_zone);
+
+      /// \brief Set the pointer to the waypoint associated with the given
+      /// unique Id passed in the constructor.
+      /// \param[in] _segment Pointer to the waypoint with the given unique
+      /// Id passed in the constructor or null not possible (e.g. if the Id
+      // pased in the constructor was incorrect).
+      public: void SetWaypoint(rndf::Waypoint *_waypoint);
 
       /////////////
       /// Operators
