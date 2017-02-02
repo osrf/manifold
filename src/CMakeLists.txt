@@ -4,6 +4,7 @@ add_subdirectory(opendrive)
 add_subdirectory(rndf)
 
 set (sources
+  ${opendrive_sources}
   ${rndf_sources}
   Helpers.cc
   RoadNetwork.cc
