@@ -15,10 +15,10 @@
  *
 */
 
-#include <tinyxml2.h>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <xercesc/parsers/XercesDOMParser.hpp>
 
 #include "manifold/opendrive/Importer.hh"
 
@@ -40,7 +40,7 @@ namespace manifold
       public: virtual ~ImporterPrivate() = default;
 
       /// \brief The XML .xodr file.
-      public: tinyxml2::XMLDocument xmlDoc;
+      public: xercesc::XercesDOMParser domParser;
     };
   }
 }
@@ -66,13 +66,22 @@ Importer::~Importer()
 //////////////////////////////////////////////////
 bool Importer::Load(const std::string &_filePath)
 {
+  //std::string grammarFile = "/home/caguero/workspace/manifold/schemas/OpenDRIVE_1.4H.xsd";
+  //if (this->dataPtr->domParser.loadGrammar(
+  //  grammarFile.c_str(), xercesc::Grammar::SchemaGrammarType) == NULL)
+  //{
+  //  std::cerr << "Error parsing grammar file" << std::endl;
+  //  return false;
+  //}
+
+
   // Flag use to indicate if a parser failure has occurred
-  if (this->dataPtr->xmlDoc.LoadFile(_filePath.c_str()) !=
-      tinyxml2::XML_SUCCESS)
-  {
-    std::cerr << "Error opening OpenDrive [" << _filePath << "]" << std::endl;
-    return false;
-  }
+  //if (this->dataPtr->xmlDoc.LoadFile(_filePath.c_str()) !=
+  //    tinyxml2::XML_SUCCESS)
+  //{
+  //  std::cerr << "Error opening OpenDrive [" << _filePath << "]" << std::endl;
+  //  return false;
+  //}
 
   return true;
 }

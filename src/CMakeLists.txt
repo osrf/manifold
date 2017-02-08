@@ -27,7 +27,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME_LOWER}${PROJECT_MAJOR_VERSION}
   ${IGNITION-MATH_LIBRARIES}
-  ${tinyxml2_LIBRARIES}
+  ${XERCESC_LIBRARIES}
 )
 
 if(WIN32)
