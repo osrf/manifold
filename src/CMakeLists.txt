@@ -15,8 +15,6 @@ set (gtest_sources
   RoadNetwork_TEST.cc
 )
 
-MESSAGE(STATUS "Files: ${sources}")
-
 include_directories(${CMAKE_BINARY_DIR}/ ${CMAKE_BINARY_DIR}/test/)
 
 ign_build_tests(${gtest_sources})
