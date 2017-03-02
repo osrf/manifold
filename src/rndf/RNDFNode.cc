@@ -34,7 +34,7 @@ namespace manifold
     class RNDFNodePrivate
     {
       /// \brief Constructor.
-      public: RNDFNodePrivate(const rndf::UniqueId &_id)
+      public: explicit RNDFNodePrivate(const rndf::UniqueId &_id)
         : uniqueId(_id)
       {
       }

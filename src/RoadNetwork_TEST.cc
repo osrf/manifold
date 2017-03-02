@@ -15,6 +15,7 @@
  *
 */
 
+#include <algorithm>
 #include <string>
 
 #include "manifold/rndf/RNDF.hh"
@@ -89,38 +90,34 @@ TEST(RoadNetwork, Constructor)
   v = graph.Vertexes("14.0.5").front();
   neighbors = graph.Adjacents(v);
   ASSERT_EQ(neighbors.size(), 12u);
-  EXPECT_EQ(neighbors.at(0)->Name(), "14.0.2");
-  EXPECT_EQ(neighbors.at(1)->Name(), "14.6.1");
-  EXPECT_EQ(neighbors.at(2)->Name(), "14.0.4");
-  EXPECT_EQ(neighbors.at(3)->Name(), "14.2.1");
-  EXPECT_EQ(neighbors.at(4)->Name(), "14.0.6");
-  EXPECT_EQ(neighbors.at(5)->Name(), "14.0.1");
-  EXPECT_EQ(neighbors.at(6)->Name(), "14.0.3");
-  EXPECT_EQ(neighbors.at(7)->Name(), "14.1.1");
-  EXPECT_EQ(neighbors.at(8)->Name(), "14.3.1");
-  EXPECT_EQ(neighbors.at(9)->Name(), "14.4.1");
-  EXPECT_EQ(neighbors.at(10)->Name(), "14.5.1");
-  // This is the exit from a zone to a segment.
-  EXPECT_EQ(neighbors.at(11)->Name(), "11.1.1");
+
+  for (auto wp : {"14.0.2", "14.6.1", "14.0.4", "14.2.1", "14.0.6", "14.0.1",
+                  "14.0.3", "14.1.1", "14.3.1", "14.4.1", "14.5.1", "11.1.1"})
+  {
+    auto res = std::find_if(neighbors.begin(), neighbors.end(),
+      [&wp](const ignition::math::VertexPtr<std::string> &_vPtr)
+      {
+        return _vPtr->Name() == wp;
+      });
+    EXPECT_NE(res, neighbors.end());
+  }
 
   // Verify a parking spot.
   ASSERT_EQ(graph.Vertexes("14.3.1").size(), 1u);
   v = graph.Vertexes("14.3.1").front();
   neighbors = graph.Adjacents(v);
   ASSERT_EQ(neighbors.size(), 12u);
-  // This is the second waypoint of the spot.
-  EXPECT_EQ(neighbors.at(0)->Name(), "14.3.2");
-  EXPECT_EQ(neighbors.at(1)->Name(), "14.0.4");
-  EXPECT_EQ(neighbors.at(2)->Name(), "14.0.6");
-  EXPECT_EQ(neighbors.at(3)->Name(), "14.0.3");
-  EXPECT_EQ(neighbors.at(4)->Name(), "14.4.1");
-  EXPECT_EQ(neighbors.at(5)->Name(), "14.0.1");
-  EXPECT_EQ(neighbors.at(6)->Name(), "14.6.1");
-  EXPECT_EQ(neighbors.at(7)->Name(), "14.0.2");
-  EXPECT_EQ(neighbors.at(8)->Name(), "14.0.5");
-  EXPECT_EQ(neighbors.at(9)->Name(), "14.2.1");
-  EXPECT_EQ(neighbors.at(10)->Name(), "14.1.1");
-  EXPECT_EQ(neighbors.at(11)->Name(), "14.5.1");
+
+  for (auto wp : {"14.3.2", "14.0.4", "14.0.6", "14.0.3", "14.4.1", "14.0.1",
+                  "14.6.1", "14.0.2", "14.0.5", "14.2.1", "14.1.1", "14.5.1"})
+  {
+    auto res = std::find_if(neighbors.begin(), neighbors.end(),
+      [&wp](const ignition::math::VertexPtr<std::string> &_vPtr)
+      {
+        return _vPtr->Name() == wp;
+      });
+    EXPECT_NE(res, neighbors.end());
+  }
 
   // Verify that the second waypoint of a parking spot is only linked with its
   // first waypoint.

@@ -45,7 +45,7 @@ namespace manifold
 
       /// \brief Default constructor.
       /// \param[in] _id A unique Id.
-      public: RNDFNode(const rndf::UniqueId &_id);
+      public: explicit RNDFNode(const rndf::UniqueId &_id);
 
       /// \brief Copy constructor.
       /// \param[in] _other Other RNDFNode.

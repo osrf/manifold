@@ -44,7 +44,7 @@ namespace manifold
     /// \brief Graph of segments.
     /// The vertex contains a string (waypoint Id) and the edge an
     /// integer (unused).
-    public: ignition::math::Graph<std::string, int> network;
+    public: ignition::math::DirectedGraph<std::string, int> network;
   };
 }
 
@@ -175,13 +175,14 @@ RoadNetwork::~RoadNetwork()
 }
 
 //////////////////////////////////////////////////
-ignition::math::Graph<std::string, int> &RoadNetwork::Graph()
+ignition::math::DirectedGraph<std::string, int> &RoadNetwork::Graph()
 {
   return this->dataPtr->network;
 }
 
 //////////////////////////////////////////////////
-const ignition::math::Graph<std::string, int> &RoadNetwork::Graph() const
+const ignition::math::DirectedGraph<std::string, int> &RoadNetwork::Graph()
+  const
 {
   return this->dataPtr->network;
 }

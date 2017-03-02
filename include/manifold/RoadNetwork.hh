@@ -40,18 +40,19 @@ namespace manifold
   class MANIFOLD_VISIBLE RoadNetwork
   {
     /// \brief Constructor.
-    public: RoadNetwork(const rndf::RNDF &_rndf);
+    public: explicit RoadNetwork(const rndf::RNDF &_rndf);
 
     /// \brief Destructor.
     public: virtual ~RoadNetwork();
 
     /// \brief Get a mutable reference to the graph of road segments.
     /// \return A mutable reference to the graph of road segments.
-    public: ignition::math::Graph<std::string, int> &Graph();
+    public: ignition::math::DirectedGraph<std::string, int> &Graph();
 
     /// \brief Get a reference to the graph of road segments.
     /// \return The reference to the graph of road segments.
-    public: const ignition::math::Graph<std::string, int> &Graph() const;
+    public: const ignition::math::DirectedGraph<std::string, int> &Graph()
+      const;
 
     /// \internal
     /// \brief Smart pointer to private data.
