@@ -36,6 +36,8 @@ TEST(RoadNetwork, Constructor)
 
   RoadNetwork roadNetwork(rndf);
 
+  EXPECT_EQ(roadNetwork.RoadType(), "rndf");
+
   auto &graph = roadNetwork.Graph();
 
   // We should have 164 vertexes.

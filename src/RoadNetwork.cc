@@ -45,6 +45,9 @@ namespace manifold
     /// The vertex contains a string (waypoint Id) and the edge an
     /// integer (unused).
     public: ignition::math::DirectedGraph<std::string, int> network;
+
+    /// \brief Type of road file loaded into the graph.
+    public: std::string type = "";
   };
 }
 
@@ -167,6 +170,8 @@ RoadNetwork::RoadNetwork(const rndf::RNDF &_rndf)
 
         this->dataPtr->network.AddEdge(tailPtr, headPtr, 0);
       }
+
+  this->dataPtr->type = "rndf";
 }
 
 //////////////////////////////////////////////////
@@ -185,4 +190,10 @@ const ignition::math::DirectedGraph<std::string, int> &RoadNetwork::Graph()
   const
 {
   return this->dataPtr->network;
+}
+
+//////////////////////////////////////////////////
+std::string RoadNetwork::RoadType() const
+{
+  return this->dataPtr->type;
 }

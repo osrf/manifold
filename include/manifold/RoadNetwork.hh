@@ -54,6 +54,11 @@ namespace manifold
     public: const ignition::math::DirectedGraph<std::string, int> &Graph()
       const;
 
+    /// \brief Get the type of road file loaded into the graph.
+    /// E.g.: rndf, opendrive
+    /// \return The type of road file loaded (e.g.: rndf, opendrive).
+    public: std::string RoadType() const;
+
     /// \internal
     /// \brief Smart pointer to private data.
     private: std::unique_ptr<RoadNetworkPrivate> dataPtr;
